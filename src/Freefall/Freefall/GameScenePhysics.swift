@@ -100,6 +100,9 @@ extension GameScene: SKPhysicsContactDelegate {
         sceneState = .complete
         stopSphereMotion()
         
+        createGoalCelebrationBurst()
+        goalFlash()
+        
         if let sphere = sphereNode {
             let fadeOut = SKAction.fadeOut(withDuration: 0.3)
             sphere.run(fadeOut)
@@ -112,6 +115,43 @@ extension GameScene: SKPhysicsContactDelegate {
             }
         ])
         run(delayAction)
+    }
+
+    private func createGoalCelebrationBurst() {
+        guard let goalNode = goalNode else { return }
+        
+        let particleCount = 16
+        for _ in 0..<particleCount {
+            let angle = CGFloat.random(in: 0..<(2 * .pi))
+            let speed = CGFloat.random(in: 80...200)
+            let dx = cos(angle) * speed
+            let dy = sin(angle) * speed
+            
+            let particle = SKSpriteNode(color: UIColor(red: 0, green: 1, blue: 1, alpha: 1), size: CGSize(width: 3, height: 3))
+            particle.position = goalNode.position
+            particle.zPosition = 15
+            addChild(particle)
+            
+            let moveAction = SKAction.move(by: CGVector(dx: dx * 0.5, dy: dy * 0.5), duration: 0.5)
+            let fadeAction = SKAction.fadeOut(withDuration: 0.5)
+            let group = SKAction.group([moveAction, fadeAction])
+            let sequence = SKAction.sequence([
+                group,
+                SKAction.run { particle.removeFromParent() }
+            ])
+            particle.run(sequence)
+        }
+    }
+
+    private func goalFlash() {
+        guard let goalNode = goalNode else { return }
+        let originalColor = goalNode.strokeColor
+        let flashSequence = SKAction.sequence([
+            SKAction.run { goalNode.strokeColor = .white },
+            SKAction.wait(forDuration: 0.2),
+            SKAction.run { goalNode.strokeColor = originalColor }
+        ])
+        goalNode.run(flashSequence)
     }
 
     var levelCompleted: (() -> Void)?
