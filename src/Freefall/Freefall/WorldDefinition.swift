@@ -10,6 +10,8 @@ struct WorldDefinition: Identifiable, Hashable {
     let trailEndColor: Color
     let backgroundImageName: String
     let musicFolderName: String
+    let bpmA: Double  // BPM for track A (levels 1-5)
+    let bpmB: Double  // BPM for track B (levels 6-10)
 
     var accentColorOpacity: Color {
         primaryColor.opacity(0.15)
@@ -27,7 +29,9 @@ enum WorldLibrary {
             trailStartColor: .hex("#00D4FF"),
             trailEndColor: .hex("#FF1493"),
             backgroundImageName: "world1-bg",
-            musicFolderName: "world1-the-block"
+            musicFolderName: "world1-the-block",
+            bpmA: 88,
+            bpmB: 95
         ),
         WorldDefinition(
             id: 2,
@@ -38,7 +42,9 @@ enum WorldLibrary {
             trailStartColor: .hex("#39FF14"),
             trailEndColor: .hex("#FFE600"),
             backgroundImageName: "world2-bg",
-            musicFolderName: "world2-neon-yard"
+            musicFolderName: "world2-neon-yard",
+            bpmA: 172,
+            bpmB: 174
         ),
         WorldDefinition(
             id: 3,
@@ -49,7 +55,9 @@ enum WorldLibrary {
             trailStartColor: .hex("#FF6600"),
             trailEndColor: .hex("#CC0000"),
             backgroundImageName: "world3-bg",
-            musicFolderName: "world3-underground"
+            musicFolderName: "world3-underground",
+            bpmA: 160,
+            bpmB: 165
         ),
         WorldDefinition(
             id: 4,
@@ -60,7 +68,9 @@ enum WorldLibrary {
             trailStartColor: .hex("#8B00FF"),
             trailEndColor: .hex("#FFFFFF"),
             backgroundImageName: "world4-bg",
-            musicFolderName: "world4-static"
+            musicFolderName: "world4-static",
+            bpmA: 132,
+            bpmB: 138
         )
     ]
 

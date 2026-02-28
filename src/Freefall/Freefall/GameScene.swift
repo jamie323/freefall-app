@@ -65,6 +65,9 @@ final class GameScene: SKScene {
     private lazy var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
     private var lastUpdateTimestamp: TimeInterval = 0
     var totalFlipsDuringLevel: Int = 0
+    
+    private var beatTimer: Timer?
+    private var beatInterval: TimeInterval = 0
 
     init(size: CGSize, gameState: GameState) {
         self.gameState = gameState
@@ -93,6 +96,10 @@ final class GameScene: SKScene {
         gameState.currentWorldId = world.id
         gameState.currentLevelId = level.levelId
         configureForCurrentLevelIfPossible()
+        
+        // Start beat timer
+        let bpm = level.levelId <= 5 ? world.bpmA : world.bpmB
+        startBeatTimer(bpm: bpm)
     }
 
     override func didMove(to view: SKView) {
@@ -467,6 +474,33 @@ final class GameScene: SKScene {
         }
     }
 
+    // MARK: - Beat-Reactive Effects
+    
+    private func startBeatTimer(bpm: Double) {
+        beatTimer?.invalidate()
+        beatInterval = 60.0 / bpm
+        beatTimer = Timer.scheduledTimer(withTimeInterval: beatInterval, repeats: true) { [weak self] _ in
+            self?.onBeat()
+        }
+    }
+    
+    private func onBeat() {
+        guard sceneState == .playing, let background = backgroundNode else { return }
+        
+        // Background brightness pulse
+        let originalAlpha = background.alpha
+        let brightUp = SKAction.sequence([
+            SKAction.fadeAlpha(to: originalAlpha + 0.08, duration: 0.05),
+            SKAction.fadeAlpha(to: originalAlpha, duration: 0.15)
+        ])
+        background.run(brightUp)
+    }
+    
+    private func stopBeatTimer() {
+        beatTimer?.invalidate()
+        beatTimer = nil
+    }
+    
     static func makeSphereTexture(diameter: CGFloat) -> SKTexture {
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: diameter, height: diameter))
         let image = renderer.image { context in

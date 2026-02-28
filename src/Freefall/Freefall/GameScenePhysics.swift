@@ -92,6 +92,7 @@ extension GameScene: SKPhysicsContactDelegate {
         guard sceneState == .playing else { return }
         sceneState = .complete
         stopSphereMotion()
+        stopBeatTimer()
         
         if let goal = goalNode {
             goal.removeAction(forKey: Constants.goalPulseActionKey)
