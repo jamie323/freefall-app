@@ -13,6 +13,7 @@
 	947AD206DD6A42CCAC8373D1 /* levels in Resources */ = {isa = PBXBuildFile; fileRef = 980D633ED63147B1AFA6417D /* levels */; };
 	B25A8958B4574DC0B88C6569 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E448FEAC3264F0B90788348 /* GameState.swift */; };
 	339BEBAF094E4662A0B7D18A /* LevelDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 567BF4B9957D4E17AB9F1157 /* LevelDefinition.swift */; };
+	E9431C81C94840DE9AD06420 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203C3C37E9DE4929A486E646 /* GameScene.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +22,7 @@
 	82F21A5A911E4F1CAC909875 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 	8E448FEAC3264F0B90788348 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
 	567BF4B9957D4E17AB9F1157 /* LevelDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelDefinition.swift; sourceTree = "<group>"; };
+	203C3C37E9DE4929A486E646 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 	980D633ED63147B1AFA6417D /* levels */ = {isa = PBXFileReference; lastKnownFileType = folder; name = levels; path = ../../assets/levels; sourceTree = SOURCE_ROOT; };
 	16BE048671424E7BAA091F68 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 	6D395C2823A24CABB37AB902 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -53,6 +55,7 @@
 			14BCEE07F80847229451D131 /* ContentView.swift */,
 			8E448FEAC3264F0B90788348 /* GameState.swift */,
 			567BF4B9957D4E17AB9F1157 /* LevelDefinition.swift */,
+			203C3C37E9DE4929A486E646 /* GameScene.swift */,
 			82F21A5A911E4F1CAC909875 /* Assets.xcassets */,
 			980D633ED63147B1AFA6417D /* levels */,
 			6D395C2823A24CABB37AB902 /* Info.plist */,
@@ -151,6 +154,7 @@
 			EFA79302B6C44109A05DF559 /* ContentView.swift in Sources */,
 			B25A8958B4574DC0B88C6569 /* GameState.swift in Sources */,
 			339BEBAF094E4662A0B7D18A /* LevelDefinition.swift in Sources */,
+			E9431C81C94840DE9AD06420 /* GameScene.swift in Sources */,
 		);
 		runOnlyForDeploymentPostprocessing = 0;
 	};
