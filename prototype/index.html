@@ -3,544 +3,752 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>FREEFALL — Prototype</title>
+<title>FREEFALL</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     background: #000;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100vh;
     overflow: hidden;
     font-family: 'Impact', 'Arial Black', sans-serif;
     touch-action: none;
+    user-select: none;
   }
-  #ui {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    pointer-events: none;
-    z-index: 10;
+  canvas { display: block; touch-action: none; }
+
+  #overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none; z-index: 20;
   }
-  #level-num {
-    position: absolute;
-    top: 20px; left: 20px;
-    color: rgba(255,255,255,0.5);
-    font-size: 18px;
-    font-family: monospace;
-    letter-spacing: 2px;
+  #level-label {
+    position: absolute; top: 18px; left: 18px;
+    color: rgba(255,255,255,0.35); font-size: 13px;
+    font-family: monospace; letter-spacing: 3px;
   }
-  #tap-hint {
-    position: absolute;
-    bottom: 60px;
-    width: 100%;
-    text-align: center;
-    color: rgba(255,255,255,0.3);
-    font-size: 14px;
-    letter-spacing: 3px;
+  #world-label {
+    position: absolute; top: 18px; right: 18px;
+    color: rgba(255,255,255,0.25); font-size: 11px;
+    font-family: monospace; letter-spacing: 2px;
+  }
+  #hint {
+    position: absolute; bottom: 55px; width: 100%; text-align: center;
+    color: rgba(255,255,255,0.25); font-size: 12px; letter-spacing: 4px;
     font-family: 'Arial', sans-serif;
   }
-  #word-reveal {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    font-size: 72px;
-    letter-spacing: 6px;
-    color: #fff;
-    text-shadow: 0 0 40px #00D4FF, 0 0 80px #00D4FF;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    pointer-events: none;
+  #flip-count {
+    position: absolute; bottom: 30px; width: 100%; text-align: center;
+    color: rgba(255,255,255,0.15); font-size: 10px; letter-spacing: 3px;
+    font-family: monospace;
   }
-  #word-reveal.show { transform: translate(-50%, -50%) scale(1); }
-  #next-btn {
-    position: absolute;
-    bottom: 40px; right: 30px;
-    background: transparent;
-    border: 1px solid #00D4FF;
+
+  /* MENU */
+  #menu {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #000; z-index: 30;
+  }
+  #menu-title {
+    font-size: clamp(52px, 18vw, 84px);
     color: #00D4FF;
-    font-size: 14px;
-    letter-spacing: 2px;
-    padding: 10px 20px;
-    cursor: pointer;
+    text-shadow: 0 0 30px #00D4FF, 0 0 60px rgba(0,212,255,0.4);
+    letter-spacing: 6px;
+    margin-bottom: 8px;
+  }
+  #menu-sub {
+    color: rgba(0,212,255,0.4); font-size: 11px;
+    letter-spacing: 5px; font-family: monospace;
+    margin-bottom: 60px;
+  }
+  #menu-play {
+    color: #00D4FF; font-size: 22px; letter-spacing: 6px;
+    border: 1px solid rgba(0,212,255,0.5); padding: 14px 40px;
+    cursor: pointer; pointer-events: all;
+    background: transparent;
+    text-shadow: 0 0 10px #00D4FF;
+    transition: all 0.2s;
+  }
+  #menu-play:active { background: rgba(0,212,255,0.1); }
+  #menu-line {
+    width: 60%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.3), transparent);
+    margin: 40px auto 0;
+  }
+
+  /* WORLD SELECT */
+  #worldmenu {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    display: none; flex-direction: column; align-items: center;
+    background: #000; z-index: 30; padding: 20px;
+    overflow-y: auto;
+  }
+  #worldmenu h2 {
+    color: rgba(255,255,255,0.5); font-size: 13px;
+    letter-spacing: 5px; margin: 30px 0 24px;
+    font-family: monospace;
+  }
+  .world-card {
+    width: 100%; max-width: 380px;
+    border: 1px solid; padding: 20px 24px;
+    margin-bottom: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    transition: all 0.15s; pointer-events: all;
+  }
+  .world-card:active { opacity: 0.7; }
+  .world-card.locked { opacity: 0.35; cursor: default; }
+  .world-name { font-size: 20px; letter-spacing: 3px; }
+  .world-prog { font-size: 11px; letter-spacing: 2px; font-family: monospace; opacity: 0.6; }
+
+  /* LEVEL SELECT */
+  #levelmenu {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    display: none; flex-direction: column; align-items: center;
+    background: #000; z-index: 30; padding: 20px;
+  }
+  #levelmenu-title {
+    color: rgba(255,255,255,0.5); font-size: 13px;
+    letter-spacing: 5px; margin: 30px 0 24px;
+    font-family: monospace; text-align: center;
+  }
+  .level-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px; width: 100%; max-width: 380px;
+  }
+  .level-cell {
+    border: 1px solid; padding: 18px 12px;
+    text-align: center; cursor: pointer;
+    transition: all 0.15s; pointer-events: all;
+    position: relative;
+  }
+  .level-cell.locked { opacity: 0.25; cursor: default; }
+  .level-cell.next { animation: pulse-border 1.5s ease-in-out infinite; }
+  .level-cell.done { opacity: 0.7; }
+  .level-num { font-size: 22px; letter-spacing: 2px; }
+  .level-status { font-size: 9px; letter-spacing: 2px; font-family: monospace; opacity: 0.5; margin-top: 4px; }
+
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 0px currentColor; }
+    50% { box-shadow: 0 0 12px currentColor; }
+  }
+
+  /* COMPLETE */
+  #complete-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 25;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
     pointer-events: all;
-    display: none;
+  }
+  #complete-word {
+    font-size: clamp(60px,18vw,90px); color: #fff;
+    letter-spacing: 8px;
+    text-shadow: 0 0 40px currentColor;
+    transform: scale(0); transition: transform 0.35s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  #complete-word.show { transform: scale(1); }
+  #complete-btns {
+    display: flex; gap: 20px; margin-top: 40px;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  #complete-btns.show { opacity: 1; pointer-events: all; }
+  .complete-btn {
+    border: 1px solid rgba(255,255,255,0.4); color: rgba(255,255,255,0.7);
+    padding: 12px 24px; font-size: 13px; letter-spacing: 3px;
+    cursor: pointer; background: transparent;
     font-family: 'Impact', sans-serif;
   }
-  canvas {
-    display: block;
-    max-width: 100vw;
-    max-height: 100vh;
+  .complete-btn.primary { border-color: #00D4FF; color: #00D4FF; text-shadow: 0 0 8px #00D4FF; }
+
+  #back-btn {
+    position: absolute; top: 20px; left: 18px;
+    color: rgba(255,255,255,0.35); font-size: 18px;
+    cursor: pointer; pointer-events: all; z-index: 31;
+    display: none;
   }
 </style>
 </head>
 <body>
 
-<div id="ui">
-  <div id="level-num">01</div>
-  <div id="tap-hint">TAP TO START</div>
-  <div id="word-reveal" id="word-reveal">CLEAN</div>
-  <button id="next-btn" onclick="nextLevel()">NEXT LEVEL →</button>
+<!-- MENU -->
+<div id="menu">
+  <div id="menu-title">FREEFALL</div>
+  <div id="menu-sub">TAP TO FLIP GRAVITY</div>
+  <button id="menu-play" onclick="showWorldMenu()">PLAY</button>
+  <div id="menu-line"></div>
 </div>
 
+<!-- WORLD SELECT -->
+<div id="worldmenu">
+  <h2>WORLDS</h2>
+  <div id="world-cards"></div>
+</div>
+
+<!-- LEVEL SELECT -->
+<div id="levelmenu">
+  <div id="levelmenu-title"></div>
+  <div class="level-grid" id="level-grid"></div>
+</div>
+
+<!-- BACK BUTTON -->
+<div id="back-btn" onclick="goBack()">‹</div>
+
+<!-- GAME -->
 <canvas id="canvas"></canvas>
+<div id="overlay">
+  <div id="level-label">01</div>
+  <div id="world-label">THE BLOCK</div>
+  <div id="hint">TAP TO START</div>
+  <div id="flip-count"></div>
+</div>
+
+<!-- LEVEL COMPLETE -->
+<div id="complete-overlay">
+  <div id="complete-word">CLEAN</div>
+  <div id="complete-btns">
+    <button class="complete-btn" onclick="backToLevels()">← LEVELS</button>
+    <button class="complete-btn primary" id="next-btn" onclick="nextLevel()">NEXT LEVEL →</button>
+  </div>
+</div>
 
 <script>
+// ─── CONFIG ────────────────────────────────────────────────────────────────
+const WORLDS = [
+  { name:'THE BLOCK',   color:'#00D4FF', trailA:'#00D4FF', trailB:'#FF1493', bgA:'#050510', bgB:'#0A0A2E', bpm:88  },
+  { name:'NEON YARD',   color:'#39FF14', trailA:'#39FF14', trailB:'#FFE600', bgA:'#050A05', bgB:'#0A1A0A', bpm:160 },
+  { name:'UNDERGROUND', color:'#FF6600', trailA:'#FF6600', trailB:'#CC0000', bgA:'#0A0500', bgB:'#1A0800', bpm:160 },
+  { name:'STATIC',      color:'#8B00FF', trailA:'#8B00FF', trailB:'#FFFFFF', bgA:'#05000A', bgB:'#0F000F', bpm:132 },
+];
+
+// Progress (localStorage)
+function getProgress() {
+  try { return JSON.parse(localStorage.getItem('ff_progress') || '{}'); } catch { return {}; }
+}
+function markComplete(worldIdx, levelIdx) {
+  const p = getProgress();
+  const key = `${worldIdx}_${levelIdx}`;
+  p[key] = true;
+  localStorage.setItem('ff_progress', JSON.stringify(p));
+}
+function isComplete(w, l) { return !!getProgress()[`${w}_${l}`]; }
+function isUnlocked(w, l) {
+  if (w === 0 && l === 0) return true;
+  if (l > 0) return isComplete(w, l-1);
+  if (w > 0) return isComplete(w-1, 9);
+  return false;
+}
+function isWorldUnlocked(w) {
+  if (w === 0) return true;
+  return isComplete(w-1, 9);
+}
+
+// ─── LEVELS (10 per world) ──────────────────────────────────────────────────
+const LEVELS = [];
+
+// World 0 — THE BLOCK (blue, boom bap) — calm obstacles
+const W0 = [
+  // Level 1: easy intro
+  { obs:[{x:0.35,y:0,w:0.04,h:0.4},{x:0.35,y:0.6,w:0.04,h:0.4},{x:0.65,y:0.2,w:0.04,h:0.35},{x:0.65,y:0.65,w:0.04,h:0.35}], cols:[{x:0.5,y:0.45},{x:0.5,y:0.55}], par:2 },
+  // Level 2
+  { obs:[{x:0.3,y:0,w:0.04,h:0.45},{x:0.3,y:0.62,w:0.04,h:0.38},{x:0.6,y:0.3,w:0.04,h:0.65}], cols:[{x:0.45,y:0.5},{x:0.7,y:0.15}], par:3 },
+  // Level 3
+  { obs:[{x:0.25,y:0.5,w:0.5,h:0.04},{x:0.5,y:0,w:0.04,h:0.45},{x:0.75,y:0.55,w:0.04,h:0.45}], cols:[{x:0.38,y:0.25},{x:0.63,y:0.75}], par:4 },
+  // Level 4
+  { obs:[{x:0.2,y:0,w:0.04,h:0.5},{x:0.2,y:0.65,w:0.04,h:0.35},{x:0.5,y:0.2,w:0.04,h:0.55},{x:0.75,y:0,w:0.04,h:0.35},{x:0.75,y:0.55,w:0.04,h:0.45}], cols:[{x:0.35,y:0.58},{x:0.63,y:0.1}], par:4 },
+  // Level 5
+  { obs:[{x:0.15,y:0.4,w:0.6,h:0.04},{x:0.4,y:0,w:0.04,h:0.35},{x:0.4,y:0.5,w:0.04,h:0.5},{x:0.7,y:0.1,w:0.04,h:0.35}], cols:[{x:0.28,y:0.2},{x:0.55,y:0.72}], par:4 },
+  // Level 6 — harder
+  { obs:[{x:0.2,y:0,w:0.04,h:0.38},{x:0.2,y:0.55,w:0.04,h:0.45},{x:0.45,y:0.25,w:0.04,h:0.55},{x:0.7,y:0,w:0.04,h:0.45},{x:0.7,y:0.6,w:0.04,h:0.4}], cols:[{x:0.33,y:0.45},{x:0.58,y:0.12},{x:0.82,y:0.52}], par:5 },
+  // Level 7
+  { obs:[{x:0.1,y:0.35,w:0.7,h:0.04},{x:0.1,y:0.6,w:0.7,h:0.04},{x:0.35,y:0,w:0.04,h:0.3},{x:0.6,y:0.7,w:0.04,h:0.3}], cols:[{x:0.22,y:0.48},{x:0.48,y:0.72}], par:5 },
+  // Level 8 (breather)
+  { obs:[{x:0.4,y:0,w:0.04,h:0.55},{x:0.4,y:0.7,w:0.04,h:0.3}], cols:[{x:0.22,y:0.5},{x:0.65,y:0.35}], par:3 },
+  // Level 9 (hard)
+  { obs:[{x:0.18,y:0,w:0.04,h:0.42},{x:0.18,y:0.58,w:0.04,h:0.42},{x:0.38,y:0.2,w:0.04,h:0.58},{x:0.58,y:0,w:0.04,h:0.45},{x:0.58,y:0.6,w:0.04,h:0.4},{x:0.78,y:0.25,w:0.04,h:0.55}], cols:[{x:0.28,y:0.08},{x:0.48,y:0.55},{x:0.68,y:0.12}], par:6 },
+  // Level 10 (art level)
+  { obs:[{x:0.15,y:0.3,w:0.03,h:0.45},{x:0.35,y:0,w:0.03,h:0.42},{x:0.55,y:0.32,w:0.03,h:0.45},{x:0.75,y:0,w:0.03,h:0.38}], cols:[{x:0.25,y:0.7},{x:0.45,y:0.2},{x:0.65,y:0.7},{x:0.83,y:0.45}], par:5 },
+];
+
+for (let i = 0; i < 4; i++) {
+  for (let j = 0; j < 10; j++) {
+    const src = W0[j]; // reuse World 0 layouts with colour adaptation
+    LEVELS.push({ world: i, level: j, par: src.par,
+      launchX: 0.07, launchY: 0.5, vx: 2.2 + i*0.15,
+      goalX: 0.9, goalY: [0.5,0.2,0.8,0.35,0.65,0.3,0.7,0.5,0.2,0.5][j],
+      goalR: 22, obstacles: src.obs, collectibles: src.cols });
+  }
+}
+
+// ─── CANVAS ────────────────────────────────────────────────────────────────
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const wordEl = document.getElementById('word-reveal');
-const hintEl = document.getElementById('tap-hint');
-const nextBtn = document.getElementById('next-btn');
-
-// --- Sizing (portrait phone-like) ---
 const W = Math.min(window.innerWidth, 430);
 const H = Math.min(window.innerHeight, 932);
-canvas.width = W;
-canvas.height = H;
+canvas.width = W; canvas.height = H;
 
-// --- Physics constants ---
-const GRAVITY_MAG = 0.4;
-const SPHERE_RADIUS = 14;
-const LAUNCH_VX = 2.2;
-
-// --- World colours ---
-const WORLDS = [
-  { name: 'THE BLOCK',    primary: '#00D4FF', trailA: '#00D4FF', trailB: '#FF1493', bgTop: '#050510', bgBot: '#0A0A2E' },
-  { name: 'NEON YARD',    primary: '#39FF14', trailA: '#39FF14', trailB: '#FFE600', bgTop: '#050A05', bgBot: '#0A1A0A' },
-  { name: 'UNDERGROUND',  primary: '#FF6600', trailA: '#FF6600', trailB: '#CC0000', bgTop: '#0A0500', bgBot: '#1A0800' },
-  { name: 'STATIC',       primary: '#8B00FF', trailA: '#8B00FF', trailB: '#FFFFFF', bgTop: '#05000A', bgBot: '#0F000F' },
-];
-
-// --- Levels (normalized 0-1 coords) ---
-const LEVELS = [
-  // World 1
-  {
-    world: 0, level: 1,
-    launchX: 0.08, launchY: 0.5, vx: LAUNCH_VX,
-    goalX: 0.88, goalY: 0.5, goalR: 22,
-    parFlips: 3,
-    obstacles: [
-      { x: 0.3, y: 0.0, w: 0.04, h: 0.38 },
-      { x: 0.3, y: 0.62, w: 0.04, h: 0.38 },
-      { x: 0.6, y: 0.2, w: 0.04, h: 0.35 },
-      { x: 0.6, y: 0.65, w: 0.04, h: 0.35 },
-    ]
-  },
-  {
-    world: 0, level: 2,
-    launchX: 0.08, launchY: 0.7, vx: LAUNCH_VX,
-    goalX: 0.88, goalY: 0.3, goalR: 22,
-    parFlips: 4,
-    obstacles: [
-      { x: 0.25, y: 0.0, w: 0.04, h: 0.45 },
-      { x: 0.25, y: 0.6, w: 0.04, h: 0.4 },
-      { x: 0.5,  y: 0.35, w: 0.04, h: 0.65 },
-      { x: 0.72, y: 0.0, w: 0.04, h: 0.3 },
-      { x: 0.72, y: 0.5, w: 0.04, h: 0.5 },
-    ]
-  },
-  {
-    world: 0, level: 3,
-    launchX: 0.08, launchY: 0.5, vx: LAUNCH_VX * 0.9,
-    goalX: 0.88, goalY: 0.15, goalR: 20,
-    parFlips: 5,
-    obstacles: [
-      { x: 0.2,  y: 0.6, w: 0.5, h: 0.04 },
-      { x: 0.45, y: 0.0, w: 0.04, h: 0.5 },
-      { x: 0.65, y: 0.3, w: 0.04, h: 0.7 },
-      { x: 0.0,  y: 0.3, w: 0.35, h: 0.04 },
-    ]
-  },
-];
-
-// --- State ---
-let state = 'menu'; // menu | ready | playing | dead | complete
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let state = 'menu';
+let navStack = [];
+let currentWorldIdx = 0;
 let currentLevelIdx = 0;
-let gravityDir = 1; // 1 = down, -1 = up
-let sphere = { x: 0, y: 0, vx: 0, vy: 0 };
-let trail = []; // [{x,y,t}]
-let scatterDots = [];
-let flipCount = 0;
-let distanceTravelled = 0;
-let bgOffsetY = 0;
-let deathTimer = 0;
-let completeTimer = 0;
+let gravDir = 1;
+let sphere = { x:0, y:0, vx:0, vy:0 };
+let trail = [];
+let scatter = [];
 let particles = [];
+let collectibles = [];
+let flipCount = 0;
+let distTravelled = 0;
+let bgBeat = 0; // beat pulse 0-1
+let beatTimer = 0;
+let beatInterval = 60 / 88 * 60; // frames
 
+// ─── HELPERS ───────────────────────────────────────────────────────────────
+function lerp(a, b, t) { return a + (b-a)*t; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function lerpColor(a, b, t) {
-  const ah = a.replace('#','');
-  const bh = b.replace('#','');
-  const ar = parseInt(ah.slice(0,2),16), ag = parseInt(ah.slice(2,4),16), ab = parseInt(ah.slice(4,6),16);
-  const br = parseInt(bh.slice(0,2),16), bg = parseInt(bh.slice(2,4),16), bb = parseInt(bh.slice(4,6),16);
-  const r = Math.round(ar + (br-ar)*t);
-  const g = Math.round(ag + (bg-ag)*t);
-  const blue = Math.round(ab + (bb-ab)*t);
-  return `rgb(${r},${g},${blue})`;
+  const p = s => parseInt(s,16);
+  const ah = a.replace('#',''), bh = b.replace('#','');
+  const r = Math.round(lerp(p(ah.slice(0,2)), p(bh.slice(0,2)), t));
+  const g = Math.round(lerp(p(ah.slice(2,4)), p(bh.slice(2,4)), t));
+  const bl = Math.round(lerp(p(ah.slice(4,6)), p(bh.slice(4,6)), t));
+  return `rgb(${r},${g},${bl})`;
 }
-
-function hexToRgba(hex, a) {
+function hexAlpha(hex, a) {
   const h = hex.replace('#','');
-  const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
-  return `rgba(${r},${g},${b},${a})`;
+  return `rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},${a})`;
+}
+function world() { return WORLDS[currentWorldIdx]; }
+function level() { return LEVELS[currentWorldIdx*10 + currentLevelIdx]; }
+function trailColor() {
+  const w = world();
+  return lerpColor(w.trailA, w.trailB, clamp(distTravelled/900, 0, 1));
+}
+function sX(n) { return n * W; }
+function sY(n) { return n * H; }
+
+// ─── MENUS ─────────────────────────────────────────────────────────────────
+function showWorldMenu() {
+  document.getElementById('menu').style.display = 'none';
+  const wm = document.getElementById('worldmenu');
+  wm.style.display = 'flex';
+  document.getElementById('back-btn').style.display = 'block';
+  navStack = ['main'];
+  const container = document.getElementById('world-cards');
+  container.innerHTML = '';
+  WORLDS.forEach((w, i) => {
+    const unlocked = isWorldUnlocked(i);
+    const done = Array.from({length:10},(_,j)=>isComplete(i,j)).filter(Boolean).length;
+    const card = document.createElement('div');
+    card.className = 'world-card' + (unlocked ? '' : ' locked');
+    card.style.borderColor = unlocked ? w.color : 'rgba(255,255,255,0.15)';
+    card.style.color = unlocked ? w.color : 'rgba(255,255,255,0.3)';
+    card.innerHTML = `<div class="world-name">${w.name}</div><div class="world-prog">${done}/10 ${unlocked ? '' : '🔒'}</div>`;
+    if (unlocked) card.onclick = () => showLevelMenu(i);
+    container.appendChild(card);
+  });
 }
 
-function getLevel() { return LEVELS[currentLevelIdx % LEVELS.length]; }
-function getWorld() { return WORLDS[getLevel().world]; }
-
-function screenX(nx) { return nx * W; }
-function screenY(ny) { return ny * H; }
-
-function resetSphere() {
-  const lv = getLevel();
-  sphere.x = screenX(lv.launchX);
-  sphere.y = screenY(lv.launchY);
-  sphere.vx = lv.vx;
-  sphere.vy = 0;
-  gravityDir = 1;
-  trail = [];
-  scatterDots = [];
-  flipCount = 0;
-  distanceTravelled = 0;
-  bgOffsetY = 0;
-  particles = [];
-}
-
-function getTrailColor() {
-  const world = getWorld();
-  const t = Math.min(distanceTravelled / 900, 1);
-  return lerpColor(world.trailA, world.trailB, t);
-}
-
-function spawnDeathParticles(x, y) {
-  const world = getWorld();
-  for (let i = 0; i < 16; i++) {
-    const angle = (Math.PI * 2 / 16) * i + (Math.random()-0.5)*0.3;
-    const speed = 2 + Math.random() * 4;
-    particles.push({
-      x, y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life: 1.0,
-      decay: 0.025 + Math.random()*0.02,
-      color: world.primary,
-      radius: 2 + Math.random()*3
-    });
+function showLevelMenu(worldIdx) {
+  currentWorldIdx = worldIdx;
+  document.getElementById('worldmenu').style.display = 'none';
+  const lm = document.getElementById('levelmenu');
+  lm.style.display = 'flex';
+  navStack.push('world');
+  const w = WORLDS[worldIdx];
+  document.getElementById('levelmenu-title').textContent = w.name;
+  document.getElementById('levelmenu-title').style.color = w.color;
+  const grid = document.getElementById('level-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < 10; i++) {
+    const unlocked = isUnlocked(worldIdx, i);
+    const done = isComplete(worldIdx, i);
+    const isNext = unlocked && !done && (i===0 || isComplete(worldIdx,i-1));
+    const cell = document.createElement('div');
+    cell.className = 'level-cell' + (!unlocked?' locked':(isNext?' next':(done?' done':'')));
+    cell.style.borderColor = unlocked ? w.color : 'rgba(255,255,255,0.1)';
+    cell.style.color = unlocked ? w.color : 'rgba(255,255,255,0.2)';
+    cell.innerHTML = `<div class="level-num">${String(i+1).padStart(2,'0')}</div><div class="level-status">${done?'✓':(!unlocked?'🔒':'')}</div>`;
+    if (unlocked) cell.onclick = () => startLevel(worldIdx, i);
+    grid.appendChild(cell);
   }
 }
 
-function spawnGoalParticles(x, y) {
-  for (let i = 0; i < 24; i++) {
-    const angle = (Math.PI * 2 / 24) * i;
-    const speed = 1.5 + Math.random() * 3;
-    particles.push({
-      x, y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life: 1.0,
-      decay: 0.018 + Math.random()*0.015,
-      color: '#00FFFF',
-      radius: 2 + Math.random()*3
-    });
+function goBack() {
+  if (navStack.length === 0) return;
+  const prev = navStack.pop();
+  document.getElementById('levelmenu').style.display = 'none';
+  document.getElementById('worldmenu').style.display = 'none';
+  document.getElementById('complete-overlay').style.display = 'none';
+  if (prev === 'world') {
+    document.getElementById('worldmenu').style.display = 'flex';
+  } else {
+    document.getElementById('menu').style.display = 'flex';
+    document.getElementById('back-btn').style.display = 'none';
   }
 }
 
-function checkCollisions() {
-  const lv = getLevel();
-  const sx = sphere.x, sy = sphere.y;
-
-  // Screen bounds
-  if (sx < -20 || sx > W+20 || sy < -20 || sy > H+20) return 'dead';
-
-  // Obstacles
-  for (const obs of lv.obstacles) {
-    const ox = screenX(obs.x), oy = screenY(obs.y);
-    const ow = obs.w * W, oh = obs.h * H;
-    if (sx+SPHERE_RADIUS > ox && sx-SPHERE_RADIUS < ox+ow &&
-        sy+SPHERE_RADIUS > oy && sy-SPHERE_RADIUS < oy+oh) {
-      return 'dead';
-    }
-  }
-
-  // Goal
-  const gx = screenX(lv.goalX), gy = screenY(lv.goalY);
-  const dist = Math.sqrt((sx-gx)**2 + (sy-gy)**2);
-  if (dist < lv.goalR + SPHERE_RADIUS) return 'complete';
-
-  return null;
-}
-
-function getCompletionWord() {
-  const lv = getLevel();
-  const roll = Math.random();
-  if (flipCount <= lv.parFlips) {
-    return roll < 0.75 ? 'CLEAN' : 'FRESH';
-  }
-  if (roll < 0.40) return 'CLEAN';
-  if (roll < 0.65) return 'FRESH';
-  if (roll < 0.85) return 'DOPE';
-  return 'NICE';
+function backToLevels() {
+  document.getElementById('complete-overlay').style.display = 'none';
+  showLevelMenu(currentWorldIdx);
 }
 
 function nextLevel() {
-  currentLevelIdx = (currentLevelIdx + 1) % LEVELS.length;
-  wordEl.className = '';
-  wordEl.style.transform = 'translate(-50%, -50%) scale(0)';
-  nextBtn.style.display = 'none';
-  hintEl.style.display = 'block';
-  hintEl.textContent = 'TAP TO START';
-  state = 'ready';
-  resetSphere();
+  document.getElementById('complete-overlay').style.display = 'none';
+  const nextL = currentLevelIdx + 1;
+  if (nextL < 10) {
+    startLevel(currentWorldIdx, nextL);
+  } else {
+    const nextW = currentWorldIdx + 1;
+    if (nextW < 4) startLevel(nextW, 0);
+    else showWorldMenu();
+  }
 }
 
-// --- Draw functions ---
-function drawBackground() {
-  const world = getWorld();
-  const grad = ctx.createLinearGradient(0, bgOffsetY, 0, H + bgOffsetY);
-  grad.addColorStop(0, world.bgTop);
-  grad.addColorStop(1, world.bgBot);
+// ─── GAME START ────────────────────────────────────────────────────────────
+function startLevel(worldIdx, levelIdx) {
+  currentWorldIdx = worldIdx;
+  currentLevelIdx = levelIdx;
+  document.getElementById('levelmenu').style.display = 'none';
+  document.getElementById('worldmenu').style.display = 'none';
+  document.getElementById('back-btn').style.display = 'none';
+  navStack = [];
+
+  const lv = level();
+  const w = world();
+
+  beatInterval = (60 / w.bpm) * 60;
+
+  sphere = { x: sX(lv.launchX), y: sY(lv.launchY), vx: lv.vx, vy: 0 };
+  gravDir = 1;
+  trail = []; scatter = []; particles = [];
+  flipCount = 0; distTravelled = 0; bgBeat = 0; beatTimer = 0;
+
+  collectibles = (lv.collectibles||[]).map(c => ({
+    x: sX(c.x), y: sY(c.y),
+    collected: false,
+    pulse: Math.random() * Math.PI * 2,
+  }));
+
+  document.getElementById('level-label').textContent = String(levelIdx+1).padStart(2,'0') + ' / ' + (currentWorldIdx*10+levelIdx+1);
+  document.getElementById('world-label').textContent = w.name;
+  document.getElementById('world-label').style.color = w.color;
+  document.getElementById('hint').textContent = 'TAP TO START';
+  document.getElementById('hint').style.display = 'block';
+  document.getElementById('flip-count').textContent = '';
+
+  const wo = document.getElementById('complete-word');
+  wo.className = ''; wo.style.color = w.color;
+  document.getElementById('complete-btns').className = '';
+
+  state = 'ready';
+}
+
+// ─── PHYSICS ───────────────────────────────────────────────────────────────
+const GRAV = 0.42;
+const SR = 13;
+
+function checkHit() {
+  const lv = level();
+  const sx = sphere.x, sy = sphere.y;
+  if (sx < -30 || sx > W+30 || sy < -30 || sy > H+30) return 'dead';
+  for (const o of lv.obstacles) {
+    const ox=sX(o.x), oy=sY(o.y), ow=o.w*W, oh=o.h*H;
+    if (sx+SR>ox && sx-SR<ox+ow && sy+SR>oy && sy-SR<oy+oh) return 'dead';
+  }
+  const gx=sX(lv.goalX), gy=sY(lv.goalY);
+  if (Math.hypot(sx-gx,sy-gy) < lv.goalR+SR) return 'complete';
+  return null;
+}
+
+function checkCollectibles() {
+  for (const c of collectibles) {
+    if (c.collected) continue;
+    if (Math.hypot(sphere.x-c.x, sphere.y-c.y) < 18) {
+      c.collected = true;
+      spawnCollectBurst(c.x, c.y);
+    }
+  }
+}
+
+function spawnBurst(x, y, color, n) {
+  for (let i=0;i<n;i++) {
+    const a = (Math.PI*2/n)*i + (Math.random()-0.5)*0.4;
+    const spd = 2.5 + Math.random()*4;
+    particles.push({ x, y, vx: Math.cos(a)*spd, vy: Math.sin(a)*spd,
+      life: 1, decay: 0.025+Math.random()*0.02, color, r: 2+Math.random()*3 });
+  }
+}
+function spawnCollectBurst(x, y) {
+  const col = world().color;
+  for (let i=0;i<10;i++) {
+    const a = Math.random()*Math.PI*2;
+    const spd = 1+Math.random()*3;
+    particles.push({ x: x+(Math.random()-0.5)*8, y: y+(Math.random()-0.5)*8,
+      vx: Math.cos(a)*spd, vy: Math.sin(a)*spd,
+      life: 1, decay: 0.04+Math.random()*0.03, color: col, r: 1.5+Math.random()*2 });
+  }
+}
+
+let deadTimer = 0;
+let completeTriggered = false;
+
+// ─── DRAW ──────────────────────────────────────────────────────────────────
+function drawBg() {
+  const w = world();
+  const beat = bgBeat;
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  // Slightly brighten on beat
+  const boost = beat * 0.12;
+  grad.addColorStop(0, lerpColor(w.bgA, '#ffffff', boost * 0.3));
+  grad.addColorStop(1, lerpColor(w.bgB, '#ffffff', boost * 0.15));
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillRect(0,0,W,H);
 }
 
 function drawObstacles() {
-  const lv = getLevel();
-  const world = getWorld();
-  ctx.strokeStyle = world.primary;
+  const lv = level();
+  const w = world();
+  const glow = 3 + bgBeat * 5;
+  ctx.shadowColor = w.color;
+  ctx.shadowBlur = glow;
+  ctx.strokeStyle = w.color;
   ctx.lineWidth = 2;
-  ctx.shadowColor = world.primary;
-  ctx.shadowBlur = 8;
-  for (const obs of lv.obstacles) {
-    const ox = screenX(obs.x), oy = screenY(obs.y);
-    const ow = obs.w * W, oh = obs.h * H;
-    ctx.strokeRect(ox, oy, ow, oh);
+  for (const o of lv.obstacles) {
+    ctx.strokeRect(sX(o.x), sY(o.y), o.w*W, o.h*H);
   }
   ctx.shadowBlur = 0;
 }
 
 function drawGoal() {
-  const lv = getLevel();
-  const gx = screenX(lv.goalX), gy = screenY(lv.goalY);
-  const pulse = 0.7 + 0.3 * Math.sin(Date.now() * 0.004);
-  ctx.strokeStyle = `rgba(0,255,255,${pulse})`;
+  const lv = level();
+  const gx=sX(lv.goalX), gy=sY(lv.goalY);
+  const pulse = 0.65 + 0.35*Math.sin(Date.now()*0.004) + bgBeat*0.3;
+  ctx.strokeStyle = `rgba(0,255,255,${clamp(pulse,0,1)})`;
   ctx.lineWidth = 2.5;
   ctx.shadowColor = '#00FFFF';
-  ctx.shadowBlur = 15;
+  ctx.shadowBlur = 14 + bgBeat*10;
   ctx.beginPath();
-  ctx.arc(gx, gy, lv.goalR, 0, Math.PI * 2);
+  ctx.arc(gx, gy, lv.goalR, 0, Math.PI*2);
   ctx.stroke();
   ctx.shadowBlur = 0;
+}
+
+function drawCollectibles() {
+  const w = world();
+  const t = Date.now() * 0.003;
+  for (const c of collectibles) {
+    if (c.collected) continue;
+    const pulse = 0.85 + 0.15*Math.sin(t + c.pulse);
+    const r = 6 * pulse;
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, r*2, 0, Math.PI*2);
+    const grad = ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,r*2);
+    grad.addColorStop(0, hexAlpha(w.color, 0.5));
+    grad.addColorStop(1, hexAlpha(w.color, 0));
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, r, 0, Math.PI*2);
+    ctx.fillStyle = hexAlpha(w.color, 0.8);
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+  }
 }
 
 function drawTrail() {
   if (trail.length < 2) return;
-  for (let i = 1; i < trail.length; i++) {
-    const a = trail[i-1], b = trail[i];
-    const color = lerpColor(getWorld().trailA, getWorld().trailB, b.t);
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i=1; i<trail.length; i++) {
+    const a=trail[i-1], b=trail[i];
+    const col = lerpColor(world().trailA, world().trailB, b.t);
     ctx.beginPath();
     ctx.moveTo(a.x, a.y);
     ctx.lineTo(b.x, b.y);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 3.5 + Math.random();
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 3.5 + (Math.random()-0.5);
     ctx.lineCap = 'round';
-    ctx.globalCompositeOperation = 'lighter';
     ctx.stroke();
-    ctx.globalCompositeOperation = 'source-over';
   }
+  ctx.globalCompositeOperation = 'source-over';
 }
 
 function drawScatter() {
-  for (const dot of scatterDots) {
+  ctx.globalCompositeOperation = 'lighter';
+  for (const d of scatter) {
     ctx.beginPath();
-    ctx.arc(dot.x, dot.y, 1.5, 0, Math.PI*2);
-    ctx.fillStyle = dot.color;
-    ctx.globalAlpha = dot.alpha;
-    ctx.globalCompositeOperation = 'lighter';
+    ctx.arc(d.x, d.y, 1.5, 0, Math.PI*2);
+    ctx.fillStyle = d.color;
+    ctx.globalAlpha = d.alpha;
     ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = 'source-over';
   }
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
 }
 
 function drawSphere() {
-  if (state === 'complete') return;
-  // Glow
-  const grad = ctx.createRadialGradient(sphere.x, sphere.y, 0, sphere.x, sphere.y, SPHERE_RADIUS*2.5);
-  grad.addColorStop(0, 'rgba(255,255,255,0.9)');
-  grad.addColorStop(0.3, 'rgba(180,220,255,0.5)');
-  grad.addColorStop(1, 'rgba(0,180,255,0)');
+  if (state==='complete') return;
   ctx.globalCompositeOperation = 'lighter';
-  ctx.beginPath();
-  ctx.arc(sphere.x, sphere.y, SPHERE_RADIUS*2.5, 0, Math.PI*2);
-  ctx.fillStyle = grad;
-  ctx.fill();
-  // Core
-  ctx.beginPath();
-  ctx.arc(sphere.x, sphere.y, SPHERE_RADIUS, 0, Math.PI*2);
-  ctx.fillStyle = '#ffffff';
-  ctx.fill();
+  const g = ctx.createRadialGradient(sphere.x,sphere.y,0,sphere.x,sphere.y,SR*3);
+  g.addColorStop(0,'rgba(255,255,255,0.95)');
+  g.addColorStop(0.3,'rgba(150,210,255,0.5)');
+  g.addColorStop(1,'rgba(0,160,255,0)');
+  ctx.beginPath(); ctx.arc(sphere.x,sphere.y,SR*3,0,Math.PI*2);
+  ctx.fillStyle = g; ctx.fill();
+  ctx.beginPath(); ctx.arc(sphere.x,sphere.y,SR,0,Math.PI*2);
+  ctx.fillStyle = '#ffffff'; ctx.fill();
   ctx.globalCompositeOperation = 'source-over';
 }
 
 function drawParticles() {
+  ctx.globalCompositeOperation = 'lighter';
   for (const p of particles) {
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.radius * p.life, 0, Math.PI*2);
-    ctx.fillStyle = hexToRgba(p.color.replace('rgb(','').replace(')','').startsWith('r') ? '#00D4FF' : p.color, p.life * 0.8);
-    ctx.globalCompositeOperation = 'lighter';
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r*p.life, 0, Math.PI*2);
+    ctx.fillStyle = hexAlpha(p.color.startsWith('rgb')?'#00D4FF':p.color, p.life*0.8);
     ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
   }
+  ctx.globalCompositeOperation = 'source-over';
 }
 
-function drawMenu() {
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, W, H);
-  // Title glow
-  ctx.shadowColor = '#00D4FF';
-  ctx.shadowBlur = 30;
-  ctx.fillStyle = '#00D4FF';
-  ctx.font = `bold ${W*0.18}px Impact, Arial Black`;
-  ctx.textAlign = 'center';
-  ctx.fillText('FREEFALL', W/2, H*0.42);
-  ctx.shadowBlur = 0;
-  // Subtitle
-  ctx.font = `${W*0.035}px Arial`;
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.letterSpacing = '4px';
-  ctx.fillText('TAP ANYWHERE TO PLAY', W/2, H*0.52);
-  // Trail line
-  ctx.beginPath();
-  ctx.moveTo(W*0.2, H*0.56);
-  ctx.lineTo(W*0.8, H*0.56);
-  ctx.strokeStyle = 'rgba(0,212,255,0.4)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  ctx.textAlign = 'left';
-}
-
-// --- Main loop ---
-let lastTime = 0;
+// ─── MAIN LOOP ─────────────────────────────────────────────────────────────
+let last = 0;
 function loop(ts) {
-  const dt = Math.min((ts - lastTime) / 16.67, 3);
-  lastTime = ts;
+  const dt = clamp((ts-last)/16.67, 0.1, 3);
+  last = ts;
+  ctx.clearRect(0,0,W,H);
 
-  ctx.clearRect(0, 0, W, H);
-
-  if (state === 'menu') {
-    drawMenu();
-    requestAnimationFrame(loop);
-    return;
+  if (state === 'menu' || state === 'worldmenu' || state === 'levelmenu') {
+    ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
+    requestAnimationFrame(loop); return;
   }
 
-  drawBackground();
+  // Beat timer
+  beatTimer += dt;
+  if (beatTimer >= beatInterval) {
+    beatTimer = 0;
+    bgBeat = 1.0;
+  }
+  bgBeat = Math.max(0, bgBeat - dt * 0.08);
+
+  drawBg();
   drawTrail();
   drawScatter();
+  drawCollectibles();
   drawObstacles();
   drawGoal();
   drawSphere();
   drawParticles();
 
-  // Update particles
+  // Particles
   particles = particles.filter(p => {
-    p.x += p.vx; p.y += p.vy;
-    p.vy += gravityDir * 0.05;
-    p.life -= p.decay;
-    return p.life > 0;
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.06; p.life-=p.decay; return p.life>0;
   });
 
   if (state === 'playing') {
-    // Physics
-    sphere.vy += GRAVITY_MAG * gravityDir * dt;
+    sphere.vy += GRAV * gravDir * dt;
     sphere.x += sphere.vx * dt;
     sphere.y += sphere.vy * dt;
 
-    // Parallax
-    bgOffsetY -= sphere.vy * 0.15 * dt;
-    bgOffsetY = Math.max(-H*0.1, Math.min(H*0.1, bgOffsetY));
-
     // Trail
-    const t = Math.min(distanceTravelled / 900, 1);
-    trail.push({ x: sphere.x, y: sphere.y, t });
-    if (trail.length > 1) {
-      const prev = trail[trail.length-2];
-      distanceTravelled += Math.sqrt((sphere.x-prev.x)**2 + (sphere.y-prev.y)**2);
+    const t = clamp(distTravelled/900, 0, 1);
+    trail.push({x:sphere.x, y:sphere.y, t});
+    if (trail.length>1) {
+      const prev=trail[trail.length-2];
+      distTravelled += Math.hypot(sphere.x-prev.x, sphere.y-prev.y);
     }
 
     // Scatter
-    if (scatterDots.length < 1500) {
-      const color = getTrailColor();
-      for (let i = 0; i < 2; i++) {
-        scatterDots.push({
-          x: sphere.x + (Math.random()-0.5)*16,
-          y: sphere.y + (Math.random()-0.5)*16,
-          color,
-          alpha: 0.15 + Math.random()*0.2
-        });
-      }
+    if (scatter.length < 1500) {
+      const col = trailColor();
+      scatter.push({x:sphere.x+(Math.random()-0.5)*14, y:sphere.y+(Math.random()-0.5)*14, color:col, alpha:0.12+Math.random()*0.2});
+      scatter.push({x:sphere.x+(Math.random()-0.5)*14, y:sphere.y+(Math.random()-0.5)*14, color:col, alpha:0.12+Math.random()*0.2});
     }
 
-    // Collision
-    const hit = checkCollisions();
+    checkCollectibles();
+
+    const hit = checkHit();
     if (hit === 'dead') {
-      spawnDeathParticles(sphere.x, sphere.y);
-      state = 'dead';
-      deathTimer = 0;
-    } else if (hit === 'complete') {
-      const lv = getLevel();
-      spawnGoalParticles(screenX(lv.goalX), screenY(lv.goalY));
+      spawnBurst(sphere.x, sphere.y, world().color, 14);
+      state = 'dead'; deadTimer = 0;
+    } else if (hit === 'complete' && !completeTriggered) {
+      completeTriggered = true;
+      spawnBurst(sX(level().goalX), sY(level().goalY), '#00FFFF', 22);
       state = 'complete';
-      completeTimer = 0;
-      const word = getCompletionWord();
-      wordEl.textContent = word;
-      setTimeout(() => { wordEl.className = 'show'; }, 400);
-      setTimeout(() => { nextBtn.style.display = 'block'; }, 800);
-      hintEl.style.display = 'none';
+      markComplete(currentWorldIdx, currentLevelIdx);
+      showComplete();
     }
+
+    document.getElementById('flip-count').textContent = `${flipCount} FLIP${flipCount!==1?'S':''}`;
   }
 
   if (state === 'dead') {
-    deathTimer += dt;
-    if (deathTimer > 18) { // ~0.3s at 60fps
-      trail = [];
-      scatterDots = [];
-      state = 'ready';
-      resetSphere();
-      hintEl.textContent = 'TAP TO RETRY';
-      hintEl.style.display = 'block';
+    deadTimer += dt;
+    if (deadTimer > 20) {
+      trail=[]; scatter=[]; particles=[];
+      completeTriggered = false;
+      const lv = level();
+      sphere = {x:sX(lv.launchX), y:sY(lv.launchY), vx:lv.vx, vy:0};
+      gravDir=1; flipCount=0; distTravelled=0; bgBeat=0;
+      collectibles.forEach(c => c.collected = false);
+      state='ready';
+      document.getElementById('hint').textContent='TAP TO RETRY';
+      document.getElementById('hint').style.display='block';
+      document.getElementById('flip-count').textContent='';
     }
   }
 
   requestAnimationFrame(loop);
 }
 
-// --- Input ---
-function handleTap(e) {
-  e.preventDefault();
-  if (state === 'menu') {
-    state = 'ready';
-    resetSphere();
-    hintEl.textContent = 'TAP TO START';
-    hintEl.style.display = 'block';
-    return;
+function showComplete() {
+  const words = ['CLEAN','FRESH','DOPE','NICE'];
+  const weights = [0.4, 0.25, 0.2, 0.15];
+  let r = Math.random(), word = 'CLEAN';
+  let acc = 0;
+  for (let i=0; i<words.length; i++) {
+    acc += weights[i];
+    if (r <= acc) { word = words[i]; break; }
   }
+  const wo = document.getElementById('complete-word');
+  wo.textContent = word;
+  wo.style.color = world().color;
+  wo.style.textShadow = `0 0 40px ${world().color}`;
+
+  const ov = document.getElementById('complete-overlay');
+  ov.style.display = 'flex';
+
+  const nextBtn = document.getElementById('next-btn');
+  const isLastInWorld = currentLevelIdx >= 9;
+  const isLastInGame = currentWorldIdx >= 3 && currentLevelIdx >= 9;
+  if (isLastInGame) nextBtn.textContent = "YOU'RE DONE 🔥";
+  else if (isLastInWorld) nextBtn.textContent = 'NEXT WORLD →';
+  else nextBtn.textContent = 'NEXT LEVEL →';
+
+  setTimeout(() => { wo.className = 'show'; }, 400);
+  setTimeout(() => { document.getElementById('complete-btns').className = 'show'; }, 900);
+}
+
+// ─── INPUT ─────────────────────────────────────────────────────────────────
+function handleTap(e) {
+  if (e.target.closest('#complete-overlay, #worldmenu, #levelmenu, #menu, .complete-btn, .world-card, .level-cell, #back-btn, #menu-play')) return;
+  e.preventDefault();
   if (state === 'ready') {
     state = 'playing';
-    hintEl.style.display = 'none';
+    document.getElementById('hint').style.display = 'none';
     return;
   }
   if (state === 'playing') {
-    gravityDir *= -1;
+    gravDir *= -1;
     flipCount++;
-    // Visual flip flash
-    ctx.fillStyle = 'rgba(0,212,255,0.05)';
-    ctx.fillRect(0, 0, W, H);
   }
-  if (state === 'complete') return;
 }
 
 canvas.addEventListener('click', handleTap);
-canvas.addEventListener('touchstart', handleTap, { passive: false });
+canvas.addEventListener('touchstart', e => { handleTap(e); }, {passive:false});
 
+// Start
 requestAnimationFrame(loop);
 </script>
 </body>
