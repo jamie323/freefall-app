@@ -367,6 +367,78 @@ border, locked dim)
 **NeonText** — Used for titles and completion words
 - Props: text, fontSize, colour, glowRadius
 - Appearance: text with outer shadow/glow in the specified colour
+### 5.7a Parallax Background System (for Codex)
+
+**What it is:** The background image drifts slowly as the sphere moves, creating depth. The background moves at 20% of the sphere's velocity in the opposite direction. This makes the world feel alive rather than a static wallpaper behind the gameplay.
+
+**Implementation in SpriteKit:**
+- The background is an `SKSpriteNode` sized at 120% of the screen (wider and taller than the viewport)
+- It starts centred on screen
+- Every physics frame: `backgroundNode.position.x -= sphere.velocity.dx * 0.20 * dt`
+- Every physics frame: `backgroundNode.position.y -= sphere.velocity.dy * 0.20 * dt`
+- Clamp the background position so it never reveals black edges: `backgroundNode.position.x = max(min(backgroundNode.position.x, maxX), minX)` where maxX/minX are calculated from the size difference between background and screen
+- On death/restart: smoothly lerp background position back to centre over 0.3s (same duration as trail fade)
+- The parallax effect is subtle — the background should feel like it's breathing, not sliding. 20% velocity multiplier is the target; adjust during playtesting.
+
+**Background assets:** One PNG per world, stored in `assets/images/worlds/`. Use the APPROVED-worldN-bg.png files. Scale to fill 120% of screen width/height.
+
+---
+
+### 5.7b Audio System — Updated Spec (8 tracks, 2 per world)
+
+**Why 8 tracks:** Each world has 2 music tracks:
+- **Track A (levels 1-5 of that world):** Chill, relaxed, player is learning. Lower energy.
+- **Track B (levels 6-10 of that world):** Same sub-genre but more intense — heavier drums, faster energy, signals that difficulty is rising.
+
+This creates natural audio progression that mirrors the difficulty curve without the player consciously noticing.
+
+**Music file naming convention:**
+```
+assets/audio/music/world1-the-block/world1-track-a.mp3   (levels 1-5)
+assets/audio/music/world1-the-block/world1-track-b.mp3   (levels 6-10)
+assets/audio/music/world2-neon-yard/world2-track-a.mp3
+assets/audio/music/world2-neon-yard/world2-track-b.mp3
+assets/audio/music/world3-underground/world3-track-a.mp3
+assets/audio/music/world3-underground/world3-track-b.mp3
+assets/audio/music/world4-static/world4-track-a.mp3
+assets/audio/music/world4-static/world4-track-b.mp3
+```
+
+**Track selection logic (in GameState):**
+```
+func musicTrackFor(world: Int, level: Int) -> String {
+    let suffix = level <= 5 ? "track-a" : "track-b"
+    return "world\(world)-\(suffix)"
+}
+```
+
+**Crossfade on track switch:**
+- When player moves from level 5 to level 6 within a world: crossfade from track-a to track-b over 2 seconds
+- When player moves to a new world: crossfade from previous world's track to new world's track-a over 2 seconds
+- Use two `AVAudioPlayer` instances simultaneously, fade out one while fading in the other
+- Music loops continuously. Use `numberOfLoops = -1` on AVAudioPlayer.
+- Music continues playing across death/restart without interruption — do NOT stop/restart the music on death. The music is the thread that keeps the player in flow state.
+
+**SFX files:**
+```
+assets/audio/sfx/flip.mp3          — gravity flip (played on every tap during gameplay)
+assets/audio/sfx/death.mp3         — sphere death (particle burst moment)
+assets/audio/sfx/goal.mp3          — goal reached (celebration hit)
+assets/audio/sfx/level-complete.mp3 — level complete word appears
+assets/audio/sfx/ui-tap.mp3        — menu/button taps
+assets/audio/sfx/world-unlock.mp3  — world unlock moment (world select screen)
+```
+
+Use `SKAction.playSoundFileNamed` for SFX (fire-and-forget). Use `AVAudioPlayer` for music (persistent, looping, crossfadeable).
+
+**Settings bindings:**
+- `GameState.musicEnabled = false` → pause both AVAudioPlayer instances immediately
+- `GameState.sfxEnabled = false` → skip all SKAction sound plays
+- `GameState.hapticsEnabled = false` → skip all UIImpactFeedbackGenerator calls
+- These are checked at the point of play, not pre-filtered — always check the setting before triggering audio/haptic
+
+---
+
 ### 5.7 Paint Trail Technical Spec (for Codex)
 **Rendering approach:**
 Option A (recommended): Use `SKShapeNode` with a `CGMutablePath`. Every physics
@@ -485,11 +557,21 @@ Step 17: SettingsView
 → Sheet with toggles
 → Bound to GameState settings
 → Requires: Steps 2, 12
-Step 18: Audio engine
-→ AVAudioPlayer for music (looping, per-world tracks)
-→ SKAction for SFX
-→ Crossfade on world transition
-→ Respect musicEnabled / sfxEnabled settings
+Step 4b: Parallax background system
+→ Background SKSpriteNode at 120% screen size
+→ Drifts at 20% of sphere velocity, opposite direction
+→ Clamped so black edges never show
+→ Lerps back to centre on death/restart
+→ Requires: Step 4
+
+Step 18: Audio engine (8 tracks + SFX)
+→ Two AVAudioPlayer instances for crossfading
+→ 8 music tracks: world1-track-a/b through world4-track-a/b
+→ Track A for levels 1-5, Track B for levels 6-10 per world
+→ 2-second crossfade on track switch and world transition
+→ Music never stops on death — continues through restart
+→ SKAction.playSoundFileNamed for all SFX
+→ Settings bindings: check musicEnabled/sfxEnabled before every play
 → Requires: Step 2Step 19: Level content — all 40 levels
 → Design and create JSON for worlds 1-4, levels 1-10 each
 → Follow difficulty curve from engagement science section
