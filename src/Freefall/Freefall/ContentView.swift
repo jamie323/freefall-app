@@ -2,19 +2,27 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var gameState = GameState()
-    @State private var isShowingMainMenu = true
+    @State private var navigationPath = NavigationPath()
     @State private var isSettingsPresented = false
 
     var body: some View {
-        ZStack {
-            if isShowingMainMenu {
-                MainMenuView(
-                    onPlay: { isShowingMainMenu = false },
-                    onOpenSettings: { isSettingsPresented = true },
-                    onToggleMusic: handleMusicToggle
-                )
-            } else {
-                WorldSelectPlaceholderView(onBack: { isShowingMainMenu = true })
+        NavigationStack(path: $navigationPath) {
+            MainMenuView(
+                onPlay: { navigationPath.append(AppDestination.worldSelect) },
+                onOpenSettings: { isSettingsPresented = true },
+                onToggleMusic: handleMusicToggle
+            )
+            .navigationDestination(for: AppDestination.self) { destination in
+                switch destination {
+                case .worldSelect:
+                    WorldSelectPlaceholderView()
+                case .levelSelect(let worldId):
+                    LevelSelectPlaceholderView(worldId: worldId)
+                case .game(let worldId, let levelId):
+                    GamePlaceholderView(worldId: worldId, levelId: levelId)
+                case .settings:
+                    SettingsPlaceholderView()
+                }
             }
         }
         .sheet(isPresented: $isSettingsPresented) {
@@ -31,14 +39,16 @@ struct ContentView: View {
     }
 }
 
-private struct WorldSelectPlaceholderView: View {
-    var onBack: () -> Void
+enum AppDestination: Hashable, Codable {
+    case worldSelect
+    case levelSelect(worldId: Int)
+    case game(worldId: Int, levelId: Int)
+    case settings
+}
 
+private struct WorldSelectPlaceholderView: View {
     var body: some View {
         VStack(spacing: 16) {
-            Button("← Back", action: onBack)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(Color.hex("#00D4FF"))
             Spacer()
             Text("World Select coming soon")
                 .font(.title)
@@ -46,6 +56,40 @@ private struct WorldSelectPlaceholderView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+        .background(Color.black.ignoresSafeArea())
+    }
+}
+
+private struct LevelSelectPlaceholderView: View {
+    let worldId: Int
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Level Select for World \(worldId) coming soon")
+                .font(.title2)
+                .foregroundStyle(.white)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+        .background(Color.black.ignoresSafeArea())
+    }
+}
+
+private struct GamePlaceholderView: View {
+    let worldId: Int
+    let levelId: Int
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Game View")
+                .font(.title)
+                .foregroundStyle(.white)
+            Text("World \(worldId) – Level \(levelId)")
+                .foregroundStyle(.white.opacity(0.7))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
         .background(Color.black.ignoresSafeArea())
     }
 }
