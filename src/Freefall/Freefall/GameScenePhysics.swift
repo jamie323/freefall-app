@@ -92,6 +92,7 @@ extension GameScene: SKPhysicsContactDelegate {
     }
 
     private func fadOutTrailNodes() {
+        clearTrail()
     }
 
     private func enterCompleteState() {

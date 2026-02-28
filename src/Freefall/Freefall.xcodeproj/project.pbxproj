@@ -16,6 +16,7 @@
 	E9431C81C94840DE9AD06420 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203C3C37E9DE4929A486E646 /* GameScene.swift */; };
 	A339AD5731FC414C90A18914 /* ObstacleNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C970558F754A4D459CBE2E84 /* ObstacleNode.swift */; };
 	C700CFD9A6A24B8A806D1A71 /* GameScenePhysics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97EBADA68F20470D9847607E /* GameScenePhysics.swift */; };
+	AA3895BD213A4071BBD96942 /* TrailNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B619B4D03220A4B8D8078B7C /* TrailNode.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 	203C3C37E9DE4929A486E646 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 	C970558F754A4D459CBE2E84 /* ObstacleNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObstacleNode.swift; sourceTree = "<group>"; };
 	97EBADA68F20470D9847607E /* GameScenePhysics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScenePhysics.swift; sourceTree = "<group>"; };
+	B619B4D03220A4B8D8078B7C /* TrailNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailNode.swift; sourceTree = "<group>"; };
 	980D633ED63147B1AFA6417D /* levels */ = {isa = PBXFileReference; lastKnownFileType = folder; name = levels; path = ../../assets/levels; sourceTree = SOURCE_ROOT; };
 	16BE048671424E7BAA091F68 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 	6D395C2823A24CABB37AB902 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -62,6 +64,7 @@
 			203C3C37E9DE4929A486E646 /* GameScene.swift */,
 			C970558F754A4D459CBE2E84 /* ObstacleNode.swift */,
 			97EBADA68F20470D9847607E /* GameScenePhysics.swift */,
+			B619B4D03220A4B8D8078B7C /* TrailNode.swift */,
 			82F21A5A911E4F1CAC909875 /* Assets.xcassets */,
 			980D633ED63147B1AFA6417D /* levels */,
 			6D395C2823A24CABB37AB902 /* Info.plist */,
@@ -163,6 +166,7 @@
 			E9431C81C94840DE9AD06420 /* GameScene.swift in Sources */,
 			A339AD5731FC414C90A18914 /* ObstacleNode.swift in Sources */,
 			C700CFD9A6A24B8A806D1A71 /* GameScenePhysics.swift in Sources */,
+			AA3895BD213A4071BBD96942 /* TrailNode.swift in Sources */,
 		);
 		runOnlyForDeploymentPostprocessing = 0;
 	};

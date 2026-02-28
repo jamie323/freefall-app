@@ -43,6 +43,7 @@ final class GameScene: SKScene {
     private let backgroundReturnActionKey = "backgroundReturnAction"
     private var obstacleNodes: [ObstacleNode] = []
     private var goalNode: SKShapeNode?
+    private var trailNode: TrailNode?
 
     private var isGravityDown: Bool = true
     private var launchVelocity: CGVector = CGVector(dx: 150, dy: 0)
@@ -79,6 +80,12 @@ final class GameScene: SKScene {
         configureForCurrentLevelIfPossible()
     }
 
+    override func update(_ currentTime: TimeInterval) {
+        super.update(currentTime)
+        updateBackgroundParallax(currentTime: currentTime)
+        updateTrail()
+    }
+
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesBegan(touches, with: event)
         guard touches.first != nil else { return }
@@ -107,6 +114,7 @@ final class GameScene: SKScene {
         sphere.physicsBody?.isDynamic = true
         stopSphereMotion()
         sphere.physicsBody?.velocity = launchVelocity
+        createTrail()
     }
 
     private func flipGravity() {
@@ -312,6 +320,34 @@ final class GameScene: SKScene {
         
         addChild(circle)
         goalNode = circle
+    }
+
+    private func createTrail() {
+        trailNode?.removeFromParent()
+        guard let sphere = sphereNode else { return }
+        let trail = TrailNode(
+            startPosition: sphere.position,
+            startColor: UIColor(red: 0, green: 0.831, blue: 1, alpha: 1),
+            endColor: UIColor(red: 1, green: 0.078, blue: 0.576, alpha: 1),
+            estimatedLevelLength: size.width
+        )
+        addChild(trail)
+        trailNode = trail
+    }
+
+    private func updateTrail() {
+        guard sceneState == .playing,
+              let trail = trailNode,
+              let sphere = sphereNode else { return }
+        trail.appendPosition(sphere.position)
+    }
+
+    private func clearTrail() {
+        guard let trail = trailNode else { return }
+        trail.fadeOut(duration: 0.3) { [weak trail] in
+            trail?.removeFromParent()
+        }
+        trailNode = nil
     }
 
     private static func makeSphereTexture(diameter: CGFloat) -> SKTexture {
