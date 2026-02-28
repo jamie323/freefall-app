@@ -38,6 +38,11 @@ struct LevelDefinition: Codable, Identifiable {
         let style: String
     }
 
+    struct CollectibleDefinition: Codable, Identifiable {
+        var id: String { position.debugDescription }
+        let position: CGPoint
+    }
+
     var id: String { "W\(worldId)L\(levelId)" }
 
     let worldId: Int
@@ -49,6 +54,7 @@ struct LevelDefinition: Codable, Identifiable {
     let initialGravityDown: Bool
     let parFlips: Int
     let obstacles: [ObstacleDefinition]
+    let collectibles: [CollectibleDefinition]?
 }
 
 enum LevelLoaderError: Error, LocalizedError {
