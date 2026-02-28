@@ -10,12 +10,14 @@
 	2B18551487E24A4BBE527869 /* FreefallApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24CEB9593A7474FB7BC0216 /* FreefallApp.swift */; };
 	EFA79302B6C44109A05DF559 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BCEE07F80847229451D131 /* ContentView.swift */; };
 	833A2C7D5BD940E399A82A73 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82F21A5A911E4F1CAC909875 /* Assets.xcassets */; };
+	B25A8958B4574DC0B88C6569 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E448FEAC3264F0B90788348 /* GameState.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 	1ACF75CA18E44AF2BC3BDA3D /* Freefall.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Freefall.app; sourceTree = BUILT_PRODUCTS_DIR; };
 	14BCEE07F80847229451D131 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 	82F21A5A911E4F1CAC909875 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+	8E448FEAC3264F0B90788348 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
 	16BE048671424E7BAA091F68 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 	6D395C2823A24CABB37AB902 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 	B24CEB9593A7474FB7BC0216 /* FreefallApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreefallApp.swift; sourceTree = "<group>"; };
@@ -45,6 +47,7 @@
 		children = (
 			B24CEB9593A7474FB7BC0216 /* FreefallApp.swift */,
 			14BCEE07F80847229451D131 /* ContentView.swift */,
+			8E448FEAC3264F0B90788348 /* GameState.swift */,
 			82F21A5A911E4F1CAC909875 /* Assets.xcassets */,
 			6D395C2823A24CABB37AB902 /* Info.plist */,
 			46E01F2D8E4D45989B6A1848 /* Preview Content */,
@@ -139,6 +142,7 @@
 		files = (
 			2B18551487E24A4BBE527869 /* FreefallApp.swift in Sources */,
 			EFA79302B6C44109A05DF559 /* ContentView.swift in Sources */,
+			B25A8958B4574DC0B88C6569 /* GameState.swift in Sources */,
 		);
 		runOnlyForDeploymentPostprocessing = 0;
 	};
