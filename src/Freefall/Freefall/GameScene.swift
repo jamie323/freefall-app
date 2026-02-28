@@ -42,6 +42,7 @@ final class GameScene: SKScene {
     private var backgroundHomePosition: CGPoint = .zero
     private let backgroundReturnActionKey = "backgroundReturnAction"
     private var obstacleNodes: [ObstacleNode] = []
+    private var goalNode: SKShapeNode?
 
     private var isGravityDown: Bool = true
     private var launchVelocity: CGVector = CGVector(dx: 150, dy: 0)
@@ -61,6 +62,7 @@ final class GameScene: SKScene {
     override func sceneDidLoad() {
         super.sceneDidLoad()
         physicsWorld.gravity = CGVector(dx: 0, dy: -Constants.gravityMagnitude)
+        setupPhysicsContactDelegate()
         createBackgroundIfNeeded()
         createSphereIfNeeded()
     }
@@ -75,11 +77,6 @@ final class GameScene: SKScene {
         super.didChangeSize(oldSize)
         updateBackgroundLayout()
         configureForCurrentLevelIfPossible()
-    }
-
-    override func update(_ currentTime: TimeInterval) {
-        super.update(currentTime)
-        updateBackgroundParallax(currentTime: currentTime)
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -240,6 +237,7 @@ final class GameScene: SKScene {
         applyGravityDirection()
         positionSphere(atNormalizedPoint: levelDefinition.launchPosition)
         createObstacles(from: levelDefinition)
+        createGoal(from: levelDefinition)
         enterReadyState(shouldReposition: false, animateBackgroundReset: false)
     }
 
@@ -289,6 +287,31 @@ final class GameScene: SKScene {
             node.removeFromParent()
         }
         obstacleNodes.removeAll()
+    }
+
+    private func createGoal(from definition: LevelDefinition) {
+        goalNode?.removeFromParent()
+        
+        let circle = SKShapeNode(circleOfRadius: definition.goalRadius)
+        circle.position = CGPoint(
+            x: definition.goalPosition.x * size.width,
+            y: definition.goalPosition.y * size.height
+        )
+        circle.strokeColor = UIColor(red: 0, green: 1, blue: 1, alpha: 1)
+        circle.lineWidth = 2
+        circle.fillColor = .clear
+        circle.zPosition = 5
+        
+        let physicsBody = SKPhysicsBody(circleOfRadius: definition.goalRadius)
+        physicsBody.isDynamic = false
+        physicsBody.affectedByGravity = false
+        physicsBody.categoryBitMask = PhysicsCategory.goal.rawValue
+        physicsBody.collisionBitMask = 0
+        physicsBody.contactTestBitMask = PhysicsCategory.sphere.rawValue
+        circle.physicsBody = physicsBody
+        
+        addChild(circle)
+        goalNode = circle
     }
 
     private static func makeSphereTexture(diameter: CGFloat) -> SKTexture {
