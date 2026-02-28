@@ -44,6 +44,7 @@ final class GameScene: SKScene {
     private var obstacleNodes: [ObstacleNode] = []
     private var goalNode: SKShapeNode?
     private var trailNode: TrailNode?
+    private var trailSprayNode: TrailSprayNode?
 
     private var isGravityDown: Bool = true
     private var launchVelocity: CGVector = CGVector(dx: 150, dy: 0)
@@ -324,7 +325,10 @@ final class GameScene: SKScene {
 
     private func createTrail() {
         trailNode?.removeFromParent()
+        trailSprayNode?.removeFromParent()
+        
         guard let sphere = sphereNode else { return }
+        
         let trail = TrailNode(
             startPosition: sphere.position,
             startColor: UIColor(red: 0, green: 0.831, blue: 1, alpha: 1),
@@ -333,21 +337,29 @@ final class GameScene: SKScene {
         )
         addChild(trail)
         trailNode = trail
+        
+        let spray = TrailSprayNode(color: UIColor(red: 0, green: 0.831, blue: 1, alpha: 1))
+        addChild(spray)
+        trailSprayNode = spray
     }
 
     private func updateTrail() {
         guard sceneState == .playing,
               let trail = trailNode,
+              let spray = trailSprayNode,
               let sphere = sphereNode else { return }
         trail.appendPosition(sphere.position)
+        spray.spawnScatterAtPosition(sphere.position)
     }
 
     private func clearTrail() {
         guard let trail = trailNode else { return }
+        trailSprayNode?.clearImmediate()
         trail.fadeOut(duration: 0.3) { [weak trail] in
             trail?.removeFromParent()
         }
         trailNode = nil
+        trailSprayNode = nil
     }
 
     private static func makeSphereTexture(diameter: CGFloat) -> SKTexture {
