@@ -53,6 +53,9 @@ extension GameScene: SKPhysicsContactDelegate {
         sceneState = .dead
         stopSphereMotion()
         
+        createDeathParticleBurst()
+        fadOutTrailNodes()
+        
         let delayAction = SKAction.sequence([
             SKAction.wait(forDuration: 0.3),
             SKAction.run { [weak self] in
@@ -60,6 +63,35 @@ extension GameScene: SKPhysicsContactDelegate {
             }
         ])
         run(delayAction)
+    }
+
+    private func createDeathParticleBurst() {
+        guard let sphere = sphereNode else { return }
+        
+        let particleCount = 12
+        for _ in 0..<particleCount {
+            let angle = CGFloat.random(in: 0..<(2 * .pi))
+            let speed = CGFloat.random(in: 100...300)
+            let dx = cos(angle) * speed
+            let dy = sin(angle) * speed
+            
+            let particle = SKSpriteNode(color: UIColor(red: 0, green: 0.831, blue: 1, alpha: 1), size: CGSize(width: 4, height: 4))
+            particle.position = sphere.position
+            particle.zPosition = 15
+            addChild(particle)
+            
+            let moveAction = SKAction.move(by: CGVector(dx: dx * 0.3, dy: dy * 0.3), duration: 0.3)
+            let fadeAction = SKAction.fadeOut(withDuration: 0.3)
+            let group = SKAction.group([moveAction, fadeAction])
+            let sequence = SKAction.sequence([
+                group,
+                SKAction.run { particle.removeFromParent() }
+            ])
+            particle.run(sequence)
+        }
+    }
+
+    private func fadOutTrailNodes() {
     }
 
     private func enterCompleteState() {
