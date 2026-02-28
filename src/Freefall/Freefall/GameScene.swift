@@ -13,9 +13,14 @@ final class GameScene: SKScene {
     private enum Constants {
         static let sphereDiameter: CGFloat = 28
         static let gravityMagnitude: CGFloat = 500
+        static let backgroundScale: CGFloat = 1.2
+        static let parallaxMultiplier: CGFloat = 0.2
+        static let backgroundResetDuration: TimeInterval = 0.3
+        static let placeholderBackground = UIColor(red: 0.039, green: 0.039, blue: 0.118, alpha: 1)
     }
 
     var hapticsEnabled: Bool = true
+
     var levelDefinition: LevelDefinition? {
         didSet {
             configureForCurrentLevelIfPossible()
@@ -33,14 +38,19 @@ final class GameScene: SKScene {
     var stateDidChange: ((SceneState) -> Void)?
 
     private var sphereNode: SKSpriteNode?
+    private var backgroundNode: SKSpriteNode?
+    private var backgroundHomePosition: CGPoint = .zero
+    private let backgroundReturnActionKey = "backgroundReturnAction"
+
     private var isGravityDown: Bool = true
     private var launchVelocity: CGVector = CGVector(dx: 150, dy: 0)
     private lazy var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
+    private var lastUpdateTimestamp: TimeInterval = 0
 
     override init(size: CGSize) {
         super.init(size: size)
         scaleMode = .resizeFill
-        backgroundColor = .clear
+        backgroundColor = .black
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -50,6 +60,7 @@ final class GameScene: SKScene {
     override func sceneDidLoad() {
         super.sceneDidLoad()
         physicsWorld.gravity = CGVector(dx: 0, dy: -Constants.gravityMagnitude)
+        createBackgroundIfNeeded()
         createSphereIfNeeded()
     }
 
@@ -61,7 +72,13 @@ final class GameScene: SKScene {
 
     override func didChangeSize(_ oldSize: CGSize) {
         super.didChangeSize(oldSize)
+        updateBackgroundLayout()
         configureForCurrentLevelIfPossible()
+    }
+
+    override func update(_ currentTime: TimeInterval) {
+        super.update(currentTime)
+        updateBackgroundParallax(currentTime: currentTime)
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -72,7 +89,7 @@ final class GameScene: SKScene {
 
     func resetScene() {
         stopSphereMotion()
-        enterReadyState(shouldReposition: true)
+        enterReadyState(shouldReposition: true, animateBackgroundReset: true)
     }
 
     private func handlePrimaryTap() {
@@ -132,12 +149,87 @@ final class GameScene: SKScene {
         sphereNode = node
     }
 
+    private func createBackgroundIfNeeded() {
+        guard backgroundNode == nil else { return }
+        let node = SKSpriteNode(color: Constants.placeholderBackground, size: CGSize(width: size.width * Constants.backgroundScale, height: size.height * Constants.backgroundScale))
+        node.zPosition = -10
+        node.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        node.position = CGPoint(x: size.width / 2, y: size.height / 2)
+        addChild(node)
+        backgroundNode = node
+        backgroundHomePosition = node.position
+    }
+
+    private func updateBackgroundLayout() {
+        guard let background = backgroundNode, size.width > 0, size.height > 0 else { return }
+        background.size = CGSize(width: size.width * Constants.backgroundScale, height: size.height * Constants.backgroundScale)
+        backgroundHomePosition = CGPoint(x: size.width / 2, y: size.height / 2)
+        if sceneState != .playing {
+            background.position = backgroundHomePosition
+        }
+    }
+
+    private func updateBackgroundParallax(currentTime: TimeInterval) {
+        guard sceneState == .playing,
+              let background = backgroundNode,
+              let velocity = sphereNode?.physicsBody?.velocity else {
+            lastUpdateTimestamp = currentTime
+            return
+        }
+
+        defer { lastUpdateTimestamp = currentTime }
+
+        if lastUpdateTimestamp == 0 {
+            return
+        }
+
+        let delta = CGFloat(currentTime - lastUpdateTimestamp)
+        let dx = -velocity.dx * Constants.parallaxMultiplier * delta
+        let dy = -velocity.dy * Constants.parallaxMultiplier * delta
+
+        if background.action(forKey: backgroundReturnActionKey) != nil {
+            background.removeAction(forKey: backgroundReturnActionKey)
+        }
+
+        let newPosition = CGPoint(x: background.position.x + dx, y: background.position.y + dy)
+        background.position = clampBackgroundPosition(newPosition)
+    }
+
+    private func clampBackgroundPosition(_ position: CGPoint) -> CGPoint {
+        guard let background = backgroundNode else { return position }
+        let horizontalLimit = max(0, (background.size.width - size.width) / 2)
+        let verticalLimit = max(0, (background.size.height - size.height) / 2)
+
+        let minX = backgroundHomePosition.x - horizontalLimit
+        let maxX = backgroundHomePosition.x + horizontalLimit
+        let minY = backgroundHomePosition.y - verticalLimit
+        let maxY = backgroundHomePosition.y + verticalLimit
+
+        let clampedX = min(max(position.x, minX), maxX)
+        let clampedY = min(max(position.y, minY), maxY)
+        return CGPoint(x: clampedX, y: clampedY)
+    }
+
+    private func resetBackgroundPosition(animated: Bool) {
+        guard let background = backgroundNode else { return }
+        background.removeAction(forKey: backgroundReturnActionKey)
+        if animated {
+            let move = SKAction.move(to: backgroundHomePosition, duration: Constants.backgroundResetDuration)
+            move.timingMode = .easeOut
+            background.run(move, withKey: backgroundReturnActionKey)
+        } else {
+            background.position = backgroundHomePosition
+        }
+    }
+
     private func configureForCurrentLevelIfPossible() {
         guard view != nil else { return }
+        createBackgroundIfNeeded()
         createSphereIfNeeded()
+        updateBackgroundLayout()
 
         guard let levelDefinition else {
-            enterReadyState(shouldReposition: true)
+            enterReadyState(shouldReposition: true, animateBackgroundReset: false)
             return
         }
 
@@ -145,17 +237,18 @@ final class GameScene: SKScene {
         isGravityDown = levelDefinition.initialGravityDown
         applyGravityDirection()
         positionSphere(atNormalizedPoint: levelDefinition.launchPosition)
-        enterReadyState(shouldReposition: false)
+        enterReadyState(shouldReposition: false, animateBackgroundReset: false)
     }
 
-    private func enterReadyState(shouldReposition: Bool) {
+    private func enterReadyState(shouldReposition: Bool, animateBackgroundReset: Bool) {
         sceneState = .ready
-        guard let sphere = sphereNode else { return }
-        sphere.physicsBody?.isDynamic = false
+        lastUpdateTimestamp = 0
+        sphereNode?.physicsBody?.isDynamic = false
         stopSphereMotion()
         if shouldReposition {
             positionSphere(at: CGPoint(x: size.width * 0.2, y: size.height * 0.5))
         }
+        resetBackgroundPosition(animated: animateBackgroundReset)
     }
 
     private func stopSphereMotion() {
