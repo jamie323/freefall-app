@@ -439,6 +439,114 @@ Use `SKAction.playSoundFileNamed` for SFX (fire-and-forget). Use `AVAudioPlayer`
 
 ---
 
+### 5.7c Collectibles System
+
+**What it is:** Small glowing orbs scattered along the level path. The sphere passing through them triggers a satisfying SFX ping, a colour burst on the trail, and a haptic. They are NOT required for completion — purely additive juice. They cannot be "missed" in a punishing way; failing to collect them has no consequence.
+
+**Visual design:**
+- Small circle, radius 6pt
+- Colour: world accent colour (e.g. World 1 = #FF1493 hot pink — contrasts with the cyan trail)
+- Soft outer glow (same colour, radius 12pt, additive blend)
+- Idle animation: gentle pulse (scale 0.8→1.0, 1.2s loop)
+- On collection: brief burst expand (scale to 2.0 over 0.15s, opacity to 0 over 0.15s) then remove
+
+**Quantity per level:** 3-5 collectibles per level, defined in level JSON as `collectibles: [{x, y}]` (normalised 0-1 coords, same as obstacles)
+
+**Level JSON addition:**
+```json
+"collectibles": [
+  { "x": 0.35, "y": 0.4 },
+  { "x": 0.55, "y": 0.6 },
+  { "x": 0.75, "y": 0.45 }
+]
+```
+
+**Collision detection:**
+- Collectible has a physics body: sensor (no collision response, contact only), radius 10pt (generous hitbox)
+- On contact with sphere: trigger collection sequence
+- Physics category: `collectible = 16`
+- Sphere contact mask includes collectible category
+
+**Collection sequence (all happen simultaneously):**
+1. Visual burst: scale 2.0 + fade out over 0.15s, remove node
+2. Trail colour burst: at the moment of collection, inject a single bright flash segment into the trail (white or bright accent for 2 frames, then resume normal gradient)
+3. SFX: play `sfx/collect.mp3` (short, high-pitched ping — feels like a percussion hit in the music)
+4. Haptic: `UIImpactFeedbackGenerator(.light)` — lighter than the gravity flip haptic
+5. Track collected count in GameScene (for potential post-launch scoring features)
+
+**State management:**
+- `collectedCount: Int` — tracked per level attempt
+- Resets to 0 on death/restart
+- Does NOT affect completion word selection at MVP
+- Does NOT persist between sessions at MVP (post-launch feature)
+
+**SFX file:** `assets/audio/sfx/collect.mp3` — short percussive ping, 0.1-0.2s, high frequency, sounds like a hi-hat accent or xylophone tap
+
+---
+
+### 5.7d Beat-Reactive Background System
+
+**What it is:** The background and obstacle outlines pulse subtly in sync with the music's BPM. The game world breathes with the beat. This is driven by a timer (not audio analysis) — we know each world's BPM in advance, so we sync a repeating animation to match.
+
+**World BPMs:**
+- World 1 (THE BLOCK): 88bpm (Track A) / 95bpm (Track B)
+- World 2 (NEON YARD): 172bpm (Track A) / 174bpm (Track B)
+- World 3 (UNDERGROUND): 160bpm (Track A) / 165bpm (Track B)
+- World 4 (STATIC): 132bpm (Track A) / 138bpm (Track B)
+
+**Beat interval calculation:**
+```swift
+let bpm: Double = 88 // from world/track definition
+let beatInterval: TimeInterval = 60.0 / bpm // seconds per beat
+```
+
+**What pulses on the beat:**
+
+1. **Background brightness pulse:**
+   - On beat: briefly increase background node alpha by +0.08 (from base 1.0 to 1.08, clamped)
+   - Decay back to 1.0 over 60% of the beat interval
+   - Implementation: SKAction sequence (fadeAlpha to 1.0+flash over 0.05s → fadeAlpha to 1.0 over beatInterval*0.6)
+   - Subtle — like the room breathing. Should not be distracting.
+
+2. **Obstacle outline glow pulse:**
+   - On beat: briefly increase obstacle glow width from base (3pt) to peak (6pt)
+   - Decay back to 3pt over 40% of the beat interval
+   - Implementation: iterate all obstacle nodes, run SKAction to animate glowWidth
+   - Note: SKShapeNode.glowWidth IS animatable via SKAction.customAction
+
+3. **Goal ring pulse amplification:**
+   - The goal ring already pulses (opacity 0.7→1.0, 0.8s). On beat, boost the peak opacity to 1.0 briefly regardless of where the pulse cycle is.
+   - Creates a visual "kick" on the goal ring that draws the eye on the beat.
+
+**Starting the beat timer:**
+```swift
+// In GameScene, when music starts playing (on entering .playing state)
+func startBeatTimer(bpm: Double) {
+    let beatInterval = 60.0 / bpm
+    let beatAction = SKAction.sequence([
+        SKAction.run { [weak self] in self?.onBeat() },
+        SKAction.wait(forDuration: beatInterval)
+    ])
+    run(SKAction.repeatForever(beatAction), withKey: "beatTimer")
+}
+
+func stopBeatTimer() {
+    removeAction(forKey: "beatTimer")
+}
+```
+
+**When to start/stop:**
+- Start: when state transitions from .ready → .playing
+- Stop: when state transitions to .dead or .complete
+- On .dead → .ready: restart beat timer when .playing resumes
+- The beat timer does NOT run during .ready state (too distracting while player is reading the level)
+
+**BPM source:** Add `bpmA: Double` and `bpmB: Double` to `WorldDefinition`. Select based on current level (1-5 = A, 6-10 = B). Pass to GameScene when loading a level.
+
+**Performance note:** The beat timer runs on the main thread via SKAction. Do not perform heavy operations in `onBeat()` — only SKAction animations on existing nodes. Max 10 obstacle nodes to animate = trivial cost.
+
+---
+
 ### 5.7 Paint Trail Technical Spec (for Codex)
 **Rendering approach:**
 Option A (recommended): Use `SKShapeNode` with a `CGMutablePath`. Every physics
@@ -557,6 +665,22 @@ Step 17: SettingsView
 → Sheet with toggles
 → Bound to GameState settings
 → Requires: Steps 2, 12
+Step 4c: Collectibles system
+→ CollectibleNode: SKShapeNode circle, radius 6pt, world accent colour, glow 12pt, pulse animation
+→ Loaded from level JSON `collectibles` array (normalised coords)
+→ Physics body: sensor, radius 10pt, category = 16
+→ Collection sequence: visual burst + trail flash + SFX + haptic
+→ collectedCount tracked per attempt, reset on death
+→ Requires: Steps 3, 4
+
+Step 4d: Beat-reactive background system
+→ Add bpmA/bpmB to WorldDefinition
+→ beatInterval = 60.0 / bpm
+→ SKAction repeatForever beat timer, key "beatTimer"
+→ onBeat(): background brightness +0.08 pulse, obstacle glowWidth 3→6pt pulse, goal ring opacity boost
+→ Start on .ready→.playing, stop on .dead/.complete
+→ Requires: Steps 4, 5
+
 Step 4b: Parallax background system
 → Background SKSpriteNode at 120% screen size
 → Drifts at 20% of sphere velocity, opposite direction
