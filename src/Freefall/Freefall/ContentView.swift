@@ -5,6 +5,8 @@ struct ContentView: View {
     @State private var navigationPath = NavigationPath()
     @State private var isSettingsPresented = false
 
+    private let worlds = WorldLibrary.allWorlds
+
     var body: some View {
         NavigationStack(path: $navigationPath) {
             MainMenuView(
@@ -15,7 +17,13 @@ struct ContentView: View {
             .navigationDestination(for: AppDestination.self) { destination in
                 switch destination {
                 case .worldSelect:
-                    WorldSelectPlaceholderView()
+                    WorldSelectView(
+                        worlds: worlds,
+                        onBack: popDestination,
+                        onWorldSelected: { world in
+                            navigationPath.append(.levelSelect(worldId: world.id))
+                        }
+                    )
                 case .levelSelect(let worldId):
                     LevelSelectPlaceholderView(worldId: worldId)
                 case .game(let worldId, let levelId):
@@ -37,6 +45,11 @@ struct ContentView: View {
     private func handleMusicToggle() {
         // Audio routing will be added with the audio engine step.
     }
+
+    private func popDestination() {
+        guard !navigationPath.isEmpty else { return }
+        navigationPath.removeLast()
+    }
 }
 
 enum AppDestination: Hashable, Codable {
@@ -44,21 +57,6 @@ enum AppDestination: Hashable, Codable {
     case levelSelect(worldId: Int)
     case game(worldId: Int, levelId: Int)
     case settings
-}
-
-private struct WorldSelectPlaceholderView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            Text("World Select coming soon")
-                .font(.title)
-                .foregroundStyle(.white)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
-        .background(Color.black.ignoresSafeArea())
-    }
 }
 
 private struct LevelSelectPlaceholderView: View {
