@@ -1,47 +1,45 @@
 import SwiftUI
-import SpriteKit
 
 struct ContentView: View {
-    @State private var gameScene: GameScene?
+    @State private var gameState = GameState()
+    @State private var levelDefinition: LevelDefinition?
+    @State private var worldDefinition: WorldDefinition? = WorldLibrary.world(for: 1)
+    @State private var loadError: String?
     @State private var hasLoadedLevel = false
 
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            if let scene = gameScene {
-                SpriteView(scene: scene)
+            if let levelDefinition, let worldDefinition {
+                SpriteKitView(level: levelDefinition, world: worldDefinition)
                     .ignoresSafeArea()
+            } else if let loadError {
+                Text(loadError)
+                    .foregroundStyle(Color.hex("#00D4FF"))
+                    .padding()
             } else {
-                Text("Loading Freefall...")
-                    .foregroundStyle(Color.cyan)
+                ProgressView("Loading Freefall…")
+                    .tint(Color.hex("#00D4FF"))
             }
         }
-        .onAppear {
-            setupGameScene()
+        .task {
+            loadInitialLevelIfNeeded()
         }
+        .environment(gameState)
     }
 
-    private func setupGameScene() {
+    @MainActor
+    private func loadInitialLevelIfNeeded() {
         guard !hasLoadedLevel else { return }
         hasLoadedLevel = true
 
-        let scene = GameScene(size: CGSize(width: 375, height: 812))
-        scene.scaleMode = .resizeFill
-
         do {
             let level = try LevelLoader().loadLevel(world: 1, level: 1)
-            scene.levelDefinition = level
+            levelDefinition = level
         } catch {
-            print("Failed to load level: \(error)")
+            loadError = error.localizedDescription
         }
-
-        scene.hapticsEnabled = true
-        scene.levelCompleted = {
-            print("LEVEL COMPLETE")
-        }
-
-        gameScene = scene
     }
 }
 

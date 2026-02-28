@@ -32,18 +32,18 @@ final class GameScene: SKScene {
         static let deathResetActionKey = "deathReset"
     }
 
+    private let gameState: GameState
+
     var hapticsEnabled: Bool = true
 
-    var levelDefinition: LevelDefinition? {
-        didSet {
-            configureForCurrentLevelIfPossible()
-        }
-    }
+    private(set) var levelDefinition: LevelDefinition?
+    private(set) var worldDefinition: WorldDefinition?
 
     private(set) var sceneState: SceneState = .ready {
         didSet {
             if sceneState != oldValue {
                 stateDidChange?(sceneState)
+                syncGameStateWithSceneState()
             }
         }
     }
@@ -65,14 +65,17 @@ final class GameScene: SKScene {
     private var lastUpdateTimestamp: TimeInterval = 0
     private var totalFlipsDuringLevel: Int = 0
 
-    override init(size: CGSize) {
+    init(size: CGSize, gameState: GameState) {
+        self.gameState = gameState
         super.init(size: size)
         scaleMode = .resizeFill
         backgroundColor = .black
+        syncGameStateWithSceneState()
     }
 
+    @available(*, unavailable)
     required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
+        fatalError("init(coder:) has not been implemented")
     }
 
     override func sceneDidLoad() {
@@ -81,6 +84,14 @@ final class GameScene: SKScene {
         setupPhysicsContactDelegate()
         createBackgroundIfNeeded()
         createSphereIfNeeded()
+    }
+
+    func loadLevel(_ level: LevelDefinition, world: WorldDefinition) {
+        levelDefinition = level
+        worldDefinition = world
+        gameState.currentWorldId = world.id
+        gameState.currentLevelId = level.levelId
+        configureForCurrentLevelIfPossible()
     }
 
     override func didMove(to view: SKView) {
@@ -134,6 +145,26 @@ final class GameScene: SKScene {
             flipGravity()
         default:
             break
+        }
+    }
+
+    private func syncGameStateWithSceneState() {
+        let gameplayState: GameState.GameplayState
+        switch sceneState {
+        case .ready:
+            gameplayState = .ready
+        case .playing:
+            gameplayState = .playing
+        case .dead:
+            gameplayState = .dead
+        case .complete:
+            gameplayState = .complete
+        case .paused:
+            gameplayState = .paused
+        }
+
+        if gameState.gameplayState != gameplayState {
+            gameState.gameplayState = gameplayState
         }
     }
 
