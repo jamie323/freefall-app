@@ -25,7 +25,15 @@ struct ContentView: View {
                         }
                     )
                 case .levelSelect(let worldId):
-                    LevelSelectPlaceholderView(worldId: worldId)
+                    if let world = WorldLibrary.world(for: worldId) {
+                        LevelSelectView(
+                            world: world,
+                            onBack: popDestination,
+                            onLevelSelected: { levelId in
+                                navigationPath.append(.game(worldId: worldId, levelId: levelId))
+                            }
+                        )
+                    }
                 case .game(let worldId, let levelId):
                     GamePlaceholderView(worldId: worldId, levelId: levelId)
                 case .settings:
@@ -57,21 +65,6 @@ enum AppDestination: Hashable, Codable {
     case levelSelect(worldId: Int)
     case game(worldId: Int, levelId: Int)
     case settings
-}
-
-private struct LevelSelectPlaceholderView: View {
-    let worldId: Int
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Text("Level Select for World \(worldId) coming soon")
-                .font(.title2)
-                .foregroundStyle(.white)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
-        .background(Color.black.ignoresSafeArea())
-    }
 }
 
 private struct GamePlaceholderView: View {
