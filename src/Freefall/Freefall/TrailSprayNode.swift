@@ -44,15 +44,17 @@ final class TrailSprayNode: SKNode {
         }
 
         let fadeAction = SKAction.fadeOut(withDuration: duration)
-        let removeAction = SKAction.run { [weak self] in
-            self?.scatterNodes.removeAll()
+        let cleanup = SKAction.run { [weak self] in
+            guard let self = self else { return }
+            for node in self.scatterNodes {
+                node.removeFromParent()
+            }
+            self.scatterNodes.removeAll()
+            self.alpha = 1
             completion()
         }
-        let sequence = SKAction.sequence([fadeAction, removeAction])
-
-        for node in scatterNodes {
-            node.run(sequence)
-        }
+        let sequence = SKAction.sequence([fadeAction, cleanup])
+        run(sequence)
     }
 
     func clearImmediate() {
@@ -60,5 +62,6 @@ final class TrailSprayNode: SKNode {
             node.removeFromParent()
         }
         scatterNodes.removeAll()
+        alpha = 1
     }
 }

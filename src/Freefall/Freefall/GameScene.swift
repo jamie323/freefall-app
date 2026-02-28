@@ -23,6 +23,13 @@ final class GameScene: SKScene {
         static let goalPulseHighAlpha: CGFloat = 1.0
         static let goalPulseActionKey = "goalPulse"
         static let sphereOutOfBoundsBuffer: CGFloat = 50
+        static let deathParticleCount = 14
+        static let deathParticleColor = UIColor(red: 0, green: 0.831, blue: 1, alpha: 1)
+        static let deathParticleRadiusRange: ClosedRange<CGFloat> = 3.0...5.0
+        static let deathParticleSpeedRange: ClosedRange<CGFloat> = 120.0...220.0
+        static let deathParticleDurationRange: ClosedRange<TimeInterval> = 0.3...0.5
+        static let deathResetDelay: TimeInterval = 0.35
+        static let deathResetActionKey = "deathReset"
     }
 
     var hapticsEnabled: Bool = true
@@ -278,10 +285,12 @@ final class GameScene: SKScene {
         sceneState = .ready
         lastUpdateTimestamp = 0
         sphereNode?.physicsBody?.isDynamic = false
+        sphereNode?.alpha = 1
         stopSphereMotion()
         if shouldReposition {
-            positionSphere(at: CGPoint(x: size.width * 0.2, y: size.height * 0.5))
+            repositionSphereToLaunchPoint()
         }
+        resetGravityToInitialDirection()
         resetBackgroundPosition(animated: animateBackgroundReset)
     }
 
@@ -298,6 +307,27 @@ final class GameScene: SKScene {
 
     private func positionSphere(at point: CGPoint) {
         sphereNode?.position = point
+    }
+
+    private func repositionSphereToLaunchPoint() {
+        if let definition = levelDefinition {
+            positionSphere(atNormalizedPoint: definition.launchPosition)
+        } else {
+            positionSphere(at: defaultLaunchPoint())
+        }
+    }
+
+    private func resetGravityToInitialDirection() {
+        if let definition = levelDefinition {
+            isGravityDown = definition.initialGravityDown
+        } else {
+            isGravityDown = true
+        }
+        applyGravityDirection()
+    }
+
+    private func defaultLaunchPoint() -> CGPoint {
+        CGPoint(x: size.width * 0.2, y: size.height * 0.5)
     }
 
     private func triggerHapticIfNeeded() {
@@ -383,13 +413,23 @@ final class GameScene: SKScene {
     }
 
     private func clearTrail() {
-        guard let trail = trailNode else { return }
-        trailSprayNode?.clearImmediate()
-        trail.fadeOut(duration: 0.3) { [weak trail] in
-            trail?.removeFromParent()
+        let fadeDuration: TimeInterval = 0.3
+
+        if let spray = trailSprayNode {
+            spray.fadeOutAndClear(duration: fadeDuration) { [weak spray] in
+                spray?.removeFromParent()
+            }
+            trailSprayNode = nil
         }
-        trailNode = nil
-        trailSprayNode = nil
+
+        if let trail = trailNode {
+            let fadeSequence = SKAction.sequence([
+                SKAction.fadeOut(withDuration: fadeDuration),
+                SKAction.removeFromParent()
+            ])
+            trail.run(fadeSequence)
+            trailNode = nil
+        }
     }
 
     private static func makeSphereTexture(diameter: CGFloat) -> SKTexture {

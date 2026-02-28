@@ -33,48 +33,59 @@ extension GameScene: SKPhysicsContactDelegate {
     private func enterDeadState() {
         guard sceneState == .playing else { return }
         sceneState = .dead
+        sphereNode?.physicsBody?.isDynamic = false
         stopSphereMotion()
-        
+
         createDeathParticleBurst()
-        fadOutTrailNodes()
-        
-        let delayAction = SKAction.sequence([
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run { [weak self] in
-                self?.resetScene()
-            }
-        ])
-        run(delayAction)
+        fadeOutTrailNodes()
+        resetBackgroundPosition(animated: true)
+        scheduleDeathReset()
     }
 
     private func createDeathParticleBurst() {
         guard let sphere = sphereNode else { return }
-        
-        let particleCount = 12
-        for _ in 0..<particleCount {
-            let angle = CGFloat.random(in: 0..<(2 * .pi))
-            let speed = CGFloat.random(in: 100...300)
-            let dx = cos(angle) * speed
-            let dy = sin(angle) * speed
-            
-            let particle = SKSpriteNode(color: UIColor(red: 0, green: 0.831, blue: 1, alpha: 1), size: CGSize(width: 4, height: 4))
+
+        for _ in 0..<Constants.deathParticleCount {
+            let radius = CGFloat.random(in: Constants.deathParticleRadiusRange)
+            let diameter = radius * 2
+            let texture = GameScene.makeSphereTexture(diameter: diameter)
+            let particle = SKSpriteNode(texture: texture)
+            particle.size = CGSize(width: diameter, height: diameter)
+            particle.color = Constants.deathParticleColor
+            particle.colorBlendFactor = 1
+            particle.blendMode = .add
             particle.position = sphere.position
             particle.zPosition = 15
             addChild(particle)
-            
-            let moveAction = SKAction.move(by: CGVector(dx: dx * 0.3, dy: dy * 0.3), duration: 0.3)
-            let fadeAction = SKAction.fadeOut(withDuration: 0.3)
+
+            let angle = CGFloat.random(in: 0..<(2 * .pi))
+            let speed = CGFloat.random(in: Constants.deathParticleSpeedRange)
+            let duration = TimeInterval.random(in: Constants.deathParticleDurationRange)
+            let dx = cos(angle) * speed * CGFloat(duration)
+            let dy = sin(angle) * speed * CGFloat(duration)
+
+            let moveAction = SKAction.moveBy(x: dx, y: dy, duration: duration)
+            let fadeAction = SKAction.fadeOut(withDuration: duration)
             let group = SKAction.group([moveAction, fadeAction])
-            let sequence = SKAction.sequence([
-                group,
-                SKAction.run { particle.removeFromParent() }
-            ])
-            particle.run(sequence)
+            particle.run(SKAction.sequence([group, .removeFromParent()]))
         }
     }
 
-    private func fadOutTrailNodes() {
+    private func fadeOutTrailNodes() {
         clearTrail()
+    }
+
+    private func scheduleDeathReset() {
+        removeAction(forKey: Constants.deathResetActionKey)
+        let wait = SKAction.wait(forDuration: Constants.deathResetDelay)
+        let reset = SKAction.run { [weak self] in
+            self?.completeDeathReset()
+        }
+        run(SKAction.sequence([wait, reset]), withKey: Constants.deathResetActionKey)
+    }
+
+    private func completeDeathReset() {
+        enterReadyState(shouldReposition: true, animateBackgroundReset: false)
     }
 
     private func enterCompleteState() {
