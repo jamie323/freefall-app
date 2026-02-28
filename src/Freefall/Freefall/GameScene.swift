@@ -41,6 +41,7 @@ final class GameScene: SKScene {
     private var backgroundNode: SKSpriteNode?
     private var backgroundHomePosition: CGPoint = .zero
     private let backgroundReturnActionKey = "backgroundReturnAction"
+    private var obstacleNodes: [ObstacleNode] = []
 
     private var isGravityDown: Bool = true
     private var launchVelocity: CGVector = CGVector(dx: 150, dy: 0)
@@ -227,6 +228,7 @@ final class GameScene: SKScene {
         createBackgroundIfNeeded()
         createSphereIfNeeded()
         updateBackgroundLayout()
+        clearObstacles()
 
         guard let levelDefinition else {
             enterReadyState(shouldReposition: true, animateBackgroundReset: false)
@@ -237,6 +239,7 @@ final class GameScene: SKScene {
         isGravityDown = levelDefinition.initialGravityDown
         applyGravityDirection()
         positionSphere(atNormalizedPoint: levelDefinition.launchPosition)
+        createObstacles(from: levelDefinition)
         enterReadyState(shouldReposition: false, animateBackgroundReset: false)
     }
 
@@ -270,6 +273,22 @@ final class GameScene: SKScene {
         guard hapticsEnabled else { return }
         hapticGenerator.impactOccurred(intensity: 0.8)
         hapticGenerator.prepare()
+    }
+
+    private func createObstacles(from definition: LevelDefinition) {
+        for obstacle in definition.obstacles {
+            let node = ObstacleNode(obstacle: obstacle, normalizedToScreenSize: size)
+            node.zPosition = 5
+            addChild(node)
+            obstacleNodes.append(node)
+        }
+    }
+
+    private func clearObstacles() {
+        for node in obstacleNodes {
+            node.removeFromParent()
+        }
+        obstacleNodes.removeAll()
     }
 
     private static func makeSphereTexture(diameter: CGFloat) -> SKTexture {
