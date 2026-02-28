@@ -30,7 +30,7 @@ extension GameScene: SKPhysicsContactDelegate {
         enterCompleteState()
     }
 
-    private func enterDeadState() {
+    func enterDeadState() {
         guard sceneState == .playing else { return }
         sceneState = .dead
         sphereNode?.physicsBody?.isDynamic = false
@@ -88,7 +88,7 @@ extension GameScene: SKPhysicsContactDelegate {
         enterReadyState(shouldReposition: true, animateBackgroundReset: false)
     }
 
-    private func enterCompleteState() {
+    func enterCompleteState() {
         guard sceneState == .playing else { return }
         sceneState = .complete
         stopSphereMotion()
@@ -177,6 +177,4 @@ extension GameScene: SKPhysicsContactDelegate {
             particle.run(SKAction.sequence([group, .removeFromParent()]))
         }
     }
-
-    var levelCompleted: (() -> Void)?
 }

@@ -10,7 +10,7 @@ final class GameScene: SKScene {
         case paused
     }
 
-    private enum Constants {
+    enum Constants {
         static let sphereDiameter: CGFloat = 28
         static let gravityMagnitude: CGFloat = 500
         static let backgroundScale: CGFloat = 1.2
@@ -39,7 +39,7 @@ final class GameScene: SKScene {
     private(set) var levelDefinition: LevelDefinition?
     private(set) var worldDefinition: WorldDefinition?
 
-    private(set) var sceneState: SceneState = .ready {
+    var sceneState: SceneState = .ready {
         didSet {
             if sceneState != oldValue {
                 stateDidChange?(sceneState)
@@ -49,13 +49,14 @@ final class GameScene: SKScene {
     }
 
     var stateDidChange: ((SceneState) -> Void)?
+    var levelCompleted: (() -> Void)?
 
-    private var sphereNode: SKSpriteNode?
-    private var backgroundNode: SKSpriteNode?
+    var sphereNode: SKSpriteNode?
+    var backgroundNode: SKSpriteNode?
     private var backgroundHomePosition: CGPoint = .zero
     private let backgroundReturnActionKey = "backgroundReturnAction"
     private var obstacleNodes: [ObstacleNode] = []
-    private var goalNode: SKShapeNode?
+    var goalNode: SKShapeNode?
     private var trailNode: TrailNode?
     private var trailSprayNode: TrailSprayNode?
 
@@ -63,7 +64,7 @@ final class GameScene: SKScene {
     private var launchVelocity: CGVector = CGVector(dx: 150, dy: 0)
     private lazy var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
     private var lastUpdateTimestamp: TimeInterval = 0
-    private var totalFlipsDuringLevel: Int = 0
+    var totalFlipsDuringLevel: Int = 0
 
     init(size: CGSize, gameState: GameState) {
         self.gameState = gameState
@@ -282,7 +283,7 @@ final class GameScene: SKScene {
         return CGPoint(x: clampedX, y: clampedY)
     }
 
-    private func resetBackgroundPosition(animated: Bool) {
+    func resetBackgroundPosition(animated: Bool) {
         guard let background = backgroundNode else { return }
         background.removeAction(forKey: backgroundReturnActionKey)
         if animated {
@@ -315,7 +316,7 @@ final class GameScene: SKScene {
         enterReadyState(shouldReposition: false, animateBackgroundReset: false)
     }
 
-    private func enterReadyState(shouldReposition: Bool, animateBackgroundReset: Bool) {
+    func enterReadyState(shouldReposition: Bool, animateBackgroundReset: Bool) {
         sceneState = .ready
         lastUpdateTimestamp = 0
         sphereNode?.physicsBody?.isDynamic = false
@@ -328,7 +329,7 @@ final class GameScene: SKScene {
         resetBackgroundPosition(animated: animateBackgroundReset)
     }
 
-    private func stopSphereMotion() {
+    func stopSphereMotion() {
         sphereNode?.physicsBody?.velocity = .zero
         sphereNode?.physicsBody?.angularVelocity = 0
     }
@@ -446,7 +447,7 @@ final class GameScene: SKScene {
         spray.spawnScatterAtPosition(sphere.position)
     }
 
-    private func clearTrail() {
+    func clearTrail() {
         let fadeDuration: TimeInterval = 0.3
 
         if let spray = trailSprayNode {
@@ -466,7 +467,7 @@ final class GameScene: SKScene {
         }
     }
 
-    private static func makeSphereTexture(diameter: CGFloat) -> SKTexture {
+    static func makeSphereTexture(diameter: CGFloat) -> SKTexture {
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: diameter, height: diameter))
         let image = renderer.image { context in
             UIColor.white.setFill()

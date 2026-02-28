@@ -2,44 +2,66 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var gameState = GameState()
-    @State private var levelDefinition: LevelDefinition?
-    @State private var worldDefinition: WorldDefinition? = WorldLibrary.world(for: 1)
-    @State private var loadError: String?
-    @State private var hasLoadedLevel = false
+    @State private var isShowingMainMenu = true
+    @State private var isSettingsPresented = false
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
-
-            if let levelDefinition, let worldDefinition {
-                SpriteKitView(level: levelDefinition, world: worldDefinition)
-                    .ignoresSafeArea()
-            } else if let loadError {
-                Text(loadError)
-                    .foregroundStyle(Color.hex("#00D4FF"))
-                    .padding()
+            if isShowingMainMenu {
+                MainMenuView(
+                    onPlay: { isShowingMainMenu = false },
+                    onOpenSettings: { isSettingsPresented = true },
+                    onToggleMusic: handleMusicToggle
+                )
             } else {
-                ProgressView("Loading Freefall…")
-                    .tint(Color.hex("#00D4FF"))
+                WorldSelectPlaceholderView(onBack: { isShowingMainMenu = true })
             }
         }
-        .task {
-            loadInitialLevelIfNeeded()
+        .sheet(isPresented: $isSettingsPresented) {
+            SettingsPlaceholderView()
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.hidden)
+                .presentationBackground(.thinMaterial)
         }
         .environment(gameState)
     }
 
-    @MainActor
-    private func loadInitialLevelIfNeeded() {
-        guard !hasLoadedLevel else { return }
-        hasLoadedLevel = true
+    private func handleMusicToggle() {
+        // Audio routing will be added with the audio engine step.
+    }
+}
 
-        do {
-            let level = try LevelLoader().loadLevel(world: 1, level: 1)
-            levelDefinition = level
-        } catch {
-            loadError = error.localizedDescription
+private struct WorldSelectPlaceholderView: View {
+    var onBack: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Button("← Back", action: onBack)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(Color.hex("#00D4FF"))
+            Spacer()
+            Text("World Select coming soon")
+                .font(.title)
+                .foregroundStyle(.white)
+            Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black.ignoresSafeArea())
+    }
+}
+
+private struct SettingsPlaceholderView: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            Text("SETTINGS")
+                .font(.headline)
+                .foregroundStyle(Color.hex("#00D4FF"))
+            Text("Settings UI arriving in Step 17.")
+                .foregroundStyle(.white.opacity(0.7))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(24)
+        .background(Color.black)
     }
 }
 
