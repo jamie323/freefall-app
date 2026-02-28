@@ -35,7 +35,18 @@ struct ContentView: View {
                         )
                     }
                 case .game(let worldId, let levelId):
-                    GamePlaceholderView(worldId: worldId, levelId: levelId)
+                    if let world = WorldLibrary.world(for: worldId) {
+                        do {
+                            let level = try LevelLoader().loadLevel(world: worldId, level: levelId)
+                            GameView(
+                                world: world,
+                                level: level,
+                                onQuit: popDestination
+                            )
+                        } catch {
+                            GameErrorView(error: error, onDismiss: popDestination)
+                        }
+                    }
                 case .settings:
                     SettingsPlaceholderView()
                 }
@@ -67,20 +78,33 @@ enum AppDestination: Hashable, Codable {
     case settings
 }
 
-private struct GamePlaceholderView: View {
-    let worldId: Int
-    let levelId: Int
+private struct GameErrorView: View {
+    let error: Error
+    let onDismiss: () -> Void
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Game View")
-                .font(.title)
-                .foregroundStyle(.white)
-            Text("World \(worldId) – Level \(levelId)")
+            Text("Error Loading Level")
+                .font(.headline)
+                .foregroundStyle(.red)
+            
+            Text(error.localizedDescription)
+                .font(.body)
                 .foregroundStyle(.white.opacity(0.7))
+                .multilineTextAlignment(.center)
+            
+            Button(action: onDismiss) {
+                Text("Go Back")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(Color.hex("#00D4FF"))
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .border(Color.hex("#00D4FF"), width: 1)
+                    .cornerRadius(8)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
+        .padding(24)
         .background(Color.black.ignoresSafeArea())
     }
 }
