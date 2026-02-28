@@ -20,6 +20,7 @@ reached) |GameView with next level (tap NEXT LEVEL), LevelSelectView (tap back t
 levels)|Modal overlay on GameView|
 |6|SettingsView |Music / SFX / haptics toggles. |MainMenuView (tap gear)
 |MainMenuView (tap back / dismiss) |Sheet |
+|7|IntermissionView|Arcade dodge mode, fires after levels 5+10 of each world.|GameView (auto after level 5/10 complete)|GameView next level (auto on death)|Full screen cover|
 ### 5.2 Per-Screen UI Specification
 #### Screen 1: MainMenuView
 ```
@@ -710,6 +711,27 @@ Step 21: iPad adaptive layout
 → Test game scene scaling on iPad aspect ratios
 → Adjust safe areas, padding, font sizes if needed
 → Requires: All previous steps
+Step 21b: Scoring system
+→ currentLevelScore, worldScores, totalScore in GameState
+→ Points for collectibles (+50), level complete (+200), speed bonus (0-300)
+→ parTime field in LevelDefinition JSON
+→ Score HUD counter in GameScene (top right, always visible)
+→ Score breakdown on LevelCompleteView
+→ Persistent worldScores + totalScore in UserDefaults
+→ Animated score tick-up (SKAction counter)
+→ Requires: Steps 19, 16
+
+Step 21c: IntermissionScene + IntermissionView
+→ IntermissionScene: SKScene, ball fixed Y, obstacles scroll down, left/right dodge
+→ Speed starts 400pt/s, +8% every 3 seconds, uncapped
+→ Score accumulates in real time (speed × 0.1 per frame), ×1.5 at 15s, ×2.0 at 30s
+→ Trigger: GameState.shouldTriggerIntermission(world:level:) — fires after levels 5 + 10
+→ IntermissionView: SwiftUI wrapper, score HUD, timer, no pause/quit
+→ "INTERMISSION" voice drop SFX + dubstep music track
+→ On death: hard music cut, "SURVIVED X SECONDS" screen, auto-advance to next level
+→ Integrate with scoring system: intermission score added to world total
+→ Requires: Steps 21b, 15, 18
+
 Step 22: Polish pass
 → Animations, transitions, particle tuning
 → Performance profiling (60fps target)
@@ -722,6 +744,162 @@ Step 23: App Store preparation
 → Privacy policy URL (required — can be a simple static page)
 → Requires: All previous steps
 ```
+---
+
+### 5.10 Intermission Mode — Full Spec
+
+**What it is:** After every 5 levels (levels 5, 10, 15, 20, 25, 30, 35, 40), the game interrupts with a completely different arcade challenge. It fires automatically — no menu, no skip, no choice. You die → it ends → game continues to next level automatically.
+
+**Trigger logic:**
+```swift
+// In GameState, after marking a level complete:
+func shouldTriggerIntermission(world: Int, level: Int) -> Bool {
+    // Fires after level 5 and level 10 of every world
+    return level == 5 || level == 10
+}
+```
+So intermission fires 8 times total across all 40 levels.
+
+**Transition sequence (entering intermission):**
+1. LevelCompleteView dismisses as normal
+2. Full screen flash to black (0.3s)
+3. Screen is black. Silence for 0.5s.
+4. Voice drop plays: "INTERMISSION" — deep, processed, distorted male voice (see audio spec below)
+5. Beat drops immediately after voice
+6. IntermissionScene loads and gameplay begins instantly
+
+**The IntermissionScene — gameplay spec:**
+- Player is a glowing sphere (same as main game)
+- Camera perspective: ball is centred, screen scrolls DOWNWARD — ball falls into a dark tunnel at high speed
+- Obstacles: rectangular walls protruding from left OR right side of the tunnel — never both simultaneously. Player must dodge left or right.
+- Controls: tap LEFT half of screen = dodge left; tap RIGHT half = dodge right
+- The ball drifts back to centre automatically when not tapping (spring physics)
+- Speed: starts at a comfortable pace, increases every 3 seconds by 8%
+- Speed cap: uncapped — it literally becomes impossible. That's intentional.
+- Obstacles: start sparse (1 per ~400pt), get denser as speed increases
+- Visual: dark tunnel walls, neon edges (world primary colour), motion blur on obstacles at high speed
+- No gravity flip in this mode — pure left/right dodge
+
+**Scoring during intermission:**
+- Score accumulates at rate of: `currentSpeed * 0.1` points per frame
+- Bonus: surviving past 15 seconds = ×1.5 multiplier kicks in
+- Bonus: surviving past 30 seconds = ×2.0 multiplier
+- On death: score is frozen, added to world total score
+
+**Death in intermission:**
+- Same particle burst as main game
+- Screen flash white → fades to black (0.3s)
+- Text appears: "SURVIVED [X] SECONDS" + points earned, white, centred, 0.5s
+- After 1.5s: automatically transition to next level (no tap required)
+
+**IntermissionScene — SpriteKit implementation:**
+```swift
+class IntermissionScene: SKScene {
+    var scrollSpeed: CGFloat = 400  // pts/sec, increases over time
+    var timeAlive: TimeInterval = 0
+    var score: Int = 0
+    
+    // Tunnel: two SKShapeNode walls, left edge and right edge
+    // Ball: centred horizontally, fixed Y position (camera moves, not ball)
+    // Obstacles: spawned above screen, scroll down at scrollSpeed
+    // Camera: SKCameraNode that moves downward at scrollSpeed
+    // OR: spawn obstacles and scroll everything downward, keep ball Y fixed
+    
+    // Recommended approach: keep ball at fixed Y (~30% from bottom)
+    // Move obstacle nodes downward each frame
+    // Ball moves only on X axis (left/right dodge)
+}
+```
+
+**Audio for intermission:**
+- Voice drop: `assets/audio/sfx/intermission-voice.mp3` — "INTERMISSION" spoken deep and distorted
+- Music: `assets/audio/music/intermission/intermission-track.mp3` — heavy dubstep/amen break, ~140bpm
+- Music starts immediately after voice drop (0.5s delay)
+- Music loops for duration of intermission
+- On death: music cuts to silence instantly (no fade — hard cut for impact)
+- After "SURVIVED X SECONDS" screen: silence → then next world's music crossfades in as next level loads
+
+**IntermissionView — SwiftUI wrapper:**
+```
+FULL SCREEN (same as GameView)
+├── SpriteKitView (IntermissionScene)
+├── HUD overlay:
+│   ├── Current score (top centre, large, white)
+│   ├── Timer (top right, monospaced, white, opacity 0.5)
+│   └── Speed indicator (optional — subtle, bottom right)
+└── No pause button. No quit. Intermission cannot be escaped.
+```
+
+**Navigation integration:**
+- GameState gets new property: `isIntermissionActive: Bool`
+- After LevelCompleteView confirms level 5 or 10 complete → set `isIntermissionActive = true`
+- ContentView/GameView detects this → presents IntermissionView as full screen cover
+- On intermission death → `isIntermissionActive = false`, `intermissionScore` saved to GameState
+- Next level loads automatically
+
+---
+
+### 5.11 Points & Scoring System — Full Spec
+
+**Design principle:** Score NEVER goes down. Every action earns points. This creates positive reinforcement only — players always feel rewarded.
+
+**Points sources:**
+
+| Event | Points |
+|---|---|
+| Collecting a collectible | +50 |
+| Completing a level | +200 |
+| Level speed bonus (under par time) | +0 to +300 (linear, based on how far under par) |
+| Intermission survival: per second alive | +`currentSpeed * 0.1` per frame |
+| Intermission bonus (15s survived) | ×1.5 multiplier on intermission score |
+| Intermission bonus (30s survived) | ×2.0 multiplier on intermission score |
+
+**Par time:** Each level JSON gets a `parTime: TimeInterval` field (e.g. 8.0 seconds). If player completes level in under parTime, speed bonus = `(parTime - actualTime) / parTime * 300` clamped to 300 max.
+
+**Score structure in GameState:**
+```swift
+// Per-level score (runtime, resets on death — accumulated across attempts in one session)
+var currentLevelScore: Int = 0
+
+// Per-world score (persisted)
+var worldScores: [Int: Int] = [:]  // worldId → total score
+
+// Total all-time score (persisted) 
+var totalScore: Int = 0
+
+// Intermission score (runtime, saved after intermission ends)
+var lastIntermissionScore: Int = 0
+var lastIntermissionSurvivalTime: TimeInterval = 0
+```
+
+**World Final Score:**
+When player completes all 10 levels of a world (including both intermissions at levels 5 and 10):
+- World score = sum of all level scores + all collectibles collected + both intermission scores
+- Displayed on WorldSelectView card as a number (bottom right of card, small, world primary colour)
+- Can be beaten — player can replay any level or intermission to improve their world score
+
+**Score display:**
+- In-game HUD: running score counter (top right, monospaced font, always visible during gameplay)
+- Starts at 0 each level, ticks up in real time as collectibles are grabbed
+- Does NOT show world total or all-time total during gameplay — only current level score
+- LevelCompleteView: shows level score breakdown (base + collectibles + speed bonus)
+- After intermission death screen: shows intermission score
+- WorldSelectView card: shows world total score (persistent best)
+
+**Score persistence:**
+- `worldScores` and `totalScore` stored in UserDefaults
+- Never decremented — only ever updated if new score > stored score
+- Wait: actually store CUMULATIVE score not best-per-world — it always goes up as you play more
+
+**Score counter animation:**
+- Numbers tick up rapidly when points are awarded (not instant)
+- Collectible collect: +50 animates over 0.3s
+- Level complete base: +200 animates over 0.5s  
+- Speed bonus: ticks up over 1.0s (dramatic)
+- Use `SKAction` sequence with custom counter node in SpriteKit, or SwiftUI `withAnimation` on the HUD number
+
+---
+
 ### 5.9 Tech Constraints (non-negotiable — repeat from context doc)
 - SwiftUI only — no UIKit (except for haptic generators which require UIKit import)
 - SpriteKit for all physics and game rendering
