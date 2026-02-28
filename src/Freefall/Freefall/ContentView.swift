@@ -53,7 +53,7 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $isSettingsPresented) {
-            SettingsPlaceholderView()
+            SettingsView()
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.hidden)
                 .presentationBackground(.thinMaterial)
@@ -106,21 +106,6 @@ private struct GameErrorView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(24)
         .background(Color.black.ignoresSafeArea())
-    }
-}
-
-private struct SettingsPlaceholderView: View {
-    var body: some View {
-        VStack(spacing: 12) {
-            Text("SETTINGS")
-                .font(.headline)
-                .foregroundStyle(Color.hex("#00D4FF"))
-            Text("Settings UI arriving in Step 17.")
-                .foregroundStyle(.white.opacity(0.7))
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(24)
-        .background(Color.black)
     }
 }
 
