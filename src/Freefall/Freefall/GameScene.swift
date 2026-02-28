@@ -17,6 +17,12 @@ final class GameScene: SKScene {
         static let parallaxMultiplier: CGFloat = 0.2
         static let backgroundResetDuration: TimeInterval = 0.3
         static let placeholderBackground = UIColor(red: 0.039, green: 0.039, blue: 0.118, alpha: 1)
+        static let goalStrokeColor = UIColor(red: 0, green: 1, blue: 1, alpha: 1)
+        static let goalPulseDuration: TimeInterval = 0.8
+        static let goalPulseLowAlpha: CGFloat = 0.6
+        static let goalPulseHighAlpha: CGFloat = 1.0
+        static let goalPulseActionKey = "goalPulse"
+        static let sphereOutOfBoundsBuffer: CGFloat = 50
     }
 
     var hapticsEnabled: Bool = true
@@ -85,6 +91,20 @@ final class GameScene: SKScene {
         super.update(currentTime)
         updateBackgroundParallax(currentTime: currentTime)
         updateTrail()
+        checkSphereOutOfBounds()
+    }
+
+    private func checkSphereOutOfBounds() {
+        guard sceneState == .playing,
+              let sphere = sphereNode,
+              size.width > 0,
+              size.height > 0 else { return }
+
+        let buffer = Constants.sphereOutOfBoundsBuffer
+        let extendedFrame = CGRect(x: -buffer, y: -buffer, width: size.width + buffer * 2, height: size.height + buffer * 2)
+        if !extendedFrame.contains(sphere.position) {
+            enterDeadState()
+        }
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -150,6 +170,10 @@ final class GameScene: SKScene {
         physicsBody.allowsRotation = false
         physicsBody.affectedByGravity = true
         physicsBody.isDynamic = false
+        physicsBody.usesPreciseCollisionDetection = true
+        physicsBody.categoryBitMask = PhysicsCategory.sphere
+        physicsBody.collisionBitMask = PhysicsCategory.obstacle | PhysicsCategory.boundary
+        physicsBody.contactTestBitMask = PhysicsCategory.obstacle | PhysicsCategory.goal | PhysicsCategory.boundary
         node.physicsBody = physicsBody
 
         addChild(node)
@@ -306,18 +330,24 @@ final class GameScene: SKScene {
             x: definition.goalPosition.x * size.width,
             y: definition.goalPosition.y * size.height
         )
-        circle.strokeColor = UIColor(red: 0, green: 1, blue: 1, alpha: 1)
+        circle.strokeColor = Constants.goalStrokeColor
         circle.lineWidth = 2
         circle.fillColor = .clear
-        circle.zPosition = 5
+        circle.alpha = Constants.goalPulseHighAlpha
+        circle.zPosition = 6
         
         let physicsBody = SKPhysicsBody(circleOfRadius: definition.goalRadius)
         physicsBody.isDynamic = false
         physicsBody.affectedByGravity = false
-        physicsBody.categoryBitMask = PhysicsCategory.goal.rawValue
+        physicsBody.categoryBitMask = PhysicsCategory.goal
         physicsBody.collisionBitMask = 0
-        physicsBody.contactTestBitMask = PhysicsCategory.sphere.rawValue
+        physicsBody.contactTestBitMask = PhysicsCategory.sphere
         circle.physicsBody = physicsBody
+        
+        let fadeDown = SKAction.fadeAlpha(to: Constants.goalPulseLowAlpha, duration: Constants.goalPulseDuration / 2)
+        let fadeUp = SKAction.fadeAlpha(to: Constants.goalPulseHighAlpha, duration: Constants.goalPulseDuration / 2)
+        let pulseSequence = SKAction.sequence([fadeDown, fadeUp])
+        circle.run(SKAction.repeatForever(pulseSequence), withKey: Constants.goalPulseActionKey)
         
         addChild(circle)
         goalNode = circle

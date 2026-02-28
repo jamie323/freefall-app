@@ -22,30 +22,12 @@ extension GameScene: SKPhysicsContactDelegate {
         }
     }
 
-    override func update(_ currentTime: TimeInterval) {
-        checkSphereOutOfBounds(currentTime: currentTime)
-        updateBackgroundParallax(currentTime: currentTime)
-    }
-
     private func handleSphereObstacleCollision() {
         enterDeadState()
     }
 
     private func handleSphereGoalCollision() {
         enterCompleteState()
-    }
-
-    private func checkSphereOutOfBounds(currentTime: TimeInterval) {
-        guard sceneState == .playing,
-              let sphere = sphereNode else { return }
-
-        let buffer: CGFloat = Constants.sphereDiameter
-        if sphere.position.x < -buffer ||
-           sphere.position.x > size.width + buffer ||
-           sphere.position.y < -buffer ||
-           sphere.position.y > size.height + buffer {
-            enterDeadState()
-        }
     }
 
     private func enterDeadState() {

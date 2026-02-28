@@ -62,9 +62,9 @@ final class ObstacleNode: SKShapeNode {
         physicsBody?.isDynamic = false
         physicsBody?.affectedByGravity = false
         physicsBody?.allowsRotation = false
-        physicsBody?.categoryBitMask = PhysicsCategory.obstacle.rawValue
-        physicsBody?.collisionBitMask = PhysicsCategory.sphere.rawValue
-        physicsBody?.contactTestBitMask = PhysicsCategory.sphere.rawValue
+        physicsBody?.categoryBitMask = PhysicsCategory.obstacle
+        physicsBody?.collisionBitMask = PhysicsCategory.sphere
+        physicsBody?.contactTestBitMask = PhysicsCategory.sphere
     }
 
     private func configureAppearance() {
@@ -80,4 +80,5 @@ struct PhysicsCategory {
     static let sphere: UInt32 = 1 << 0
     static let obstacle: UInt32 = 1 << 1
     static let goal: UInt32 = 1 << 2
+    static let boundary: UInt32 = 1 << 3
 }
