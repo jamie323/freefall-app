@@ -93,58 +93,89 @@ extension GameScene: SKPhysicsContactDelegate {
         sceneState = .complete
         stopSphereMotion()
         
+        if let goal = goalNode {
+            goal.removeAction(forKey: Constants.goalPulseActionKey)
+            performGoalFlash(goal: goal)
+        }
+        
         createGoalCelebrationBurst()
-        goalFlash()
         
         if let sphere = sphereNode {
             let fadeOut = SKAction.fadeOut(withDuration: 0.3)
             sphere.run(fadeOut)
         }
         
+        pauseBackgroundMovement()
+        
         let delayAction = SKAction.sequence([
             SKAction.wait(forDuration: 0.8),
             SKAction.run { [weak self] in
+                self?.emitLevelCompleteMessage()
                 self?.levelCompleted?()
             }
         ])
         run(delayAction)
     }
 
+    private func pauseBackgroundMovement() {
+        backgroundNode?.isPaused = true
+    }
+
+    private func performGoalFlash(goal: SKShapeNode) {
+        let originalColor = goal.strokeColor
+        let white = SKAction.run { goal.strokeColor = .white }
+        let wait1 = SKAction.wait(forDuration: 0.1)
+        let back = SKAction.run { goal.strokeColor = originalColor }
+        let wait2 = SKAction.wait(forDuration: 0.2)
+        let sequence = SKAction.sequence([white, wait1, back, wait2])
+        goal.run(sequence)
+    }
+
+    private func emitLevelCompleteMessage() {
+        guard let definition = levelDefinition else { return }
+        
+        let flipCount = totalFlipsDuringLevel
+        let parFlips = definition.parFlips
+        var word: String
+        
+        let roll = Double.random(in: 0...1)
+        if flipCount <= parFlips {
+            word = roll < 0.75 ? "CLEAN" : "FRESH"
+        } else {
+            if roll < 0.40 {
+                word = "CLEAN"
+            } else if roll < 0.65 {
+                word = "FRESH"
+            } else if roll < 0.85 {
+                word = "DOPE"
+            } else {
+                word = "NICE"
+            }
+        }
+        
+        print("LEVEL COMPLETE - flips: \(flipCount), word: \(word)")
+    }
+
     private func createGoalCelebrationBurst() {
         guard let goalNode = goalNode else { return }
         
-        let particleCount = 16
-        for _ in 0..<particleCount {
+        for _ in 0..<20 {
             let angle = CGFloat.random(in: 0..<(2 * .pi))
-            let speed = CGFloat.random(in: 80...200)
-            let dx = cos(angle) * speed
-            let dy = sin(angle) * speed
+            let speed = CGFloat.random(in: 100...250)
+            let duration: TimeInterval = 0.6
+            let dx = cos(angle) * speed * CGFloat(duration)
+            let dy = sin(angle) * speed * CGFloat(duration)
             
             let particle = SKSpriteNode(color: UIColor(red: 0, green: 1, blue: 1, alpha: 1), size: CGSize(width: 3, height: 3))
             particle.position = goalNode.position
             particle.zPosition = 15
             addChild(particle)
             
-            let moveAction = SKAction.move(by: CGVector(dx: dx * 0.5, dy: dy * 0.5), duration: 0.5)
-            let fadeAction = SKAction.fadeOut(withDuration: 0.5)
+            let moveAction = SKAction.moveBy(x: dx, y: dy, duration: duration)
+            let fadeAction = SKAction.fadeOut(withDuration: duration)
             let group = SKAction.group([moveAction, fadeAction])
-            let sequence = SKAction.sequence([
-                group,
-                SKAction.run { particle.removeFromParent() }
-            ])
-            particle.run(sequence)
+            particle.run(SKAction.sequence([group, .removeFromParent()]))
         }
-    }
-
-    private func goalFlash() {
-        guard let goalNode = goalNode else { return }
-        let originalColor = goalNode.strokeColor
-        let flashSequence = SKAction.sequence([
-            SKAction.run { goalNode.strokeColor = .white },
-            SKAction.wait(forDuration: 0.2),
-            SKAction.run { goalNode.strokeColor = originalColor }
-        ])
-        goalNode.run(flashSequence)
     }
 
     var levelCompleted: (() -> Void)?

@@ -63,6 +63,7 @@ final class GameScene: SKScene {
     private var launchVelocity: CGVector = CGVector(dx: 150, dy: 0)
     private lazy var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
     private var lastUpdateTimestamp: TimeInterval = 0
+    private var totalFlipsDuringLevel: Int = 0
 
     override init(size: CGSize) {
         super.init(size: size)
@@ -139,6 +140,7 @@ final class GameScene: SKScene {
     private func beginPlaying() {
         guard let sphere = sphereNode else { return }
         sceneState = .playing
+        totalFlipsDuringLevel = 0
         sphere.physicsBody?.isDynamic = true
         stopSphereMotion()
         sphere.physicsBody?.velocity = launchVelocity
@@ -148,6 +150,7 @@ final class GameScene: SKScene {
     private func flipGravity() {
         guard sceneState == .playing else { return }
         isGravityDown.toggle()
+        totalFlipsDuringLevel += 1
         applyGravityDirection()
         triggerHapticIfNeeded()
     }
