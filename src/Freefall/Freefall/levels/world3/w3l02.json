@@ -1,0 +1,126 @@
+{
+  "worldId": 3,
+  "levelId": 2,
+  "launchPosition": {
+    "x": 0.08,
+    "y": 0.5
+  },
+  "launchVelocity": {
+    "dx": 172,
+    "dy": 0
+  },
+  "goalPosition": {
+    "x": 0.9,
+    "y": 0.7
+  },
+  "goalRadius": 35,
+  "initialGravityDown": true,
+  "parTime": 10.3,
+  "parFlips": 5,
+  "collectibles": [
+    {
+      "position": {
+        "x": 0.428,
+        "y": 0.494
+      }
+    },
+    {
+      "position": {
+        "x": 0.554,
+        "y": 0.476
+      }
+    },
+    {
+      "position": {
+        "x": 0.781,
+        "y": 0.394
+      }
+    }
+  ],
+  "obstacles": [
+    {
+      "id": "upper-bar",
+      "type": "rect",
+      "position": {
+        "x": 0.5,
+        "y": 0.22174700144554402
+      },
+      "size": {
+        "width": 0.7807692307692307,
+        "height": 0.035
+      },
+      "rotation": 0,
+      "style": "pulsing_glow"
+    },
+    {
+      "id": "lower-bar",
+      "type": "rect",
+      "position": {
+        "x": 0.5,
+        "y": 0.8578641400810615
+      },
+      "size": {
+        "width": 0.7807692307692307,
+        "height": 0.035
+      },
+      "rotation": 0,
+      "style": "pulsing_glow"
+    },
+    {
+      "id": "obs-0",
+      "type": "rect",
+      "position": {
+        "x": 0.317,
+        "y": 0.479
+      },
+      "size": {
+        "width": 0.104,
+        "height": 0.069
+      },
+      "rotation": 15,
+      "style": "pulsing_glow"
+    },
+    {
+      "id": "obs-1",
+      "type": "rect",
+      "position": {
+        "x": 0.725,
+        "y": 0.735
+      },
+      "size": {
+        "width": 0.111,
+        "height": 0.077
+      },
+      "rotation": 30,
+      "style": "pulsing_glow"
+    },
+    {
+      "id": "obs-2",
+      "type": "rect",
+      "position": {
+        "x": 0.463,
+        "y": 0.744
+      },
+      "size": {
+        "width": 0.097,
+        "height": 0.049
+      },
+      "rotation": 45,
+      "style": "pulsing_glow"
+    },
+    {
+      "id": "obs-3",
+      "type": "rect",
+      "position": {
+        "x": 0.487,
+        "y": 0.356
+      },
+      "size": {
+        "width": 0.081,
+        "height": 0.073
+      },
+      "rotation": 45,
+      "style": "pulsing_glow"
+    }
+  ]
+}

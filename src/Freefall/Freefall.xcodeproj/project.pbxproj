@@ -9,17 +9,17 @@
 /* Begin PBXBuildFile section */
 		0965D993EBE2146B2DCD87D0 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82843F82D99C241B92FB2D80 /* AudioManager.swift */; };
 		2B18551487E24A4BBE527869 /* FreefallApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24CEB9593A7474FB7BC0216 /* FreefallApp.swift */; };
+		2FD77A53B2BD9806418953AA /* audio in Resources */ = {isa = PBXBuildFile; fileRef = E01B58E7019F5E1024AC96D5 /* audio */; };
 		339BEBAF094E4662A0B7D18A /* LevelDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 567BF4B9957D4E17AB9F1157 /* LevelDefinition.swift */; };
 		394F0A13884077D640A87860 /* CollectibleNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FA268E3B3522B76E3C573EF /* CollectibleNode.swift */; };
+		3FB961C153744B7F55AD2D2C /* levels in Resources */ = {isa = PBXBuildFile; fileRef = 95E544EBCF856DC908092E0B /* levels */; };
 		43A1B1813B645064B3AEEC79 /* LevelCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEC78C2D3EF9EE127682007 /* LevelCompleteView.swift */; };
 		5256DC7821C337FCBF1AD840 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD11509A94FF37246D8A1F98 /* SettingsView.swift */; };
 		53AB21E61111421B5C593047 /* TrailSprayNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C033A4EB2FBB45C9800F0DA6 /* TrailSprayNode.swift */; };
 		5F3B62B6D7DB4C8EB35D50C0 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6B36F4E64C4BF8A6C085A9 /* Color+Hex.swift */; };
-		7DDF0CA454939B39987CA799 /* audio in Resources */ = {isa = PBXBuildFile; fileRef = EAD2307B1FAB305253AE603F /* audio */; };
 		7EDB9D6CCFAA40F1A144BCA2 /* WorldDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBB39B6242D44B2B87D0A2F /* WorldDefinition.swift */; };
 		833A2C7D5BD940E399A82A73 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82F21A5A911E4F1CAC909875 /* Assets.xcassets */; };
 		8D9570A7F7FF4CB898C7945A /* MainMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0DAC954C6E4BE9B5F0AF7F /* MainMenuView.swift */; };
-		947AD206DD6A42CCAC8373D1 /* levels in Resources */ = {isa = PBXBuildFile; fileRef = 980D633ED63147B1AFA6417D /* levels */; };
 		987F1CB45F1979855EA156F7 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA690AD7DD4CEDC1FB1194A9 /* GameView.swift */; };
 		A339AD5731FC414C90A18914 /* ObstacleNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C970558F754A4D459CBE2E84 /* ObstacleNode.swift */; };
 		A515DCB418378F21C7E81F23 /* IntermissionScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AF17DE9CC71DE6DDDCC4701 /* IntermissionScene.swift */; };
@@ -52,8 +52,8 @@
 		82F21A5A911E4F1CAC909875 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8B6B36F4E64C4BF8A6C085A9 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		8E448FEAC3264F0B90788348 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
+		95E544EBCF856DC908092E0B /* levels */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; name = levels; path = levels; sourceTree = "<group>"; };
 		97EBADA68F20470D9847607E /* GameScenePhysics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScenePhysics.swift; sourceTree = "<group>"; };
-		980D633ED63147B1AFA6417D /* levels */ = {isa = PBXFileReference; lastKnownFileType = folder; name = levels; path = ../../assets/levels; sourceTree = SOURCE_ROOT; };
 		AD11509A94FF37246D8A1F98 /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B0608EF3424CBD2B3CB37C8D /* LevelSelectView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LevelSelectView.swift; sourceTree = "<group>"; };
 		B24CEB9593A7474FB7BC0216 /* FreefallApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreefallApp.swift; sourceTree = "<group>"; };
@@ -61,7 +61,7 @@
 		C033A4EB2FBB45C9800F0DA6 /* TrailSprayNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailSprayNode.swift; sourceTree = "<group>"; };
 		C970558F754A4D459CBE2E84 /* ObstacleNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObstacleNode.swift; sourceTree = "<group>"; };
 		CA690AD7DD4CEDC1FB1194A9 /* GameView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
-		EAD2307B1FAB305253AE603F /* audio */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; name = audio; path = ../../assets/audio; sourceTree = "<group>"; };
+		E01B58E7019F5E1024AC96D5 /* audio */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; name = audio; path = audio; sourceTree = "<group>"; };
 		F8DF075F96AA4E2C9FD968A7 /* SpriteKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteKitView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -117,7 +117,6 @@
 				B619B4D03220A4B8D8078B7C /* TrailNode.swift */,
 				C033A4EB2FBB45C9800F0DA6 /* TrailSprayNode.swift */,
 				82F21A5A911E4F1CAC909875 /* Assets.xcassets */,
-				980D633ED63147B1AFA6417D /* levels */,
 				6D395C2823A24CABB37AB902 /* Info.plist */,
 				46E01F2D8E4D45989B6A1848 /* Preview Content */,
 				82843F82D99C241B92FB2D80 /* AudioManager.swift */,
@@ -129,7 +128,8 @@
 				B0608EF3424CBD2B3CB37C8D /* LevelSelectView.swift */,
 				AD11509A94FF37246D8A1F98 /* SettingsView.swift */,
 				16496DE4C4A473CBDA0C2A9B /* WorldSelectView.swift */,
-				EAD2307B1FAB305253AE603F /* audio */,
+				E01B58E7019F5E1024AC96D5 /* audio */,
+				95E544EBCF856DC908092E0B /* levels */,
 			);
 			path = Freefall;
 			sourceTree = "<group>";
@@ -193,8 +193,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				833A2C7D5BD940E399A82A73 /* Assets.xcassets in Resources */,
-				947AD206DD6A42CCAC8373D1 /* levels in Resources */,
-				7DDF0CA454939B39987CA799 /* audio in Resources */,
+				2FD77A53B2BD9806418953AA /* audio in Resources */,
+				3FB961C153744B7F55AD2D2C /* levels in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

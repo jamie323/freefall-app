@@ -1,0 +1,126 @@
+{
+  "worldId": 4,
+  "levelId": 8,
+  "launchPosition": {
+    "x": 0.08,
+    "y": 0.5
+  },
+  "launchVelocity": {
+    "dx": 197,
+    "dy": 0
+  },
+  "goalPosition": {
+    "x": 0.9,
+    "y": 0.523
+  },
+  "goalRadius": 35,
+  "initialGravityDown": true,
+  "parTime": 13.6,
+  "parFlips": 7,
+  "collectibles": [
+    {
+      "position": {
+        "x": 0.366,
+        "y": 0.547
+      }
+    },
+    {
+      "position": {
+        "x": 0.597,
+        "y": 0.409
+      }
+    },
+    {
+      "position": {
+        "x": 0.776,
+        "y": 0.494
+      }
+    }
+  ],
+  "obstacles": [
+    {
+      "id": "obs-0",
+      "type": "rect",
+      "position": {
+        "x": 0.307,
+        "y": 0.367
+      },
+      "size": {
+        "width": 0.096,
+        "height": 0.07
+      },
+      "rotation": 30,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-1",
+      "type": "rect",
+      "position": {
+        "x": 0.737,
+        "y": 0.691
+      },
+      "size": {
+        "width": 0.127,
+        "height": 0.081
+      },
+      "rotation": 0,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-2",
+      "type": "rect",
+      "position": {
+        "x": 0.554,
+        "y": 0.595
+      },
+      "size": {
+        "width": 0.133,
+        "height": 0.05
+      },
+      "rotation": 15,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-3",
+      "type": "rect",
+      "position": {
+        "x": 0.601,
+        "y": 0.385
+      },
+      "size": {
+        "width": 0.105,
+        "height": 0.049
+      },
+      "rotation": 45,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-4",
+      "type": "rect",
+      "position": {
+        "x": 0.322,
+        "y": 0.594
+      },
+      "size": {
+        "width": 0.084,
+        "height": 0.086
+      },
+      "rotation": 0,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-5",
+      "type": "rect",
+      "position": {
+        "x": 0.412,
+        "y": 0.765
+      },
+      "size": {
+        "width": 0.126,
+        "height": 0.093
+      },
+      "rotation": -15,
+      "style": "abstract"
+    }
+  ]
+}

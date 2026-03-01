@@ -1,0 +1,154 @@
+{
+  "worldId": 4,
+  "levelId": 3,
+  "launchPosition": {
+    "x": 0.08,
+    "y": 0.5
+  },
+  "launchVelocity": {
+    "dx": 189,
+    "dy": 0
+  },
+  "goalPosition": {
+    "x": 0.9,
+    "y": 0.635
+  },
+  "goalRadius": 35,
+  "initialGravityDown": true,
+  "parTime": 12.6,
+  "parFlips": 6,
+  "collectibles": [
+    {
+      "position": {
+        "x": 0.419,
+        "y": 0.661
+      }
+    },
+    {
+      "position": {
+        "x": 0.535,
+        "y": 0.618
+      }
+    },
+    {
+      "position": {
+        "x": 0.739,
+        "y": 0.45
+      }
+    }
+  ],
+  "obstacles": [
+    {
+      "id": "upper-bar",
+      "type": "rect",
+      "position": {
+        "x": 0.5,
+        "y": 0.19636888294845345
+      },
+      "size": {
+        "width": 0.823076923076923,
+        "height": 0.035
+      },
+      "rotation": 0,
+      "style": "abstract"
+    },
+    {
+      "id": "lower-bar",
+      "type": "rect",
+      "position": {
+        "x": 0.5,
+        "y": 0.7879252448290445
+      },
+      "size": {
+        "width": 0.823076923076923,
+        "height": 0.035
+      },
+      "rotation": 0,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-0",
+      "type": "rect",
+      "position": {
+        "x": 0.74,
+        "y": 0.497
+      },
+      "size": {
+        "width": 0.076,
+        "height": 0.072
+      },
+      "rotation": 30,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-1",
+      "type": "rect",
+      "position": {
+        "x": 0.416,
+        "y": 0.26
+      },
+      "size": {
+        "width": 0.14,
+        "height": 0.051
+      },
+      "rotation": -30,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-2",
+      "type": "rect",
+      "position": {
+        "x": 0.258,
+        "y": 0.286
+      },
+      "size": {
+        "width": 0.142,
+        "height": 0.095
+      },
+      "rotation": 0,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-3",
+      "type": "rect",
+      "position": {
+        "x": 0.485,
+        "y": 0.782
+      },
+      "size": {
+        "width": 0.1,
+        "height": 0.081
+      },
+      "rotation": -45,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-4",
+      "type": "rect",
+      "position": {
+        "x": 0.587,
+        "y": 0.52
+      },
+      "size": {
+        "width": 0.149,
+        "height": 0.078
+      },
+      "rotation": 45,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-5",
+      "type": "rect",
+      "position": {
+        "x": 0.739,
+        "y": 0.656
+      },
+      "size": {
+        "width": 0.129,
+        "height": 0.051
+      },
+      "rotation": -15,
+      "style": "abstract"
+    }
+  ]
+}
