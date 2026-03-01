@@ -4,12 +4,15 @@ struct LevelCompleteView: View {
     let world: WorldDefinition
     let level: LevelDefinition
     let completionWord: String
+    let collectiblesCollected: Int
+    let speedBonus: Int
     let onNextLevel: () -> Void
     let onLevels: () -> Void
 
     @State private var showButtons = false
     @State private var scale: CGFloat = 0.5
     @State private var opacity: CGFloat = 0
+    @State private var showScoreDetails = false
 
     private var isLastLevel: Bool {
         level.levelId == 10
@@ -18,6 +21,10 @@ struct LevelCompleteView: View {
     private var isLastLevelOverall: Bool {
         world.id == 4 && level.levelId == 10
     }
+
+    private var baseLevelScore: Int { 200 }
+    private var collectibleScore: Int { collectiblesCollected * 50 }
+    private var totalLevelScore: Int { baseLevelScore + collectibleScore + speedBonus }
 
     var body: some View {
         ZStack {
@@ -47,12 +54,36 @@ struct LevelCompleteView: View {
                             opacity = 1.0
                         }
                         
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            withAnimation(.easeIn(duration: 0.3)) {
+                                showScoreDetails = true
+                            }
+                        }
+                        
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                             withAnimation(.easeIn(duration: 0.3)) {
                                 showButtons = true
                             }
                         }
                     }
+
+                if showScoreDetails {
+                    VStack(spacing: 6) {
+                        Text("LEVEL SCORE")
+                            .font(.system(size: 16, weight: .heavy, design: .monospaced))
+                            .foregroundStyle(world.primaryColor)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Base: +\(baseLevelScore)")
+                            Text("Collectibles: +\(collectiblesCollected)×50")
+                            Text("Speed bonus: +\(speedBonus)")
+                            Text("Total this level: \(totalLevelScore)")
+                        }
+                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(world.primaryColor)
+                    }
+                    .padding(.top, 12)
+                    .transition(.opacity)
+                }
 
                 Spacer()
 
@@ -103,6 +134,8 @@ struct LevelCompleteView: View {
                 obstacles: []
             ),
             completionWord: "CLEAN",
+            collectiblesCollected: 4,
+            speedBonus: 140,
             onNextLevel: {},
             onLevels: {}
         )

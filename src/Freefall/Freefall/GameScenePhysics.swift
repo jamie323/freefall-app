@@ -20,6 +20,12 @@ extension GameScene: SKPhysicsContactDelegate {
            (bodyA.categoryBitMask == PhysicsCategory.goal && bodyB.categoryBitMask == PhysicsCategory.sphere) {
             handleSphereGoalCollision()
         }
+
+        if (bodyA.categoryBitMask == PhysicsCategory.sphere && bodyB.categoryBitMask == PhysicsCategory.collectible) ||
+           (bodyA.categoryBitMask == PhysicsCategory.collectible && bodyB.categoryBitMask == PhysicsCategory.sphere) {
+            let collectibleBody = bodyA.categoryBitMask == PhysicsCategory.collectible ? bodyA : bodyB
+            handleCollectibleContact(with: collectibleBody)
+        }
     }
 
     private func handleSphereObstacleCollision() {
@@ -28,6 +34,26 @@ extension GameScene: SKPhysicsContactDelegate {
 
     private func handleSphereGoalCollision() {
         enterCompleteState()
+    }
+
+    private func handleCollectibleContact(with collectibleBody: SKPhysicsBody) {
+        guard let node = collectibleBody.node as? CollectibleNode else {
+            collectibleBody.node?.removeFromParent()
+            return
+        }
+        collectibleBody.categoryBitMask = 0
+        collectibleBody.contactTestBitMask = 0
+        collectibleBody.collisionBitMask = 0
+        node.physicsBody = nil
+        node.removeAllActions()
+        let fadeOut = SKAction.fadeOut(withDuration: 0.15)
+        let scaleUp = SKAction.scale(to: 1.3, duration: 0.15)
+        let group = SKAction.group([fadeOut, scaleUp])
+        node.run(SKAction.sequence([group, .removeFromParent()]))
+        collectibleNodes.removeAll { $0 === node }
+        collectiblesCollectedThisAttempt += 1
+        gameState.addScore(50)
+        updateScoreLabel(animated: true)
     }
 
     func enterDeadState() {
@@ -91,6 +117,7 @@ extension GameScene: SKPhysicsContactDelegate {
     func enterCompleteState() {
         guard sceneState == .playing else { return }
         sceneState = .complete
+        applyCompletionScoreIfNeeded()
         stopSphereMotion()
         stopBeatTimer()
         

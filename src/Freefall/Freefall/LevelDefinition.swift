@@ -53,8 +53,53 @@ struct LevelDefinition: Codable, Identifiable {
     let goalRadius: CGFloat
     let initialGravityDown: Bool
     let parFlips: Int
+    let parTime: TimeInterval = 10.0
     let obstacles: [ObstacleDefinition]
     let collectibles: [CollectibleDefinition]?
+
+    private enum CodingKeys: String, CodingKey {
+        case worldId
+        case levelId
+        case launchPosition
+        case launchVelocity
+        case goalPosition
+        case goalRadius
+        case initialGravityDown
+        case parFlips
+        case parTime
+        case obstacles
+        case collectibles
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        worldId = try container.decode(Int.self, forKey: .worldId)
+        levelId = try container.decode(Int.self, forKey: .levelId)
+        launchPosition = try container.decode(CGPoint.self, forKey: .launchPosition)
+        launchVelocity = try container.decode(CGVector.self, forKey: .launchVelocity)
+        goalPosition = try container.decode(CGPoint.self, forKey: .goalPosition)
+        goalRadius = try container.decode(CGFloat.self, forKey: .goalRadius)
+        initialGravityDown = try container.decode(Bool.self, forKey: .initialGravityDown)
+        parFlips = try container.decode(Int.self, forKey: .parFlips)
+        obstacles = try container.decode([ObstacleDefinition].self, forKey: .obstacles)
+        collectibles = try container.decodeIfPresent([CollectibleDefinition].self, forKey: .collectibles)
+        parTime = try container.decodeIfPresent(TimeInterval.self, forKey: .parTime) ?? 10.0
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(worldId, forKey: .worldId)
+        try container.encode(levelId, forKey: .levelId)
+        try container.encode(launchPosition, forKey: .launchPosition)
+        try container.encode(launchVelocity, forKey: .launchVelocity)
+        try container.encode(goalPosition, forKey: .goalPosition)
+        try container.encode(goalRadius, forKey: .goalRadius)
+        try container.encode(initialGravityDown, forKey: .initialGravityDown)
+        try container.encode(parFlips, forKey: .parFlips)
+        try container.encode(parTime, forKey: .parTime)
+        try container.encode(obstacles, forKey: .obstacles)
+        try container.encodeIfPresent(collectibles, forKey: .collectibles)
+    }
 }
 
 enum LevelLoaderError: Error, LocalizedError {

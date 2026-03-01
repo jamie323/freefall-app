@@ -1,5 +1,6 @@
 import SpriteKit
 import UIKit
+import SwiftUI
 
 final class GameScene: SKScene {
     enum SceneState: String {
@@ -59,6 +60,13 @@ final class GameScene: SKScene {
     var goalNode: SKShapeNode?
     private var trailNode: TrailNode?
     private var trailSprayNode: TrailSprayNode?
+    private var collectibleNodes: [CollectibleNode] = []
+    private var collectiblesCollectedThisAttempt: Int = 0
+    private var scoreLabel: SKLabelNode?
+    private let scoreLabelPulseKey = "scoreLabelPulse"
+    private var lastDisplayedScore: Int = 0
+    private var levelStartTime: TimeInterval?
+    private var hasAppliedCompletionScore = false
 
     private var isGravityDown: Bool = true
     private var launchVelocity: CGVector = CGVector(dx: 150, dy: 0)
@@ -88,6 +96,8 @@ final class GameScene: SKScene {
         setupPhysicsContactDelegate()
         createBackgroundIfNeeded()
         createSphereIfNeeded()
+        setupScoreLabelIfNeeded()
+        updateScoreLabel(animated: false)
     }
 
     func loadLevel(_ level: LevelDefinition, world: WorldDefinition) {
@@ -95,6 +105,13 @@ final class GameScene: SKScene {
         worldDefinition = world
         gameState.currentWorldId = world.id
         gameState.currentLevelId = level.levelId
+        levelStartTime = nil
+        hasAppliedCompletionScore = false
+        collectiblesCollectedThisAttempt = 0
+        gameState.resetCurrentLevelScore()
+        lastDisplayedScore = 0
+        setupScoreLabelIfNeeded()
+        updateScoreLabel(animated: false)
         configureForCurrentLevelIfPossible()
         
         // Start beat timer
@@ -112,6 +129,7 @@ final class GameScene: SKScene {
         super.didChangeSize(oldSize)
         updateBackgroundLayout()
         configureForCurrentLevelIfPossible()
+        layoutScoreLabel()
     }
 
     override func update(_ currentTime: TimeInterval) {
@@ -178,6 +196,12 @@ final class GameScene: SKScene {
 
     private func beginPlaying() {
         guard let sphere = sphereNode else { return }
+        gameState.resetCurrentLevelScore()
+        collectiblesCollectedThisAttempt = 0
+        lastDisplayedScore = 0
+        updateScoreLabel(animated: false)
+        levelStartTime = CACurrentMediaTime()
+        hasAppliedCompletionScore = false
         sceneState = .playing
         totalFlipsDuringLevel = 0
         sphere.physicsBody?.isDynamic = true
@@ -222,7 +246,7 @@ final class GameScene: SKScene {
         physicsBody.usesPreciseCollisionDetection = true
         physicsBody.categoryBitMask = PhysicsCategory.sphere
         physicsBody.collisionBitMask = PhysicsCategory.obstacle | PhysicsCategory.boundary
-        physicsBody.contactTestBitMask = PhysicsCategory.obstacle | PhysicsCategory.goal | PhysicsCategory.boundary
+        physicsBody.contactTestBitMask = PhysicsCategory.obstacle | PhysicsCategory.goal | PhysicsCategory.boundary | PhysicsCategory.collectible
         node.physicsBody = physicsBody
 
         addChild(node)
@@ -290,6 +314,59 @@ final class GameScene: SKScene {
         return CGPoint(x: clampedX, y: clampedY)
     }
 
+    private func setupScoreLabelIfNeeded() {
+        guard scoreLabel == nil else { return }
+        let label = SKLabelNode(fontNamed: "Menlo")
+        label.fontSize = 16
+        label.fontColor = .white
+        label.alpha = 0.7
+        label.horizontalAlignmentMode = .right
+        label.verticalAlignmentMode = .top
+        label.zPosition = 50
+        label.text = "0"
+        scoreLabel = label
+        addChild(label)
+        layoutScoreLabel()
+    }
+
+    private func layoutScoreLabel() {
+        guard let label = scoreLabel else { return }
+        let padding: CGFloat = 16
+        label.position = CGPoint(x: size.width - padding, y: size.height - padding)
+    }
+
+    private func updateScoreLabel(animated: Bool) {
+        setupScoreLabelIfNeeded()
+        guard let label = scoreLabel else { return }
+        let newScore = gameState.currentLevelScore
+        label.text = "\(newScore)"
+        if animated && newScore > lastDisplayedScore {
+            label.removeAction(forKey: scoreLabelPulseKey)
+            let scaleUp = SKAction.scale(to: 1.3, duration: 0.08)
+            scaleUp.timingMode = .easeOut
+            let scaleDown = SKAction.scale(to: 1.0, duration: 0.12)
+            scaleDown.timingMode = .easeIn
+            let sequence = SKAction.sequence([scaleUp, scaleDown])
+            label.run(sequence, withKey: scoreLabelPulseKey)
+        }
+        lastDisplayedScore = newScore
+    }
+
+    private func applyCompletionScoreIfNeeded() {
+        guard !hasAppliedCompletionScore else { return }
+        hasAppliedCompletionScore = true
+        guard let levelDefinition else { return }
+        let parTime = max(levelDefinition.parTime, 0.1)
+        let elapsed = levelStartTime.map { CACurrentMediaTime() - $0 } ?? parTime
+        let ratio = max(0, min(1, (parTime - elapsed) / parTime))
+        let speedBonus = max(0, Int(ratio * 300))
+        let totalPoints = 200 + speedBonus
+        if totalPoints > 0 {
+            gameState.addScore(totalPoints)
+            updateScoreLabel(animated: true)
+        }
+    }
+
     func resetBackgroundPosition(animated: Bool) {
         guard let background = backgroundNode else { return }
         background.removeAction(forKey: backgroundReturnActionKey)
@@ -308,6 +385,7 @@ final class GameScene: SKScene {
         createSphereIfNeeded()
         updateBackgroundLayout()
         clearObstacles()
+        clearCollectibles()
 
         guard let levelDefinition else {
             enterReadyState(shouldReposition: true, animateBackgroundReset: false)
@@ -320,17 +398,31 @@ final class GameScene: SKScene {
         positionSphere(atNormalizedPoint: levelDefinition.launchPosition)
         createObstacles(from: levelDefinition)
         createGoal(from: levelDefinition)
+        if let worldDefinition {
+            createCollectibles(from: levelDefinition, world: worldDefinition)
+        }
         enterReadyState(shouldReposition: false, animateBackgroundReset: false)
     }
 
     func enterReadyState(shouldReposition: Bool, animateBackgroundReset: Bool) {
         sceneState = .ready
         lastUpdateTimestamp = 0
+        levelStartTime = nil
         sphereNode?.physicsBody?.isDynamic = false
         sphereNode?.alpha = 1
         stopSphereMotion()
         if shouldReposition {
+            gameState.resetCurrentLevelScore()
+            collectiblesCollectedThisAttempt = 0
+            lastDisplayedScore = 0
+            updateScoreLabel(animated: false)
             repositionSphereToLaunchPoint()
+            if let definition = levelDefinition, let world = worldDefinition {
+                createCollectibles(from: definition, world: world)
+            } else {
+                clearCollectibles()
+            }
+            hasAppliedCompletionScore = false
         }
         resetGravityToInitialDirection()
         resetBackgroundPosition(animated: animateBackgroundReset)
@@ -423,6 +515,25 @@ final class GameScene: SKScene {
         
         addChild(circle)
         goalNode = circle
+    }
+
+    private func createCollectibles(from definition: LevelDefinition, world: WorldDefinition) {
+        clearCollectibles()
+        guard let collectibles = definition.collectibles, !collectibles.isEmpty else { return }
+        let worldColor = UIColor(world.primaryColor)
+        for collectible in collectibles {
+            let position = CGPoint(x: collectible.position.x * size.width, y: collectible.position.y * size.height)
+            let node = CollectibleNode(position: position, worldColor: worldColor, id: collectible.id)
+            addChild(node)
+            collectibleNodes.append(node)
+        }
+    }
+
+    private func clearCollectibles() {
+        for node in collectibleNodes {
+            node.removeFromParent()
+        }
+        collectibleNodes.removeAll()
     }
 
     private func createTrail() {

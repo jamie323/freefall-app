@@ -16,6 +16,8 @@ final class GameState {
         static let musicEnabled = "freefall.musicEnabled"
         static let sfxEnabled = "freefall.sfxEnabled"
         static let hapticsEnabled = "freefall.hapticsEnabled"
+        static let worldScores = "freefall.worldScores"
+        static let totalScore = "freefall.totalScore"
     }
 
     private let defaults: UserDefaults
@@ -48,6 +50,27 @@ final class GameState {
         }
     }
 
+    // Runtime (non-persisted)
+    var currentLevelScore: Int = 0
+    var isIntermissionActive: Bool = false
+    var lastIntermissionScore: Int = 0
+    var lastIntermissionSurvivalTime: TimeInterval = 0
+
+    // Persisted totals
+    var worldScores: [Int: Int] {
+        didSet {
+            guard oldValue != worldScores else { return }
+            persistWorldScores()
+        }
+    }
+
+    var totalScore: Int {
+        didSet {
+            guard oldValue != totalScore else { return }
+            defaults.set(totalScore, forKey: DefaultsKeys.totalScore)
+        }
+    }
+
     var currentWorldId: Int?
     var currentLevelId: Int?
     var gameplayState: GameplayState
@@ -58,6 +81,8 @@ final class GameState {
         self.musicEnabled = defaults.object(forKey: DefaultsKeys.musicEnabled) as? Bool ?? true
         self.sfxEnabled = defaults.object(forKey: DefaultsKeys.sfxEnabled) as? Bool ?? true
         self.hapticsEnabled = defaults.object(forKey: DefaultsKeys.hapticsEnabled) as? Bool ?? true
+        self.worldScores = GameState.loadWorldScores(from: defaults)
+        self.totalScore = defaults.object(forKey: DefaultsKeys.totalScore) as? Int ?? 0
         self.currentWorldId = nil
         self.currentLevelId = nil
         self.gameplayState = .ready
@@ -94,6 +119,27 @@ final class GameState {
 
     func resetProgress() {
         completedLevels.removeAll()
+        currentLevelScore = 0
+        worldScores = [:]
+        totalScore = 0
+        defaults.removeObject(forKey: DefaultsKeys.worldScores)
+        defaults.removeObject(forKey: DefaultsKeys.totalScore)
+    }
+
+    func addScore(_ points: Int) {
+        currentLevelScore += points
+        if let world = currentWorldId {
+            worldScores[world, default: 0] += points
+        }
+        totalScore += points
+    }
+
+    func shouldTriggerIntermission(world: Int, level: Int) -> Bool {
+        level == 5 || level == 10
+    }
+
+    func resetCurrentLevelScore() {
+        currentLevelScore = 0
     }
 
     private func levelKey(world: Int, level: Int) -> String {
@@ -107,11 +153,26 @@ final class GameState {
         }
     }
 
+    private func persistWorldScores() {
+        let encoder = JSONEncoder()
+        if let data = try? encoder.encode(worldScores) {
+            defaults.set(data, forKey: DefaultsKeys.worldScores)
+        }
+    }
+
     private static func loadCompletedLevels(from defaults: UserDefaults) -> Set<String> {
         guard let data = defaults.data(forKey: DefaultsKeys.completedLevels),
               let decoded = try? JSONDecoder().decode([String].self, from: data) else {
             return []
         }
         return Set(decoded)
+    }
+
+    private static func loadWorldScores(from defaults: UserDefaults) -> [Int: Int] {
+        guard let data = defaults.data(forKey: DefaultsKeys.worldScores),
+              let decoded = try? JSONDecoder().decode([Int: Int].self, from: data) else {
+            return [:]
+        }
+        return decoded
     }
 }
