@@ -1,0 +1,140 @@
+{
+  "worldId": 4,
+  "levelId": 10,
+  "launchPosition": {
+    "x": 0.08,
+    "y": 0.5
+  },
+  "launchVelocity": {
+    "dx": 200,
+    "dy": 0
+  },
+  "goalPosition": {
+    "x": 0.9,
+    "y": 0.698
+  },
+  "goalRadius": 35,
+  "initialGravityDown": true,
+  "parTime": 14.0,
+  "parFlips": 8,
+  "collectibles": [
+    {
+      "position": {
+        "x": 0.388,
+        "y": 0.532
+      }
+    },
+    {
+      "position": {
+        "x": 0.625,
+        "y": 0.596
+      }
+    },
+    {
+      "position": {
+        "x": 0.714,
+        "y": 0.664
+      }
+    }
+  ],
+  "obstacles": [
+    {
+      "id": "obs-0",
+      "type": "rect",
+      "position": {
+        "x": 0.512,
+        "y": 0.437
+      },
+      "size": {
+        "width": 0.105,
+        "height": 0.067
+      },
+      "rotation": 15,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-1",
+      "type": "rect",
+      "position": {
+        "x": 0.64,
+        "y": 0.246
+      },
+      "size": {
+        "width": 0.131,
+        "height": 0.077
+      },
+      "rotation": -15,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-2",
+      "type": "rect",
+      "position": {
+        "x": 0.703,
+        "y": 0.41
+      },
+      "size": {
+        "width": 0.138,
+        "height": 0.091
+      },
+      "rotation": 45,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-3",
+      "type": "rect",
+      "position": {
+        "x": 0.324,
+        "y": 0.262
+      },
+      "size": {
+        "width": 0.1,
+        "height": 0.059
+      },
+      "rotation": -15,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-4",
+      "type": "rect",
+      "position": {
+        "x": 0.63,
+        "y": 0.593
+      },
+      "size": {
+        "width": 0.094,
+        "height": 0.089
+      },
+      "rotation": -30,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-5",
+      "type": "rect",
+      "position": {
+        "x": 0.287,
+        "y": 0.477
+      },
+      "size": {
+        "width": 0.083,
+        "height": 0.068
+      },
+      "rotation": 15,
+      "style": "abstract"
+    },
+    {
+      "id": "obs-6",
+      "type": "rect",
+      "position": {
+        "x": 0.288,
+        "y": 0.719
+      },
+      "size": {
+        "width": 0.148,
+        "height": 0.081
+      },
+      "rotation": 30,
+      "style": "abstract"
+    }
+  ]
+}

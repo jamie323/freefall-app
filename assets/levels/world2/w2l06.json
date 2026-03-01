@@ -1,0 +1,84 @@
+{
+  "worldId": 2,
+  "levelId": 6,
+  "launchPosition": {
+    "x": 0.08,
+    "y": 0.5
+  },
+  "launchVelocity": {
+    "dx": 163,
+    "dy": 0
+  },
+  "goalPosition": {
+    "x": 0.9,
+    "y": 0.301
+  },
+  "goalRadius": 35,
+  "initialGravityDown": true,
+  "parTime": 9.1,
+  "parFlips": 4,
+  "collectibles": [
+    {
+      "position": {
+        "x": 0.376,
+        "y": 0.495
+      }
+    },
+    {
+      "position": {
+        "x": 0.621,
+        "y": 0.638
+      }
+    },
+    {
+      "position": {
+        "x": 0.719,
+        "y": 0.469
+      }
+    }
+  ],
+  "obstacles": [
+    {
+      "id": "obs-0",
+      "type": "rect",
+      "position": {
+        "x": 0.744,
+        "y": 0.592
+      },
+      "size": {
+        "width": 0.056,
+        "height": 0.079
+      },
+      "rotation": 15,
+      "style": "texture_fill"
+    },
+    {
+      "id": "obs-1",
+      "type": "rect",
+      "position": {
+        "x": 0.716,
+        "y": 0.262
+      },
+      "size": {
+        "width": 0.126,
+        "height": 0.051
+      },
+      "rotation": 0,
+      "style": "texture_fill"
+    },
+    {
+      "id": "obs-2",
+      "type": "rect",
+      "position": {
+        "x": 0.391,
+        "y": 0.326
+      },
+      "size": {
+        "width": 0.083,
+        "height": 0.072
+      },
+      "rotation": 45,
+      "style": "texture_fill"
+    }
+  ]
+}
