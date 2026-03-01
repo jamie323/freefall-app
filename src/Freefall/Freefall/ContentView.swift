@@ -4,12 +4,14 @@ struct ContentView: View {
     @State private var gameState = GameState()
     @State private var navigationPath = NavigationPath()
     @State private var isSettingsPresented = false
+    @State private var audioManager: AudioManager?
 
     private let worlds = WorldLibrary.allWorlds
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
             MainMenuView(
+                audioManager: audioManager ?? AudioManager(gameState: gameState),
                 onPlay: { navigationPath.append(AppDestination.worldSelect) },
                 onOpenSettings: { isSettingsPresented = true },
                 onToggleMusic: handleMusicToggle
@@ -59,10 +61,19 @@ struct ContentView: View {
                 .presentationBackground(.thinMaterial)
         }
         .environment(gameState)
+        .onAppear {
+            if audioManager == nil {
+                audioManager = AudioManager(gameState: gameState)
+            }
+        }
     }
 
     private func handleMusicToggle() {
-        // Audio routing will be added with the audio engine step.
+        if gameState.musicEnabled {
+            audioManager?.playMenuMusic()
+        } else {
+            audioManager?.stopMusic()
+        }
     }
 
     private func popDestination() {

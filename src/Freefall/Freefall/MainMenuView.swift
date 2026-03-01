@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MainMenuView: View {
     @Environment(GameState.self) private var gameState
+    var audioManager: AudioManager
 
     var onPlay: () -> Void
     var onOpenSettings: () -> Void
@@ -18,6 +19,9 @@ struct MainMenuView: View {
                 Spacer()
 
                 Text("FREEFALL")
+                    .onAppear {
+                        audioManager.playMenuMusic()
+                    }
                     .font(.system(size: 64, weight: .black, design: .default).width(.condensed))
                     .foregroundStyle(cyan)
                     .shadow(color: cyan.opacity(0.8), radius: 20)
@@ -102,6 +106,7 @@ private struct AmbientSphereView: View {
 
 #Preview {
     MainMenuView(
+        audioManager: AudioManager(gameState: GameState()),
         onPlay: {},
         onOpenSettings: {},
         onToggleMusic: {}

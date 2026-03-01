@@ -31,7 +31,17 @@ final class AudioManager {
         guard gameState.musicEnabled else { return }
 
         let track = musicTrack(for: world, level: level)
-        loadAndPlayMusic(track: track)
+        loadAndPlayMusic(named: track, inSubdirectory: "audio/music")
+    }
+
+    func playMenuMusic() {
+        guard gameState.musicEnabled else { return }
+        loadAndPlayMusic(named: "menu-track", inSubdirectory: "audio/music/menu")
+    }
+
+    func playIntermissionMusic() {
+        guard gameState.musicEnabled else { return }
+        loadAndPlayMusic(named: "intermission-track", inSubdirectory: "audio/music/intermission")
     }
 
     private func musicTrack(for world: Int, level: Int) -> String {
@@ -47,13 +57,13 @@ final class AudioManager {
         return "world\(world)-\(suffix)"
     }
 
-    private func loadAndPlayMusic(track: String) {
+    private func loadAndPlayMusic(named: String, inSubdirectory subdirectory: String) {
         guard let url = Bundle.main.url(
-            forResource: track,
+            forResource: named,
             withExtension: "mp3",
-            subdirectory: "audio/music"
+            subdirectory: subdirectory
         ) else {
-            print("Music file not found: \(track)")
+            print("Music file not found: \(named) in \(subdirectory)")
             return
         }
 
