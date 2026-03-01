@@ -337,7 +337,7 @@ const AudioEngine = (() => {
   let currentNodes = null;
 
   async function playMusic(key, fadeCurrent=true) {
-    await ctx.resume();
+    try { await ctx.resume(); } catch(e){}
     const buf = await loadBuffer(key, MUSIC_FILES[key]);
     if (!buf) return;
     if (currentNodes && fadeCurrent) {
@@ -462,9 +462,9 @@ function initLevel(idx) {
 // ─── TRAIL ───────────────────────────────────────────────────────────────────
 function lerpColor(c1, c2, t) {
   const r1=parseInt(c1.slice(1,3),16), g1=parseInt(c1.slice(3,5),16), b1=parseInt(c1.slice(5,7),16);
-  const r2=parseInt(c2.slice(1,3),16), g2=parseInt(c2.slice(3,5),16), b2=parseInt(c2.slice(7,7),16);
-  const r=Math.round(r1+(r2-r1)*t), g=Math.round(g1+(g2-g1)*t), b=Math.round(parseInt(c2.slice(5,7),16)-0+0);
-  return `rgb(${Math.round(r1+(parseInt(c2.slice(1,3),16)-r1)*t)},${Math.round(g1+(parseInt(c2.slice(3,5),16)-g1)*t)},${Math.round(b1+(parseInt(c2.slice(5,7),16)-b1)*t)})`;
+  const r2=parseInt(c2.slice(1,3),16), g2=parseInt(c2.slice(3,5),16), b2=parseInt(c2.slice(5,7),16);
+  const r=Math.round(r1+(r2-r1)*t), g=Math.round(g1+(g2-g1)*t), b=Math.round(b1+(b2-b1)*t);
+  return `rgb(${r},${g},${b})`;
 }
 
 function worldColor(t) {
@@ -538,7 +538,11 @@ function gameLoop(ts) {
         dead = true; break;
       }
     }
-    if (sphere.x < -30 || sphere.x > W+30 || sphere.y < -30 || sphere.y > H+30) dead = true;
+    // Bounce off left/right walls instead of dying
+  if (sphere.x - sphere.r < 0) { sphere.x = sphere.r; sphere.vx = Math.abs(sphere.vx); }
+  if (sphere.x + sphere.r > W) { sphere.x = W - sphere.r; sphere.vx = -Math.abs(sphere.vx); }
+  // Die if exits top/bottom
+  if (sphere.y < -30 || sphere.y > H+30) dead = true;
 
     // Goal check
     const gx = L.goalX * W, gy = L.goalY * H;
@@ -951,7 +955,7 @@ function startLevel(idx) {
   const L = LEVELS[idx];
   const world = WORLDS[L.world - 1];
   const trackKey = L.level <= 5 ? world.musicA : world.musicB;
-  AudioEngine.playMusic(trackKey);
+  AudioEngine.playMusic(trackKey, true);
 
   lastTime = performance.now();
   requestAnimationFrame(ts => { lastTime = ts; gameLoop(ts); });
@@ -974,7 +978,8 @@ function handleTap(e) {
   if (GS.screen === 'game') {
     if (gameState === 'ready') {
       gameState = 'playing';
-      sphere.vy = -200;
+      sphere.vx = 200;
+      sphere.vy = -150;
       levelStartTime = performance.now();
       return;
     }
@@ -1002,11 +1007,9 @@ iCanvas.addEventListener('mouseup', handleTapEnd);
 // ─── INIT ────────────────────────────────────────────────────────────────────
 document.getElementById('play-btn').addEventListener('click', () => {
   AudioEngine.resume();
-  startLevel(0);
+  AudioEngine.playMusic('menu', false);
+  setTimeout(() => startLevel(0), 100);
 });
-
-// Start menu music
-AudioEngine.playMusic('menu');
 </script>
 </body>
 </html>
