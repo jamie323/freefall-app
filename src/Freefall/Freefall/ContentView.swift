@@ -40,11 +40,38 @@ struct ContentView: View {
                     if let world = WorldLibrary.world(for: worldId) {
                         do {
                             let level = try LevelLoader().loadLevel(world: worldId, level: levelId)
-                            GameView(
-                                world: world,
-                                level: level,
-                                onQuit: popDestination
-                            )
+                            ZStack {
+                                GameView(
+                                    world: world,
+                                    level: level,
+                                    onQuit: popDestination
+                                )
+
+                                if gameState.isIntermissionActive {
+                                    IntermissionView(
+                                        audioManager: audioManager ?? AudioManager(gameState: gameState),
+                                        onComplete: { finalScore, time in
+                                            gameState.addScore(finalScore)
+                                            gameState.lastIntermissionScore = finalScore
+                                            gameState.lastIntermissionSurvivalTime = time
+                                            gameState.isIntermissionActive = false
+                                            if gameState.shouldTriggerIntermission(world: worldId, level: levelId + 1) == false {
+                                                navigationPath.append(.levelSelect(worldId: worldId))
+                                            } else {
+                                                do {
+                                                    let nextLevel = try LevelLoader().loadLevel(world: worldId, level: levelId + 1)
+                                                    navigationPath.removeLast()
+                                                    navigationPath.append(.game(worldId: worldId, levelId: levelId + 1))
+                                                } catch {
+                                                    navigationPath.removeLast()
+                                                    navigationPath.append(.levelSelect(worldId: worldId))
+                                                }
+                                            }
+                                        }
+                                    )
+                                    .ignoresSafeArea()
+                                }
+                            }
                         } catch {
                             GameErrorView(error: error, onDismiss: popDestination)
                         }
