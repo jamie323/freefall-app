@@ -5,14 +5,15 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        ZStack {
+        @Bindable var gs = gameState
+        return ZStack {
             Color.black.ignoresSafeArea()
 
             VStack(spacing: 24) {
                 // Header
                 HStack {
                     Text("SETTINGS")
-                        .font(.system(size: 22, weight: .black, design: .condensed))
+                        .font(.system(size: 22, weight: .black, design: .default))
                         .foregroundStyle(Color.hex("#00D4FF"))
 
                     Spacer()
@@ -34,19 +35,19 @@ struct SettingsView: View {
                 VStack(spacing: 16) {
                     SettingsRow(
                         label: "Music",
-                        isOn: $gameState.musicEnabled,
+                        isOn: $gs.musicEnabled,
                         tintColor: Color.hex("#00D4FF")
                     )
 
                     SettingsRow(
                         label: "Sound Effects",
-                        isOn: $gameState.sfxEnabled,
+                        isOn: $gs.sfxEnabled,
                         tintColor: Color.hex("#00D4FF")
                     )
 
                     SettingsRow(
                         label: "Haptics",
-                        isOn: $gameState.hapticsEnabled,
+                        isOn: $gs.hapticsEnabled,
                         tintColor: Color.hex("#00D4FF")
                     )
                 }

@@ -184,11 +184,11 @@ extension GameScene: SKPhysicsContactDelegate {
         print("LEVEL COMPLETE - flips: \(flipCount), word: \(word)")
         
         // Check if should trigger intermission
-        if gameState?.shouldTriggerIntermission(world: world.id, level: definition.levelId) == true {
-            gameState?.isIntermissionActive = true
+        if gameState.shouldTriggerIntermission(world: world.id, level: definition.levelId) == true {
+            gameState.isIntermissionActive = true
         } else {
             // Mark level as completed
-            gameState?.markLevelCompleted(world: world.id, level: definition.levelId)
+            gameState.markLevelCompleted(world: world.id, level: definition.levelId)
         }
     }
 

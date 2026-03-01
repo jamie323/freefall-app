@@ -53,7 +53,7 @@ struct LevelDefinition: Codable, Identifiable {
     let goalRadius: CGFloat
     let initialGravityDown: Bool
     let parFlips: Int
-    let parTime: TimeInterval = 10.0
+    let parTime: TimeInterval
     let obstacles: [ObstacleDefinition]
     let collectibles: [CollectibleDefinition]?
 

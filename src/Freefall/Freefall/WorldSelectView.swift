@@ -85,7 +85,7 @@ private struct WorldCardView: View {
 
                 VStack(alignment: .leading, spacing: 12) {
                     Text(world.name)
-                        .font(.system(size: 28, weight: .black, design: .condensed))
+                        .font(.system(size: 28, weight: .black, design: .default))
                         .foregroundStyle(world.primaryColor)
                         .shadow(color: world.primaryColor.opacity(0.35), radius: 10, x: 0, y: 4)
                         .lineLimit(1)

@@ -7,379 +7,414 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-	2B18551487E24A4BBE527869 /* FreefallApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24CEB9593A7474FB7BC0216 /* FreefallApp.swift */; };
-	EFA79302B6C44109A05DF559 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BCEE07F80847229451D131 /* ContentView.swift */; };
-	833A2C7D5BD940E399A82A73 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82F21A5A911E4F1CAC909875 /* Assets.xcassets */; };
-	947AD206DD6A42CCAC8373D1 /* levels in Resources */ = {isa = PBXBuildFile; fileRef = 980D633ED63147B1AFA6417D /* levels */; };
-	B25A8958B4574DC0B88C6569 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E448FEAC3264F0B90788348 /* GameState.swift */; };
-	339BEBAF094E4662A0B7D18A /* LevelDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 567BF4B9957D4E17AB9F1157 /* LevelDefinition.swift */; };
-	E9431C81C94840DE9AD06420 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203C3C37E9DE4929A486E646 /* GameScene.swift */; };
-	A339AD5731FC414C90A18914 /* ObstacleNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C970558F754A4D459CBE2E84 /* ObstacleNode.swift */; };
-	C700CFD9A6A24B8A806D1A71 /* GameScenePhysics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97EBADA68F20470D9847607E /* GameScenePhysics.swift */; };
-	AA3895BD213A4071BBD96942 /* TrailNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B619B4D03220A4B8D8078B7C /* TrailNode.swift */; };
-	53AB21E61111421B5C593047 /* TrailSprayNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C033A4EB2FBB45C9800F0DA6 /* TrailSprayNode.swift */; };
-	5F3B62B6D7DB4C8EB35D50C0 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6B36F4E64C4BF8A6C085A9 /* Color+Hex.swift */; };
-	8D9570A7F7FF4CB898C7945A /* MainMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0DAC954C6E4BE9B5F0AF7F /* MainMenuView.swift */; };
-	A7D905F5225B4DD68D7054F3 /* SpriteKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8DF075F96AA4E2C9FD968A7 /* SpriteKitView.swift */; };
-	7EDB9D6CCFAA40F1A144BCA2 /* WorldDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBB39B6242D44B2B87D0A2F /* WorldDefinition.swift */; };
+		0965D993EBE2146B2DCD87D0 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82843F82D99C241B92FB2D80 /* AudioManager.swift */; };
+		2B18551487E24A4BBE527869 /* FreefallApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24CEB9593A7474FB7BC0216 /* FreefallApp.swift */; };
+		339BEBAF094E4662A0B7D18A /* LevelDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 567BF4B9957D4E17AB9F1157 /* LevelDefinition.swift */; };
+		394F0A13884077D640A87860 /* CollectibleNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FA268E3B3522B76E3C573EF /* CollectibleNode.swift */; };
+		43A1B1813B645064B3AEEC79 /* LevelCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEC78C2D3EF9EE127682007 /* LevelCompleteView.swift */; };
+		5256DC7821C337FCBF1AD840 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD11509A94FF37246D8A1F98 /* SettingsView.swift */; };
+		53AB21E61111421B5C593047 /* TrailSprayNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C033A4EB2FBB45C9800F0DA6 /* TrailSprayNode.swift */; };
+		5F3B62B6D7DB4C8EB35D50C0 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6B36F4E64C4BF8A6C085A9 /* Color+Hex.swift */; };
+		7EDB9D6CCFAA40F1A144BCA2 /* WorldDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBB39B6242D44B2B87D0A2F /* WorldDefinition.swift */; };
+		833A2C7D5BD940E399A82A73 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82F21A5A911E4F1CAC909875 /* Assets.xcassets */; };
+		8D9570A7F7FF4CB898C7945A /* MainMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0DAC954C6E4BE9B5F0AF7F /* MainMenuView.swift */; };
+		947AD206DD6A42CCAC8373D1 /* levels in Resources */ = {isa = PBXBuildFile; fileRef = 980D633ED63147B1AFA6417D /* levels */; };
+		987F1CB45F1979855EA156F7 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA690AD7DD4CEDC1FB1194A9 /* GameView.swift */; };
+		A339AD5731FC414C90A18914 /* ObstacleNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C970558F754A4D459CBE2E84 /* ObstacleNode.swift */; };
+		A515DCB418378F21C7E81F23 /* IntermissionScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AF17DE9CC71DE6DDDCC4701 /* IntermissionScene.swift */; };
+		A7D905F5225B4DD68D7054F3 /* SpriteKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8DF075F96AA4E2C9FD968A7 /* SpriteKitView.swift */; };
+		A9ED19748D4F7DAE18BAA294 /* IntermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241AF79664C3A867C247A268 /* IntermissionView.swift */; };
+		AA3895BD213A4071BBD96942 /* TrailNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B619B4D03220A4B8D8078B7C /* TrailNode.swift */; };
+		B25A8958B4574DC0B88C6569 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E448FEAC3264F0B90788348 /* GameState.swift */; };
+		C700CFD9A6A24B8A806D1A71 /* GameScenePhysics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97EBADA68F20470D9847607E /* GameScenePhysics.swift */; };
+		C90DB0B55C33EBB168225FC4 /* LevelSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0608EF3424CBD2B3CB37C8D /* LevelSelectView.swift */; };
+		E9431C81C94840DE9AD06420 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203C3C37E9DE4929A486E646 /* GameScene.swift */; };
+		EAD2E45B6F59ABAD106E31F1 /* WorldSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16496DE4C4A473CBDA0C2A9B /* WorldSelectView.swift */; };
+		EFA79302B6C44109A05DF559 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BCEE07F80847229451D131 /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-	1ACF75CA18E44AF2BC3BDA3D /* Freefall.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Freefall.app; sourceTree = BUILT_PRODUCTS_DIR; };
-	14BCEE07F80847229451D131 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-	82F21A5A911E4F1CAC909875 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-	8E448FEAC3264F0B90788348 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
-	567BF4B9957D4E17AB9F1157 /* LevelDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelDefinition.swift; sourceTree = "<group>"; };
-	203C3C37E9DE4929A486E646 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
-	C970558F754A4D459CBE2E84 /* ObstacleNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObstacleNode.swift; sourceTree = "<group>"; };
-	97EBADA68F20470D9847607E /* GameScenePhysics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScenePhysics.swift; sourceTree = "<group>"; };
-	B619B4D03220A4B8D8078B7C /* TrailNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailNode.swift; sourceTree = "<group>"; };
-	C033A4EB2FBB45C9800F0DA6 /* TrailSprayNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailSprayNode.swift; sourceTree = "<group>"; };
-	980D633ED63147B1AFA6417D /* levels */ = {isa = PBXFileReference; lastKnownFileType = folder; name = levels; path = ../../assets/levels; sourceTree = SOURCE_ROOT; };
-	16BE048671424E7BAA091F68 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-	6D395C2823A24CABB37AB902 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-	B24CEB9593A7474FB7BC0216 /* FreefallApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreefallApp.swift; sourceTree = "<group>"; };
-	8B6B36F4E64C4BF8A6C085A9 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
-	0F0DAC954C6E4BE9B5F0AF7F /* MainMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuView.swift; sourceTree = "<group>"; };
-	F8DF075F96AA4E2C9FD968A7 /* SpriteKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteKitView.swift; sourceTree = "<group>"; };
-	7CBB39B6242D44B2B87D0A2F /* WorldDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldDefinition.swift; sourceTree = "<group>"; };
+		0F0DAC954C6E4BE9B5F0AF7F /* MainMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuView.swift; sourceTree = "<group>"; };
+		14BCEE07F80847229451D131 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		16496DE4C4A473CBDA0C2A9B /* WorldSelectView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorldSelectView.swift; sourceTree = "<group>"; };
+		16BE048671424E7BAA091F68 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		1ACF75CA18E44AF2BC3BDA3D /* Freefall.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Freefall.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1FA268E3B3522B76E3C573EF /* CollectibleNode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CollectibleNode.swift; sourceTree = "<group>"; };
+		203C3C37E9DE4929A486E646 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
+		241AF79664C3A867C247A268 /* IntermissionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IntermissionView.swift; sourceTree = "<group>"; };
+		3AF17DE9CC71DE6DDDCC4701 /* IntermissionScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IntermissionScene.swift; sourceTree = "<group>"; };
+		567BF4B9957D4E17AB9F1157 /* LevelDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelDefinition.swift; sourceTree = "<group>"; };
+		5FEC78C2D3EF9EE127682007 /* LevelCompleteView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LevelCompleteView.swift; sourceTree = "<group>"; };
+		6D395C2823A24CABB37AB902 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7CBB39B6242D44B2B87D0A2F /* WorldDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldDefinition.swift; sourceTree = "<group>"; };
+		82843F82D99C241B92FB2D80 /* AudioManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		82F21A5A911E4F1CAC909875 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8B6B36F4E64C4BF8A6C085A9 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
+		8E448FEAC3264F0B90788348 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
+		97EBADA68F20470D9847607E /* GameScenePhysics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScenePhysics.swift; sourceTree = "<group>"; };
+		980D633ED63147B1AFA6417D /* levels */ = {isa = PBXFileReference; lastKnownFileType = folder; name = levels; path = ../../assets/levels; sourceTree = SOURCE_ROOT; };
+		AD11509A94FF37246D8A1F98 /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B0608EF3424CBD2B3CB37C8D /* LevelSelectView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LevelSelectView.swift; sourceTree = "<group>"; };
+		B24CEB9593A7474FB7BC0216 /* FreefallApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreefallApp.swift; sourceTree = "<group>"; };
+		B619B4D03220A4B8D8078B7C /* TrailNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailNode.swift; sourceTree = "<group>"; };
+		C033A4EB2FBB45C9800F0DA6 /* TrailSprayNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailSprayNode.swift; sourceTree = "<group>"; };
+		C970558F754A4D459CBE2E84 /* ObstacleNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObstacleNode.swift; sourceTree = "<group>"; };
+		CA690AD7DD4CEDC1FB1194A9 /* GameView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
+		F8DF075F96AA4E2C9FD968A7 /* SpriteKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteKitView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-	ADFBA8F82A7640F79D039392 /* Frameworks */ = {
-		isa = PBXFrameworksBuildPhase;
-		buildActionMask = 2147483647;
-		files = (
-		);
-		runOnlyForDeploymentPostprocessing = 0;
-	};
+		ADFBA8F82A7640F79D039392 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-	52549A932F7D4257861CC2C7 = {
-		isa = PBXGroup;
-		children = (
-			81B5B744B9884E9E852FAE27 /* Freefall */,
-			6D0A71546BD14F77987DC053 /* Products */,
-		);
-		sourceTree = "<group>";
-	};
-	81B5B744B9884E9E852FAE27 /* Freefall */ = {
-		isa = PBXGroup;
-		children = (
-			B24CEB9593A7474FB7BC0216 /* FreefallApp.swift */,
-			14BCEE07F80847229451D131 /* ContentView.swift */,
-			0F0DAC954C6E4BE9B5F0AF7F /* MainMenuView.swift */,
-			8E448FEAC3264F0B90788348 /* GameState.swift */,
-			567BF4B9957D4E17AB9F1157 /* LevelDefinition.swift */,
-			7CBB39B6242D44B2B87D0A2F /* WorldDefinition.swift */,
-			203C3C37E9DE4929A486E646 /* GameScene.swift */,
-			F8DF075F96AA4E2C9FD968A7 /* SpriteKitView.swift */,
-			8B6B36F4E64C4BF8A6C085A9 /* Color+Hex.swift */,
-			C970558F754A4D459CBE2E84 /* ObstacleNode.swift */,
-			97EBADA68F20470D9847607E /* GameScenePhysics.swift */,
-			B619B4D03220A4B8D8078B7C /* TrailNode.swift */,
-			C033A4EB2FBB45C9800F0DA6 /* TrailSprayNode.swift */,
-			82F21A5A911E4F1CAC909875 /* Assets.xcassets */,
-			980D633ED63147B1AFA6417D /* levels */,
-			6D395C2823A24CABB37AB902 /* Info.plist */,
-			46E01F2D8E4D45989B6A1848 /* Preview Content */,
-		);
-		path = Freefall;
-		sourceTree = "<group>";
-	};
-	46E01F2D8E4D45989B6A1848 /* Preview Content */ = {
-		isa = PBXGroup;
-		children = (
-			16BE048671424E7BAA091F68 /* Preview Assets.xcassets */,
-		);
-		path = "Preview Content";
-		sourceTree = "<group>";
-	};
-	6D0A71546BD14F77987DC053 /* Products */ = {
-		isa = PBXGroup;
-		children = (
-			1ACF75CA18E44AF2BC3BDA3D /* Freefall.app */,
-		);
-		name = Products;
-		sourceTree = "<group>";
-	};
+		46E01F2D8E4D45989B6A1848 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				16BE048671424E7BAA091F68 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		52549A932F7D4257861CC2C7 = {
+			isa = PBXGroup;
+			children = (
+				81B5B744B9884E9E852FAE27 /* Freefall */,
+				6D0A71546BD14F77987DC053 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6D0A71546BD14F77987DC053 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1ACF75CA18E44AF2BC3BDA3D /* Freefall.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		81B5B744B9884E9E852FAE27 /* Freefall */ = {
+			isa = PBXGroup;
+			children = (
+				B24CEB9593A7474FB7BC0216 /* FreefallApp.swift */,
+				14BCEE07F80847229451D131 /* ContentView.swift */,
+				0F0DAC954C6E4BE9B5F0AF7F /* MainMenuView.swift */,
+				8E448FEAC3264F0B90788348 /* GameState.swift */,
+				567BF4B9957D4E17AB9F1157 /* LevelDefinition.swift */,
+				7CBB39B6242D44B2B87D0A2F /* WorldDefinition.swift */,
+				203C3C37E9DE4929A486E646 /* GameScene.swift */,
+				F8DF075F96AA4E2C9FD968A7 /* SpriteKitView.swift */,
+				8B6B36F4E64C4BF8A6C085A9 /* Color+Hex.swift */,
+				C970558F754A4D459CBE2E84 /* ObstacleNode.swift */,
+				97EBADA68F20470D9847607E /* GameScenePhysics.swift */,
+				B619B4D03220A4B8D8078B7C /* TrailNode.swift */,
+				C033A4EB2FBB45C9800F0DA6 /* TrailSprayNode.swift */,
+				82F21A5A911E4F1CAC909875 /* Assets.xcassets */,
+				980D633ED63147B1AFA6417D /* levels */,
+				6D395C2823A24CABB37AB902 /* Info.plist */,
+				46E01F2D8E4D45989B6A1848 /* Preview Content */,
+				82843F82D99C241B92FB2D80 /* AudioManager.swift */,
+				1FA268E3B3522B76E3C573EF /* CollectibleNode.swift */,
+				3AF17DE9CC71DE6DDDCC4701 /* IntermissionScene.swift */,
+				241AF79664C3A867C247A268 /* IntermissionView.swift */,
+				CA690AD7DD4CEDC1FB1194A9 /* GameView.swift */,
+				5FEC78C2D3EF9EE127682007 /* LevelCompleteView.swift */,
+				B0608EF3424CBD2B3CB37C8D /* LevelSelectView.swift */,
+				AD11509A94FF37246D8A1F98 /* SettingsView.swift */,
+				16496DE4C4A473CBDA0C2A9B /* WorldSelectView.swift */,
+			);
+			path = Freefall;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-	63DA2CF8F9CB48D8B0C3D9E8 /* Freefall */ = {
-		isa = PBXNativeTarget;
-		buildConfigurationList = D91947BA3A354B008285C6EE /* Build configuration list for PBXNativeTarget "Freefall" */;
-		buildPhases = (
-			BD2B6D76A1EC40F3B5DBB155 /* Sources */,
-			ADFBA8F82A7640F79D039392 /* Frameworks */,
-			28044A622D564D45BB1E6656 /* Resources */,
-		);
-		buildRules = (
-		);
-		dependencies = (
-		);
-		name = Freefall;
-		productName = Freefall;
-		productReference = 1ACF75CA18E44AF2BC3BDA3D /* Freefall.app */;
-		productType = "com.apple.product-type.application";
-	};
+		63DA2CF8F9CB48D8B0C3D9E8 /* Freefall */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D91947BA3A354B008285C6EE /* Build configuration list for PBXNativeTarget "Freefall" */;
+			buildPhases = (
+				BD2B6D76A1EC40F3B5DBB155 /* Sources */,
+				ADFBA8F82A7640F79D039392 /* Frameworks */,
+				28044A622D564D45BB1E6656 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Freefall;
+			productName = Freefall;
+			productReference = 1ACF75CA18E44AF2BC3BDA3D /* Freefall.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-	DB68E9E47A1C4C1D84CE0E5C /* Project object */ = {
-		isa = PBXProject;
-		attributes = {
-			BuildIndependentTargetsInParallel = 1;
-			LastSwiftUpdateCheck = 1500;
-			LastUpgradeCheck = 1500;
-			TargetAttributes = {
-				63DA2CF8F9CB48D8B0C3D9E8 = {
-					CreatedOnToolsVersion = 15.0;
+		DB68E9E47A1C4C1D84CE0E5C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					63DA2CF8F9CB48D8B0C3D9E8 = {
+						CreatedOnToolsVersion = 15.0;
+					};
 				};
 			};
+			buildConfigurationList = A1C4E50EEDCA416DBB3082AF /* Build configuration list for PBXProject "Freefall" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 52549A932F7D4257861CC2C7;
+			productRefGroup = 6D0A71546BD14F77987DC053 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				63DA2CF8F9CB48D8B0C3D9E8 /* Freefall */,
+			);
 		};
-		buildConfigurationList = A1C4E50EEDCA416DBB3082AF /* Build configuration list for PBXProject "Freefall" */;
-		compatibilityVersion = "Xcode 15.0";
-		developmentRegion = en;
-		hasScannedForEncodings = 0;
-		knownRegions = (
-			en,
-			Base,
-		);
-		mainGroup = 52549A932F7D4257861CC2C7;
-		productRefGroup = 6D0A71546BD14F77987DC053 /* Products */;
-		projectDirPath = "";
-		projectRoot = "";
-		targets = (
-			63DA2CF8F9CB48D8B0C3D9E8 /* Freefall */,
-		);
-	};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-	28044A622D564D45BB1E6656 /* Resources */ = {
-		isa = PBXResourcesBuildPhase;
-		buildActionMask = 2147483647;
-		files = (
-			833A2C7D5BD940E399A82A73 /* Assets.xcassets in Resources */,
-			947AD206DD6A42CCAC8373D1 /* levels in Resources */,
-		);
-		runOnlyForDeploymentPostprocessing = 0;
-	};
+		28044A622D564D45BB1E6656 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				833A2C7D5BD940E399A82A73 /* Assets.xcassets in Resources */,
+				947AD206DD6A42CCAC8373D1 /* levels in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-	BD2B6D76A1EC40F3B5DBB155 /* Sources */ = {
-		isa = PBXSourcesBuildPhase;
-		buildActionMask = 2147483647;
-		files = (
-			2B18551487E24A4BBE527869 /* FreefallApp.swift in Sources */,
-			EFA79302B6C44109A05DF559 /* ContentView.swift in Sources */,
-			8D9570A7F7FF4CB898C7945A /* MainMenuView.swift in Sources */,
-			B25A8958B4574DC0B88C6569 /* GameState.swift in Sources */,
-			339BEBAF094E4662A0B7D18A /* LevelDefinition.swift in Sources */,
-			7EDB9D6CCFAA40F1A144BCA2 /* WorldDefinition.swift in Sources */,
-			E9431C81C94840DE9AD06420 /* GameScene.swift in Sources */,
-			A7D905F5225B4DD68D7054F3 /* SpriteKitView.swift in Sources */,
-			5F3B62B6D7DB4C8EB35D50C0 /* Color+Hex.swift in Sources */,
-			A339AD5731FC414C90A18914 /* ObstacleNode.swift in Sources */,
-			C700CFD9A6A24B8A806D1A71 /* GameScenePhysics.swift in Sources */,
-			AA3895BD213A4071BBD96942 /* TrailNode.swift in Sources */,
-			53AB21E61111421B5C593047 /* TrailSprayNode.swift in Sources */,
-		);
-		runOnlyForDeploymentPostprocessing = 0;
-	};
+		BD2B6D76A1EC40F3B5DBB155 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B18551487E24A4BBE527869 /* FreefallApp.swift in Sources */,
+				EFA79302B6C44109A05DF559 /* ContentView.swift in Sources */,
+				8D9570A7F7FF4CB898C7945A /* MainMenuView.swift in Sources */,
+				B25A8958B4574DC0B88C6569 /* GameState.swift in Sources */,
+				339BEBAF094E4662A0B7D18A /* LevelDefinition.swift in Sources */,
+				7EDB9D6CCFAA40F1A144BCA2 /* WorldDefinition.swift in Sources */,
+				E9431C81C94840DE9AD06420 /* GameScene.swift in Sources */,
+				A7D905F5225B4DD68D7054F3 /* SpriteKitView.swift in Sources */,
+				5F3B62B6D7DB4C8EB35D50C0 /* Color+Hex.swift in Sources */,
+				A339AD5731FC414C90A18914 /* ObstacleNode.swift in Sources */,
+				C700CFD9A6A24B8A806D1A71 /* GameScenePhysics.swift in Sources */,
+				AA3895BD213A4071BBD96942 /* TrailNode.swift in Sources */,
+				53AB21E61111421B5C593047 /* TrailSprayNode.swift in Sources */,
+				0965D993EBE2146B2DCD87D0 /* AudioManager.swift in Sources */,
+				394F0A13884077D640A87860 /* CollectibleNode.swift in Sources */,
+				A515DCB418378F21C7E81F23 /* IntermissionScene.swift in Sources */,
+				A9ED19748D4F7DAE18BAA294 /* IntermissionView.swift in Sources */,
+				987F1CB45F1979855EA156F7 /* GameView.swift in Sources */,
+				43A1B1813B645064B3AEEC79 /* LevelCompleteView.swift in Sources */,
+				C90DB0B55C33EBB168225FC4 /* LevelSelectView.swift in Sources */,
+				5256DC7821C337FCBF1AD840 /* SettingsView.swift in Sources */,
+				EAD2E45B6F59ABAD106E31F1 /* WorldSelectView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-	2F350BEEA7834CB8AC1C0320 /* Debug */ = {
-		isa = XCBuildConfiguration;
-		buildSettings = {
-			ALWAYS_SEARCH_USER_PATHS = NO;
-			CLANG_ANALYZER_NONNULL = YES;
-			CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-			CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-			CLANG_ENABLE_MODULES = YES;
-			CLANG_ENABLE_OBJC_ARC = YES;
-			CLANG_ENABLE_OBJC_WEAK = YES;
-			CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-			CLANG_WARN_BOOL_CONVERSION = YES;
-			CLANG_WARN_COMMA = YES;
-			CLANG_WARN_CONSTANT_CONVERSION = YES;
-			CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-			CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-			CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-			CLANG_WARN_EMPTY_BODY = YES;
-			CLANG_WARN_ENUM_CONVERSION = YES;
-			CLANG_WARN_INFINITE_RECURSION = YES;
-			CLANG_WARN_INT_CONVERSION = YES;
-			CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-			CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-			CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-			CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-			CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-			CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-			CLANG_WARN_STRICT_PROTOTYPES = YES;
-			CLANG_WARN_SUSPICIOUS_MOVE = YES;
-			CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-			CODE_SIGN_IDENTITY = "Apple Development";
-			COPY_PHASE_STRIP = NO;
-			DEBUG_INFORMATION_FORMAT = dwarf;
-			ENABLE_STRICT_OBJC_MSGSEND = YES;
-			ENABLE_TESTABILITY = YES;
-			GCC_C_LANGUAGE_STANDARD = gnu17;
-			GCC_DYNAMIC_NO_PIC = NO;
-			GCC_NO_COMMON_BLOCKS = YES;
-			GCC_OPTIMIZATION_LEVEL = 0;
-			GCC_PREPROCESSOR_DEFINITIONS = (
-				"DEBUG=1",
-				"$(inherited)",
-			);
-			GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-			GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-			GCC_WARN_UNDECLARED_SELECTOR = YES;
-			GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-			GCC_WARN_UNUSED_FUNCTION = YES;
-			GCC_WARN_UNUSED_VARIABLE = YES;
-			IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-			MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-			ONLY_ACTIVE_ARCH = YES;
-			SDKROOT = iphoneos;
-			SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-			SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-			TARGETED_DEVICE_FAMILY = "1,2";
+		2F350BEEA7834CB8AC1C0320 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
 		};
-		name = Debug;
-	};
-	2F5E41EDC1264C90B2C811A4 /* Release */ = {
-		isa = XCBuildConfiguration;
-		buildSettings = {
-			ALWAYS_SEARCH_USER_PATHS = NO;
-			CLANG_ANALYZER_NONNULL = YES;
-			CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-			CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-			CLANG_ENABLE_MODULES = YES;
-			CLANG_ENABLE_OBJC_ARC = YES;
-			CLANG_ENABLE_OBJC_WEAK = YES;
-			CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-			CLANG_WARN_BOOL_CONVERSION = YES;
-			CLANG_WARN_COMMA = YES;
-			CLANG_WARN_CONSTANT_CONVERSION = YES;
-			CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-			CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-			CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-			CLANG_WARN_EMPTY_BODY = YES;
-			CLANG_WARN_ENUM_CONVERSION = YES;
-			CLANG_WARN_INFINITE_RECURSION = YES;
-			CLANG_WARN_INT_CONVERSION = YES;
-			CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-			CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-			CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-			CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-			CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-			CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-			CLANG_WARN_STRICT_PROTOTYPES = YES;
-			CLANG_WARN_SUSPICIOUS_MOVE = YES;
-			CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-			CODE_SIGN_IDENTITY = "Apple Development";
-			COPY_PHASE_STRIP = NO;
-			DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-			ENABLE_NS_ASSERTIONS = NO;
-			ENABLE_STRICT_OBJC_MSGSEND = YES;
-			GCC_C_LANGUAGE_STANDARD = gnu17;
-			GCC_NO_COMMON_BLOCKS = YES;
-			GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-			GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-			GCC_WARN_UNDECLARED_SELECTOR = YES;
-			GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-			GCC_WARN_UNUSED_FUNCTION = YES;
-			GCC_WARN_UNUSED_VARIABLE = YES;
-			IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-			MTL_ENABLE_DEBUG_INFO = NO;
-			SDKROOT = iphoneos;
-			SWIFT_COMPILATION_MODE = wholemodule;
-			SWIFT_OPTIMIZATION_LEVEL = "-O";
-			TARGETED_DEVICE_FAMILY = "1,2";
+		2F5E41EDC1264C90B2C811A4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
 		};
-		name = Release;
-	};
-	8F2B0B22030D4C02B52D697A /* Debug */ = {
-		isa = XCBuildConfiguration;
-		buildSettings = {
-			ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-			CODE_SIGN_STYLE = Automatic;
-			CURRENT_PROJECT_VERSION = 1;
-			DEVELOPMENT_TEAM = "";
-			GENERATE_INFOPLIST_FILE = NO;
-			INFOPLIST_FILE = Freefall/Info.plist;
-			IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-			LD_RUNPATH_SEARCH_PATHS = (
-				"$(inherited)",
-				"@executable_path/Frameworks",
-			);
-			MARKETING_VERSION = 1.0;
-			PRODUCT_BUNDLE_IDENTIFIER = com.jamie323.freefall;
-			PRODUCT_NAME = "$(TARGET_NAME)";
-			SWIFT_EMIT_LOC_STRINGS = YES;
-			SWIFT_VERSION = 5.0;
-			TARGETED_DEVICE_FAMILY = "1,2";
-			SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
-			SUPPORTS_MACCATALYST = NO;
-			SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-			VALIDATE_PRODUCT = YES;
+		8F2B0B22030D4C02B52D697A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Freefall/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jamie323.freefall;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Debug;
 		};
-		name = Debug;
-	};
-	AE97A2E224C446AAAE67749F /* Release */ = {
-		isa = XCBuildConfiguration;
-		buildSettings = {
-			ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-			CODE_SIGN_STYLE = Automatic;
-			CURRENT_PROJECT_VERSION = 1;
-			DEVELOPMENT_TEAM = "";
-			GENERATE_INFOPLIST_FILE = NO;
-			INFOPLIST_FILE = Freefall/Info.plist;
-			IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-			LD_RUNPATH_SEARCH_PATHS = (
-				"$(inherited)",
-				"@executable_path/Frameworks",
-			);
-			MARKETING_VERSION = 1.0;
-			PRODUCT_BUNDLE_IDENTIFIER = com.jamie323.freefall;
-			PRODUCT_NAME = "$(TARGET_NAME)";
-			SWIFT_EMIT_LOC_STRINGS = YES;
-			SWIFT_VERSION = 5.0;
-			TARGETED_DEVICE_FAMILY = "1,2";
-			SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
-			SUPPORTS_MACCATALYST = NO;
-			SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+		AE97A2E224C446AAAE67749F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Freefall/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jamie323.freefall;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
 		};
-		name = Release;
-	};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-	A1C4E50EEDCA416DBB3082AF /* Build configuration list for PBXProject "Freefall" */ = {
-		isa = XCConfigurationList;
-		buildConfigurations = (
-			2F350BEEA7834CB8AC1C0320 /* Debug */,
-			2F5E41EDC1264C90B2C811A4 /* Release */,
-		);
-		defaultConfigurationIsVisible = 0;
-		defaultConfigurationName = Release;
-	};
-	D91947BA3A354B008285C6EE /* Build configuration list for PBXNativeTarget "Freefall" */ = {
-		isa = XCConfigurationList;
-		buildConfigurations = (
-			8F2B0B22030D4C02B52D697A /* Debug */,
-			AE97A2E224C446AAAE67749F /* Release */,
-		);
-		defaultConfigurationIsVisible = 0;
-		defaultConfigurationName = Release;
-	};
+		A1C4E50EEDCA416DBB3082AF /* Build configuration list for PBXProject "Freefall" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2F350BEEA7834CB8AC1C0320 /* Debug */,
+				2F5E41EDC1264C90B2C811A4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D91947BA3A354B008285C6EE /* Build configuration list for PBXNativeTarget "Freefall" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8F2B0B22030D4C02B52D697A /* Debug */,
+				AE97A2E224C446AAAE67749F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = DB68E9E47A1C4C1D84CE0E5C /* Project object */;
 }

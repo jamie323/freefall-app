@@ -60,7 +60,7 @@ struct LevelSelectView: View {
             Spacer()
             
             Text(world.name)
-                .font(.system(size: 22, weight: .black, design: .condensed))
+                .font(.system(size: 22, weight: .black, design: .default))
                 .foregroundStyle(world.primaryColor)
             
             Spacer()

@@ -33,7 +33,7 @@ final class GameScene: SKScene {
         static let deathResetActionKey = "deathReset"
     }
 
-    private let gameState: GameState
+    let gameState: GameState
 
     var hapticsEnabled: Bool = true
 
@@ -60,8 +60,8 @@ final class GameScene: SKScene {
     var goalNode: SKShapeNode?
     private var trailNode: TrailNode?
     private var trailSprayNode: TrailSprayNode?
-    private var collectibleNodes: [CollectibleNode] = []
-    private var collectiblesCollectedThisAttempt: Int = 0
+    var collectibleNodes: [CollectibleNode] = []
+    var collectiblesCollectedThisAttempt: Int = 0
     private var scoreLabel: SKLabelNode?
     private let scoreLabelPulseKey = "scoreLabelPulse"
     private var lastDisplayedScore: Int = 0
@@ -335,7 +335,7 @@ final class GameScene: SKScene {
         label.position = CGPoint(x: size.width - padding, y: size.height - padding)
     }
 
-    private func updateScoreLabel(animated: Bool) {
+    func updateScoreLabel(animated: Bool) {
         setupScoreLabelIfNeeded()
         guard let label = scoreLabel else { return }
         let newScore = gameState.currentLevelScore
@@ -352,7 +352,7 @@ final class GameScene: SKScene {
         lastDisplayedScore = newScore
     }
 
-    private func applyCompletionScoreIfNeeded() {
+    func applyCompletionScoreIfNeeded() {
         guard !hasAppliedCompletionScore else { return }
         hasAppliedCompletionScore = true
         guard let levelDefinition else { return }
@@ -607,7 +607,7 @@ final class GameScene: SKScene {
         background.run(brightUp)
     }
     
-    private func stopBeatTimer() {
+    func stopBeatTimer() {
         beatTimer?.invalidate()
         beatTimer = nil
     }

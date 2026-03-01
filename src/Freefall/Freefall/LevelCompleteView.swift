@@ -37,7 +37,7 @@ struct LevelCompleteView: View {
 
                 // Completion word with spring animation
                 Text(completionWord)
-                    .font(.system(size: 80, weight: .black, design: .condensed))
+                    .font(.system(size: 80, weight: .black, design: .default))
                     .foregroundStyle(
                         LinearGradient(
                             colors: [world.primaryColor, .white],
@@ -99,7 +99,7 @@ struct LevelCompleteView: View {
 
                     Button(action: onNextLevel) {
                         Text(isLastLevelOverall ? "YOU'RE DONE 🔥" : (isLastLevel ? "NEXT WORLD →" : "NEXT LEVEL →"))
-                            .font(.system(size: 16, weight: .heavy, design: .condensed))
+                            .font(.system(size: 16, weight: .heavy, design: .default))
                             .foregroundStyle(world.primaryColor)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
@@ -119,25 +119,7 @@ struct LevelCompleteView: View {
 #Preview {
     ZStack {
         Color.black
-
-        LevelCompleteView(
-            world: WorldLibrary.allWorlds[0],
-            level: LevelDefinition(
-                worldId: 1,
-                levelId: 1,
-                launchPosition: CGPoint(x: 0.1, y: 0.5),
-                launchVelocity: CGVector(dx: 150, dy: 0),
-                goalPosition: CGPoint(x: 0.85, y: 0.5),
-                goalRadius: 35,
-                initialGravityDown: true,
-                parFlips: 3,
-                obstacles: []
-            ),
-            completionWord: "CLEAN",
-            collectiblesCollected: 4,
-            speedBonus: 140,
-            onNextLevel: {},
-            onLevels: {}
-        )
+        Text("LevelCompleteView Preview")
+            .foregroundColor(.white)
     }
 }
