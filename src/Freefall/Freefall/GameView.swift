@@ -8,34 +8,30 @@ struct GameView: View {
     let onQuit: () -> Void
 
     var body: some View {
-        ZStack {
-            SpriteKitView(level: level, world: world)
-                .ignoresSafeArea()
-
-            VStack(alignment: .leading) {
-                HStack(spacing: 16) {
-                    // Level number (top left)
-                    Text("L\(level.levelId)")
-                        .font(.system(size: 16, weight: .medium, design: .monospaced))
-                        .foregroundStyle(.white.opacity(0.5))
-                    
-                    Spacer()
-                    
-                    // Pause button (top right)
-                    Button(action: {
-                        // Pause functionality will be added in audio engine step
-                    }) {
-                        Image(systemName: "pause.circle")
-                            .font(.system(size: 24, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.5))
-                    }
-                }
-                .padding(16)
-
-                Spacer()
+        SpriteKitView(level: level, world: world)
+            .ignoresSafeArea()
+            .overlay(alignment: .topLeading) {
+                // Level label — top left corner, decorative only
+                Text("L\(level.levelId)")
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.white.opacity(0.5))
+                    .padding(.leading, 16)
+                    .padding(.top, 16)
+                    .allowsHitTesting(false)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        }
-        .navigationBarBackButtonHidden(true)
+            .overlay(alignment: .topTrailing) {
+                // Pause button — top right corner, interactive
+                Button(action: {
+                    // Pause functionality to be added
+                }) {
+                    Image(systemName: "pause.circle")
+                        .font(.system(size: 24, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.5))
+                        .padding(12)
+                }
+                .padding(.trailing, 4)
+                .padding(.top, 8)
+            }
+            .navigationBarBackButtonHidden(true)
     }
 }

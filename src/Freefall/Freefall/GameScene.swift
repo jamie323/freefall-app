@@ -112,8 +112,10 @@ final class GameScene: SKScene {
         lastDisplayedScore = 0
         setupScoreLabelIfNeeded()
         updateScoreLabel(animated: false)
+        createBackgroundIfNeeded()
+        updateBackgroundTexture(for: world)
         configureForCurrentLevelIfPossible()
-        
+
         // Start beat timer
         let bpm = level.levelId <= 5 ? world.bpmA : world.bpmB
         startBeatTimer(bpm: bpm)
@@ -255,13 +257,28 @@ final class GameScene: SKScene {
 
     private func createBackgroundIfNeeded() {
         guard backgroundNode == nil else { return }
-        let node = SKSpriteNode(color: Constants.placeholderBackground, size: CGSize(width: size.width * Constants.backgroundScale, height: size.height * Constants.backgroundScale))
+        let bgSize = CGSize(
+            width: max(size.width, 1) * Constants.backgroundScale,
+            height: max(size.height, 1) * Constants.backgroundScale
+        )
+        let node = SKSpriteNode(color: Constants.placeholderBackground, size: bgSize)
         node.zPosition = -10
         node.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         node.position = CGPoint(x: size.width / 2, y: size.height / 2)
         addChild(node)
         backgroundNode = node
         backgroundHomePosition = node.position
+    }
+
+    private func updateBackgroundTexture(for world: WorldDefinition) {
+        guard let background = backgroundNode else { return }
+        if let uiImage = UIImage(named: world.backgroundImageName) {
+            let texture = SKTexture(image: uiImage)
+            background.texture = texture
+            background.color = .clear
+            background.colorBlendFactor = 0
+        }
+        // If image not found, keep the solid colour placeholder
     }
 
     private func updateBackgroundLayout() {
