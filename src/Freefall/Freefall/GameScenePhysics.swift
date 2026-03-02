@@ -41,19 +41,78 @@ extension GameScene: SKPhysicsContactDelegate {
             collectibleBody.node?.removeFromParent()
             return
         }
+        // Disable physics immediately
         collectibleBody.categoryBitMask = 0
         collectibleBody.contactTestBitMask = 0
         collectibleBody.collisionBitMask = 0
         node.physicsBody = nil
         node.removeAllActions()
-        let fadeOut = SKAction.fadeOut(withDuration: 0.15)
-        let scaleUp = SKAction.scale(to: 1.3, duration: 0.15)
-        let group = SKAction.group([fadeOut, scaleUp])
-        node.run(SKAction.sequence([group, .removeFromParent()]))
+
+        let collectPos = node.position
+        let worldColor = UIColor(worldDefinition?.primaryColor ?? .cyan)
+
+        // Burst: 10 particles in world colour
+        spawnCollectBurst(at: collectPos, color: worldColor)
+
+        // Ring flash: quick expanding ring
+        let ring = SKShapeNode(circleOfRadius: 8)
+        ring.position = collectPos
+        ring.strokeColor = worldColor
+        ring.fillColor = .clear
+        ring.lineWidth = 2
+        ring.zPosition = 20
+        ring.blendMode = .add
+        addChild(ring)
+        ring.run(SKAction.sequence([
+            SKAction.group([
+                SKAction.scale(to: 3.5, duration: 0.25),
+                SKAction.fadeOut(withDuration: 0.25)
+            ]),
+            .removeFromParent()
+        ]))
+
+        // Remove collectible
+        let pop = SKAction.group([
+            SKAction.scale(to: 2.0, duration: 0.08),
+            SKAction.fadeOut(withDuration: 0.08)
+        ])
+        node.run(SKAction.sequence([pop, .removeFromParent()]))
         collectibleNodes.removeAll { $0 === node }
+
         collectiblesCollectedThisAttempt += 1
         gameState.addScore(50)
         updateScoreLabel(animated: true)
+
+        // Haptic ping
+        if hapticsEnabled {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred(intensity: 0.5)
+        }
+    }
+
+    private func spawnCollectBurst(at position: CGPoint, color: UIColor) {
+        for _ in 0..<10 {
+            let size: CGFloat = CGFloat.random(in: 2...5)
+            let particle = SKSpriteNode(color: color, size: CGSize(width: size, height: size))
+            particle.position = position
+            particle.zPosition = 18
+            particle.blendMode = .add
+            addChild(particle)
+
+            let angle = CGFloat.random(in: 0..<(2 * .pi))
+            let speed = CGFloat.random(in: 60...140)
+            let dur = TimeInterval.random(in: 0.25...0.45)
+            let dx = cos(angle) * speed * CGFloat(dur)
+            let dy = sin(angle) * speed * CGFloat(dur)
+
+            particle.run(SKAction.sequence([
+                SKAction.group([
+                    SKAction.moveBy(x: dx, y: dy, duration: dur),
+                    SKAction.fadeOut(withDuration: dur)
+                ]),
+                .removeFromParent()
+            ]))
+        }
     }
 
     func enterDeadState() {

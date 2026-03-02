@@ -254,10 +254,11 @@ final class GameScene: SKScene {
         totalFlipsDuringLevel += 1
         flipCount += 1
         applyGravityDirection()
-        // On flip: zero vertical + apply small impulse in new direction
-        // Keeps horizontal momentum, gives instant directional feedback
+        // Pendulum feel: carry 30% of existing vertical velocity into the new direction,
+        // then add a small impulse. Gives swing/arc rather than dead stop + restart.
+        let carry = -body.velocity.dy * 0.3   // reverse 30% of current dy
         let impulse = isGravityDown ? -Constants.flipImpulse : Constants.flipImpulse
-        body.velocity = CGVector(dx: body.velocity.dx, dy: impulse)
+        body.velocity = CGVector(dx: body.velocity.dx, dy: carry + impulse)
         triggerHapticIfNeeded()
         print("🔄 FLIP #\(flipCount) — gravity now \(isGravityDown ? "DOWN" : "UP")")
     }
