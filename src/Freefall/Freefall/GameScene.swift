@@ -14,6 +14,8 @@ final class GameScene: SKScene {
     enum Constants {
         static let sphereDiameter: CGFloat = 28
         static let gravityMagnitude: CGFloat = 60
+        static let maxVerticalVelocity: CGFloat = 220   // cap vertical speed
+        static let linearDamping: CGFloat = 0.4          // air resistance
         static let backgroundScale: CGFloat = 1.2
         static let parallaxMultiplier: CGFloat = 0.2
         static let backgroundResetDuration: TimeInterval = 0.3
@@ -141,9 +143,19 @@ final class GameScene: SKScene {
 
     override func update(_ currentTime: TimeInterval) {
         super.update(currentTime)
+        clampSphereVelocity()
         updateBackgroundParallax(currentTime: currentTime)
         updateTrail()
         checkSphereOutOfBounds()
+    }
+
+    private func clampSphereVelocity() {
+        guard let body = sphereNode?.physicsBody, sceneState == .playing else { return }
+        let dy = body.velocity.dy
+        let maxDY = Constants.maxVerticalVelocity
+        if abs(dy) > maxDY {
+            body.velocity = CGVector(dx: body.velocity.dx, dy: dy > 0 ? maxDY : -maxDY)
+        }
     }
 
     private func checkSphereOutOfBounds() {
@@ -229,13 +241,16 @@ final class GameScene: SKScene {
     private(set) var flipCount: Int = 0
 
     private func flipGravity() {
-        guard sceneState == .playing else { return }
+        guard sceneState == .playing, let body = sphereNode?.physicsBody else { return }
         isGravityDown.toggle()
         totalFlipsDuringLevel += 1
         flipCount += 1
         applyGravityDirection()
+        // Bleed vertical velocity on flip — keeps horizontal momentum, kills vertical
+        // so the reversal feels controlled rather than violent
+        body.velocity = CGVector(dx: body.velocity.dx, dy: 0)
         triggerHapticIfNeeded()
-        print("🔄 FLIP #\(flipCount) — gravity now \(isGravityDown ? "DOWN" : "UP") physicsGravity=\(physicsWorld.gravity)")
+        print("🔄 FLIP #\(flipCount) — gravity now \(isGravityDown ? "DOWN" : "UP")")
     }
 
     private func applyGravityDirection() {
@@ -259,7 +274,7 @@ final class GameScene: SKScene {
         physicsBody.mass = 1
         physicsBody.restitution = 0
         physicsBody.friction = 0.1
-        physicsBody.linearDamping = 0.05
+        physicsBody.linearDamping = Constants.linearDamping
         physicsBody.allowsRotation = false
         physicsBody.affectedByGravity = true
         physicsBody.isDynamic = false
