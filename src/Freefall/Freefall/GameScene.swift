@@ -57,6 +57,10 @@ final class GameScene: SKScene {
     var levelCompleted: (() -> Void)?
     var onSizeReady: (() -> Void)?
 
+    // Exposed for GameView to read after completion
+    private(set) var lastCompletionWord: String = "CLEAN"
+    private(set) var lastSpeedBonus: Int = 0
+
     var sphereNode: SKSpriteNode?
     var backgroundNode: SKSpriteNode?
     private var backgroundHomePosition: CGPoint = .zero

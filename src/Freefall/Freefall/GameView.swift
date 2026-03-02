@@ -11,14 +11,16 @@ struct GameView: View {
     @State private var debugLines: [String] = []
     @State private var tapCount = 0
     @State private var debugTimer: Timer?
+    @State private var showLevelComplete = false
+    @State private var completionWord = "CLEAN"
+    @State private var speedBonus = 0
 
     var body: some View {
         ZStack {
             SpriteKitView(level: level, world: world, proxy: proxy)
                 .ignoresSafeArea()
 
-            // Full-screen tap target — Color.clear needs contentShape to receive taps
-            // Use opacity(0.001) as belt-and-braces: guarantees hit testing works
+            // Full-screen tap target
             Color.white.opacity(0.001)
                 .ignoresSafeArea()
                 .onTapGesture {
@@ -46,6 +48,28 @@ struct GameView: View {
             .padding(.trailing, 4)
             .padding(.top, 8)
 
+            // Level complete overlay
+            if showLevelComplete {
+                LevelCompleteView(
+                    world: world,
+                    level: level,
+                    completionWord: completionWord,
+                    collectiblesCollected: proxy.coordinator?.scene.collectiblesCollectedThisAttempt ?? 0,
+                    speedBonus: speedBonus,
+                    onNextLevel: {
+                        showLevelComplete = false
+                        // Navigate to next level or back to level select
+                        onQuit()
+                    },
+                    onLevels: {
+                        showLevelComplete = false
+                        onQuit()
+                    }
+                )
+                .transition(.opacity)
+                .zIndex(100)
+            }
+
             // ── DEBUG OVERLAY ──────────────────────────────────────
             VStack(alignment: .leading, spacing: 2) {
                 ForEach(debugLines, id: \.self) { line in
@@ -64,7 +88,20 @@ struct GameView: View {
             // ── END DEBUG ──────────────────────────────────────────
         }
         .navigationBarBackButtonHidden(true)
-        .onAppear { startDebugTimer() }
+        .onAppear {
+            startDebugTimer()
+            // Wire level complete callback
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                proxy.coordinator?.scene.levelCompleted = { [self] in
+                    guard let scene = proxy.coordinator?.scene else { return }
+                    completionWord = scene.lastCompletionWord
+                    speedBonus = scene.lastSpeedBonus
+                    withAnimation(.easeIn(duration: 0.2)) {
+                        showLevelComplete = true
+                    }
+                }
+            }
+        }
         .onDisappear { debugTimer?.invalidate() }
     }
 
@@ -86,8 +123,8 @@ struct GameView: View {
         let grav = scene.physicsWorld.gravity
         let state = scene.sceneState.rawValue
         let sz = scene.size
-
         let flips = scene.flipCount
+
         debugLines = [
             "TAPS:\(tapCount) FLIPS:\(flips) STATE:\(state)",
             "POS x:\(Int(pos.x)) y:\(Int(pos.y))",

@@ -179,29 +179,119 @@ extension GameScene: SKPhysicsContactDelegate {
         applyCompletionScoreIfNeeded()
         stopSphereMotion()
         stopBeatTimer()
-        
+
+        // Heavy haptic
+        let haptic = UINotificationFeedbackGenerator()
+        haptic.notificationOccurred(.success)
+
+        // Goal flash
         if let goal = goalNode {
             goal.removeAction(forKey: Constants.goalPulseActionKey)
             performGoalFlash(goal: goal)
         }
-        
-        createGoalCelebrationBurst()
-        
+
+        // Sphere flash then fade
         if let sphere = sphereNode {
-            let fadeOut = SKAction.fadeOut(withDuration: 0.3)
-            sphere.run(fadeOut)
+            let worldColor = UIColor(worldDefinition?.primaryColor ?? .cyan)
+            sphere.color = worldColor
+            sphere.colorBlendFactor = 1
+            let flash = SKAction.sequence([
+                SKAction.colorize(with: .white, colorBlendFactor: 1, duration: 0.05),
+                SKAction.colorize(with: worldColor, colorBlendFactor: 1, duration: 0.1),
+                SKAction.fadeOut(withDuration: 0.4)
+            ])
+            sphere.run(flash)
         }
-        
+
+        // Screen flash overlay
+        let flash = SKSpriteNode(color: UIColor(worldDefinition?.primaryColor ?? .cyan).withAlphaComponent(0.4),
+                                 size: size)
+        flash.position = CGPoint(x: size.width/2, y: size.height/2)
+        flash.zPosition = 50
+        flash.blendMode = .add
+        addChild(flash)
+        flash.run(SKAction.sequence([
+            SKAction.fadeOut(withDuration: 0.3),
+            .removeFromParent()
+        ]))
+
+        // Fireworks — 3 waves of bursts
+        let goalPos = goalNode?.position ?? CGPoint(x: size.width/2, y: size.height/2)
+        createFireworksBurst(at: goalPos, delay: 0.0)
+        createFireworksBurst(at: CGPoint(x: goalPos.x - 80, y: goalPos.y + 60), delay: 0.15)
+        createFireworksBurst(at: CGPoint(x: goalPos.x + 80, y: goalPos.y - 40), delay: 0.3)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.3, y: size.height * 0.4), delay: 0.45)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.7, y: size.height * 0.6), delay: 0.6)
+
         pauseBackgroundMovement()
-        
+
+        // Show complete UI after celebration fires
         let delayAction = SKAction.sequence([
-            SKAction.wait(forDuration: 0.8),
+            SKAction.wait(forDuration: 0.9),
             SKAction.run { [weak self] in
                 self?.emitLevelCompleteMessage()
                 self?.levelCompleted?()
             }
         ])
         run(delayAction)
+    }
+
+    private func createFireworksBurst(at position: CGPoint, delay: TimeInterval) {
+        let worldColor = UIColor(worldDefinition?.primaryColor ?? .cyan)
+        let colors: [UIColor] = [worldColor, .white, worldColor.withAlphaComponent(0.7), .cyan]
+
+        run(SKAction.wait(forDuration: delay)) { [weak self] in
+            guard let self else { return }
+
+            // Haptic per burst
+            let haptic = UIImpactFeedbackGenerator(style: .medium)
+            haptic.impactOccurred(intensity: 0.7)
+
+            // Central flash ring
+            let ring = SKShapeNode(circleOfRadius: 6)
+            ring.position = position
+            ring.strokeColor = worldColor
+            ring.fillColor = worldColor.withAlphaComponent(0.3)
+            ring.lineWidth = 3
+            ring.zPosition = 25
+            ring.blendMode = .add
+            self.addChild(ring)
+            ring.run(SKAction.sequence([
+                SKAction.group([
+                    SKAction.scale(to: 6.0, duration: 0.4),
+                    SKAction.fadeOut(withDuration: 0.4)
+                ]),
+                .removeFromParent()
+            ]))
+
+            // Particle shower — 30 particles per burst
+            for i in 0..<30 {
+                let color = colors[i % colors.count]
+                let size: CGFloat = CGFloat.random(in: 3...7)
+                let particle = SKSpriteNode(color: color, size: CGSize(width: size, height: size))
+                particle.position = position
+                particle.zPosition = 22
+                particle.blendMode = .add
+                self.addChild(particle)
+
+                let angle = CGFloat(i) * (2 * .pi / 30) + CGFloat.random(in: -0.2...0.2)
+                let speed = CGFloat.random(in: 120...320)
+                let dur = TimeInterval.random(in: 0.5...0.9)
+                let dx = cos(angle) * speed * CGFloat(dur)
+                let dy = sin(angle) * speed * CGFloat(dur)
+
+                particle.run(SKAction.sequence([
+                    SKAction.group([
+                        SKAction.moveBy(x: dx, y: dy, duration: dur),
+                        SKAction.sequence([
+                            SKAction.wait(forDuration: dur * 0.4),
+                            SKAction.fadeOut(withDuration: dur * 0.6)
+                        ])
+                    ]),
+                    .removeFromParent()
+                ]))
+            }
+        }
     }
 
     private func pauseBackgroundMovement() {
@@ -240,8 +330,19 @@ extension GameScene: SKPhysicsContactDelegate {
             }
         }
         
-        print("LEVEL COMPLETE - flips: \(flipCount), word: \(word)")
-        
+        lastCompletionWord = word
+        // Speed bonus: based on time vs par
+        if let startTime = levelStartTime, let parTime = levelDefinition?.parTime {
+            let elapsed = CACurrentMediaTime() - startTime
+            if elapsed < parTime {
+                let ratio = max(0, 1.0 - elapsed / parTime)
+                lastSpeedBonus = Int(ratio * 300)
+            } else {
+                lastSpeedBonus = 0
+            }
+        }
+        print("LEVEL COMPLETE - flips: \(flipCount), word: \(word), speedBonus: \(lastSpeedBonus)")
+
         // Check if should trigger intermission
         if gameState.shouldTriggerIntermission(world: world.id, level: definition.levelId) == true {
             gameState.isIntermissionActive = true
