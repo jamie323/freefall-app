@@ -6,62 +6,62 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 143,
-    "dy": 0
+    "dx": 163,
+    "dy": 59
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.635
+    "y": 0.594
   },
   "goalRadius": 35,
   "initialGravityDown": true,
-  "parTime": 6.4,
+  "parTime": 7.4,
   "parFlips": 2,
   "collectibles": [
     {
       "position": {
-        "x": 0.373,
-        "y": 0.416
+        "x": 0.437,
+        "y": 0.435
       }
     },
     {
       "position": {
-        "x": 0.538,
-        "y": 0.393
+        "x": 0.547,
+        "y": 0.339
       }
     },
     {
       "position": {
-        "x": 0.72,
-        "y": 0.411
+        "x": 0.788,
+        "y": 0.541
       }
     }
   ],
   "obstacles": [
     {
-      "id": "upper-bar",
+      "id": "top-bar",
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.18362280914547008
+        "y": 0.12
       },
       "size": {
-        "width": 0.7076923076923076,
-        "height": 0.035
+        "width": 0.65,
+        "height": 0.025
       },
       "rotation": 0,
       "style": "neon_outline"
     },
     {
-      "id": "lower-bar",
+      "id": "bot-bar",
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.7726884236020629
+        "y": 0.88
       },
       "size": {
-        "width": 0.7076923076923076,
-        "height": 0.035
+        "width": 0.65,
+        "height": 0.025
       },
       "rotation": 0,
       "style": "neon_outline"
@@ -70,26 +70,12 @@
       "id": "obs-0",
       "type": "rect",
       "position": {
-        "x": 0.439,
-        "y": 0.531
+        "x": 0.613,
+        "y": 0.619
       },
       "size": {
-        "width": 0.108,
-        "height": 0.062
-      },
-      "rotation": 0,
-      "style": "neon_outline"
-    },
-    {
-      "id": "obs-1",
-      "type": "rect",
-      "position": {
-        "x": 0.681,
-        "y": 0.546
-      },
-      "size": {
-        "width": 0.098,
-        "height": 0.033
+        "width": 0.052,
+        "height": 0.098
       },
       "rotation": 0,
       "style": "neon_outline"

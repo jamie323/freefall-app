@@ -6,62 +6,62 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 140,
-    "dy": 0
+    "dx": 160,
+    "dy": 60
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.643
+    "y": 0.672
   },
   "goalRadius": 35,
   "initialGravityDown": true,
-  "parTime": 6.0,
+  "parTime": 7.0,
   "parFlips": 2,
   "collectibles": [
     {
       "position": {
-        "x": 0.372,
-        "y": 0.502
+        "x": 0.419,
+        "y": 0.571
       }
     },
     {
       "position": {
-        "x": 0.533,
-        "y": 0.38
+        "x": 0.611,
+        "y": 0.335
       }
     },
     {
       "position": {
-        "x": 0.775,
-        "y": 0.518
+        "x": 0.754,
+        "y": 0.312
       }
     }
   ],
   "obstacles": [
     {
-      "id": "upper-bar",
+      "id": "top-bar",
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.19394267984578836
+        "y": 0.12
       },
       "size": {
-        "width": 0.7,
-        "height": 0.035
+        "width": 0.65,
+        "height": 0.025
       },
       "rotation": 0,
       "style": "neon_outline"
     },
     {
-      "id": "lower-bar",
+      "id": "bot-bar",
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.8674989244777332
+        "y": 0.88
       },
       "size": {
-        "width": 0.7,
-        "height": 0.035
+        "width": 0.65,
+        "height": 0.025
       },
       "rotation": 0,
       "style": "neon_outline"
@@ -70,26 +70,12 @@
       "id": "obs-0",
       "type": "rect",
       "position": {
-        "x": 0.388,
-        "y": 0.334
+        "x": 0.538,
+        "y": 0.215
       },
       "size": {
-        "width": 0.099,
-        "height": 0.064
-      },
-      "rotation": 0,
-      "style": "neon_outline"
-    },
-    {
-      "id": "obs-1",
-      "type": "rect",
-      "position": {
-        "x": 0.696,
-        "y": 0.252
-      },
-      "size": {
-        "width": 0.074,
-        "height": 0.031
+        "width": 0.047,
+        "height": 0.102
       },
       "rotation": 0,
       "style": "neon_outline"

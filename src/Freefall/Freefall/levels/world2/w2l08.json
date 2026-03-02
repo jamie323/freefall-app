@@ -6,92 +6,92 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 166,
-    "dy": 0
+    "dx": 182,
+    "dy": 51
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.523
+    "y": 0.675
   },
   "goalRadius": 35,
   "initialGravityDown": true,
-  "parTime": 9.5,
+  "parTime": 10.5,
   "parFlips": 4,
   "collectibles": [
     {
       "position": {
-        "x": 0.432,
-        "y": 0.649
+        "x": 0.383,
+        "y": 0.579
       }
     },
     {
       "position": {
-        "x": 0.552,
-        "y": 0.564
+        "x": 0.598,
+        "y": 0.613
       }
     },
     {
       "position": {
-        "x": 0.75,
-        "y": 0.411
+        "x": 0.773,
+        "y": 0.495
       }
     }
   ],
   "obstacles": [
     {
+      "id": "top-bar",
+      "type": "rect",
+      "position": {
+        "x": 0.5,
+        "y": 0.12
+      },
+      "size": {
+        "width": 0.65,
+        "height": 0.025
+      },
+      "rotation": 0,
+      "style": "texture_fill"
+    },
+    {
+      "id": "bot-bar",
+      "type": "rect",
+      "position": {
+        "x": 0.5,
+        "y": 0.88
+      },
+      "size": {
+        "width": 0.65,
+        "height": 0.025
+      },
+      "rotation": 0,
+      "style": "texture_fill"
+    },
+    {
       "id": "obs-0",
       "type": "rect",
       "position": {
-        "x": 0.715,
-        "y": 0.719
+        "x": 0.325,
+        "y": 0.491
       },
       "size": {
-        "width": 0.136,
-        "height": 0.079
+        "width": 0.056,
+        "height": 0.138
       },
-      "rotation": -30,
+      "rotation": 0,
       "style": "texture_fill"
     },
     {
       "id": "obs-1",
       "type": "rect",
       "position": {
-        "x": 0.262,
-        "y": 0.642
+        "x": 0.324,
+        "y": 0.201
       },
       "size": {
-        "width": 0.084,
-        "height": 0.085
+        "width": 0.067,
+        "height": 0.19
       },
-      "rotation": 45,
-      "style": "texture_fill"
-    },
-    {
-      "id": "obs-2",
-      "type": "rect",
-      "position": {
-        "x": 0.374,
-        "y": 0.296
-      },
-      "size": {
-        "width": 0.114,
-        "height": 0.058
-      },
-      "rotation": 0,
-      "style": "texture_fill"
-    },
-    {
-      "id": "obs-3",
-      "type": "rect",
-      "position": {
-        "x": 0.679,
-        "y": 0.333
-      },
-      "size": {
-        "width": 0.123,
-        "height": 0.062
-      },
-      "rotation": 15,
+      "rotation": -35,
       "style": "texture_fill"
     }
   ]

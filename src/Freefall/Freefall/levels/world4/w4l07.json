@@ -6,120 +6,120 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 195,
-    "dy": 0
+    "dx": 206,
+    "dy": 42
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.374
+    "y": 0.504
   },
   "goalRadius": 35,
   "initialGravityDown": true,
-  "parTime": 13.4,
-  "parFlips": 7,
+  "parTime": 14.4,
+  "parFlips": 6,
   "collectibles": [
     {
       "position": {
-        "x": 0.401,
-        "y": 0.362
+        "x": 0.423,
+        "y": 0.55
       }
     },
     {
       "position": {
-        "x": 0.578,
-        "y": 0.639
+        "x": 0.593,
+        "y": 0.673
       }
     },
     {
       "position": {
-        "x": 0.745,
-        "y": 0.523
+        "x": 0.754,
+        "y": 0.518
       }
     }
   ],
   "obstacles": [
     {
+      "id": "top-bar",
+      "type": "rect",
+      "position": {
+        "x": 0.5,
+        "y": 0.12
+      },
+      "size": {
+        "width": 0.65,
+        "height": 0.025
+      },
+      "rotation": 0,
+      "style": "abstract"
+    },
+    {
+      "id": "bot-bar",
+      "type": "rect",
+      "position": {
+        "x": 0.5,
+        "y": 0.88
+      },
+      "size": {
+        "width": 0.65,
+        "height": 0.025
+      },
+      "rotation": 0,
+      "style": "abstract"
+    },
+    {
       "id": "obs-0",
       "type": "rect",
       "position": {
-        "x": 0.562,
-        "y": 0.551
+        "x": 0.453,
+        "y": 0.466
       },
       "size": {
-        "width": 0.134,
-        "height": 0.068
+        "width": 0.109,
+        "height": 0.216
       },
-      "rotation": 30,
+      "rotation": 20,
       "style": "abstract"
     },
     {
       "id": "obs-1",
       "type": "rect",
       "position": {
-        "x": 0.553,
-        "y": 0.26
+        "x": 0.506,
+        "y": 0.236
       },
       "size": {
-        "width": 0.133,
-        "height": 0.091
+        "width": 0.115,
+        "height": 0.127
       },
-      "rotation": -45,
+      "rotation": -20,
       "style": "abstract"
     },
     {
       "id": "obs-2",
       "type": "rect",
       "position": {
-        "x": 0.727,
-        "y": 0.612
+        "x": 0.287,
+        "y": 0.344
       },
       "size": {
-        "width": 0.115,
-        "height": 0.053
+        "width": 0.091,
+        "height": 0.133
       },
-      "rotation": 0,
+      "rotation": -35,
       "style": "abstract"
     },
     {
       "id": "obs-3",
       "type": "rect",
       "position": {
-        "x": 0.297,
-        "y": 0.258
+        "x": 0.568,
+        "y": 0.622
       },
       "size": {
-        "width": 0.136,
-        "height": 0.089
+        "width": 0.085,
+        "height": 0.186
       },
-      "rotation": 30,
-      "style": "abstract"
-    },
-    {
-      "id": "obs-4",
-      "type": "rect",
-      "position": {
-        "x": 0.28,
-        "y": 0.774
-      },
-      "size": {
-        "width": 0.122,
-        "height": 0.082
-      },
-      "rotation": -30,
-      "style": "abstract"
-    },
-    {
-      "id": "obs-5",
-      "type": "rect",
-      "position": {
-        "x": 0.611,
-        "y": 0.781
-      },
-      "size": {
-        "width": 0.125,
-        "height": 0.066
-      },
-      "rotation": 30,
+      "rotation": 20,
       "style": "abstract"
     }
   ]

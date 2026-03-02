@@ -6,62 +6,76 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 148,
-    "dy": 0
+    "dx": 166,
+    "dy": 57
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.301
+    "y": 0.33
   },
   "goalRadius": 35,
   "initialGravityDown": true,
-  "parTime": 7.0,
+  "parTime": 8.0,
   "parFlips": 2,
   "collectibles": [
     {
       "position": {
-        "x": 0.39,
-        "y": 0.388
+        "x": 0.412,
+        "y": 0.544
       }
     },
     {
       "position": {
-        "x": 0.63,
-        "y": 0.504
+        "x": 0.554,
+        "y": 0.592
       }
     },
     {
       "position": {
-        "x": 0.719,
-        "y": 0.319
+        "x": 0.733,
+        "y": 0.452
       }
     }
   ],
   "obstacles": [
     {
-      "id": "obs-0",
+      "id": "top-bar",
       "type": "rect",
       "position": {
-        "x": 0.707,
-        "y": 0.475
+        "x": 0.5,
+        "y": 0.12
       },
       "size": {
-        "width": 0.066,
-        "height": 0.045
+        "width": 0.65,
+        "height": 0.025
       },
       "rotation": 0,
       "style": "neon_outline"
     },
     {
-      "id": "obs-1",
+      "id": "bot-bar",
       "type": "rect",
       "position": {
-        "x": 0.531,
-        "y": 0.358
+        "x": 0.5,
+        "y": 0.88
       },
       "size": {
-        "width": 0.092,
-        "height": 0.077
+        "width": 0.65,
+        "height": 0.025
+      },
+      "rotation": 0,
+      "style": "neon_outline"
+    },
+    {
+      "id": "obs-0",
+      "type": "rect",
+      "position": {
+        "x": 0.417,
+        "y": 0.326
+      },
+      "size": {
+        "width": 0.05,
+        "height": 0.179
       },
       "rotation": 0,
       "style": "neon_outline"

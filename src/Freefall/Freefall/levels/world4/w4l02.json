@@ -6,62 +6,62 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 188,
-    "dy": 0
+    "dx": 200,
+    "dy": 44
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.7
+    "y": 0.714
   },
   "goalRadius": 35,
   "initialGravityDown": true,
-  "parTime": 12.4,
-  "parFlips": 6,
+  "parTime": 13.4,
+  "parFlips": 5,
   "collectibles": [
     {
       "position": {
-        "x": 0.428,
-        "y": 0.317
+        "x": 0.437,
+        "y": 0.343
       }
     },
     {
       "position": {
-        "x": 0.604,
-        "y": 0.582
+        "x": 0.542,
+        "y": 0.425
       }
     },
     {
       "position": {
-        "x": 0.791,
-        "y": 0.454
+        "x": 0.774,
+        "y": 0.683
       }
     }
   ],
   "obstacles": [
     {
-      "id": "upper-bar",
+      "id": "top-bar",
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.17722197819034077
+        "y": 0.12
       },
       "size": {
-        "width": 0.8192307692307692,
-        "height": 0.035
+        "width": 0.65,
+        "height": 0.025
       },
       "rotation": 0,
       "style": "abstract"
     },
     {
-      "id": "lower-bar",
+      "id": "bot-bar",
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.8243213527267685
+        "y": 0.88
       },
       "size": {
-        "width": 0.8192307692307692,
-        "height": 0.035
+        "width": 0.65,
+        "height": 0.025
       },
       "rotation": 0,
       "style": "abstract"
@@ -70,70 +70,56 @@
       "id": "obs-0",
       "type": "rect",
       "position": {
-        "x": 0.322,
-        "y": 0.314
+        "x": 0.287,
+        "y": 0.212
       },
       "size": {
-        "width": 0.12,
-        "height": 0.083
+        "width": 0.086,
+        "height": 0.212
       },
-      "rotation": -15,
+      "rotation": 20,
       "style": "abstract"
     },
     {
       "id": "obs-1",
       "type": "rect",
       "position": {
-        "x": 0.682,
-        "y": 0.366
+        "x": 0.681,
+        "y": 0.224
       },
       "size": {
-        "width": 0.135,
-        "height": 0.067
+        "width": 0.056,
+        "height": 0.137
       },
-      "rotation": 45,
+      "rotation": 0,
       "style": "abstract"
     },
     {
       "id": "obs-2",
       "type": "rect",
       "position": {
-        "x": 0.504,
-        "y": 0.692
+        "x": 0.53,
+        "y": 0.343
       },
       "size": {
-        "width": 0.094,
-        "height": 0.061
+        "width": 0.082,
+        "height": 0.123
       },
-      "rotation": 30,
+      "rotation": -20,
       "style": "abstract"
     },
     {
       "id": "obs-3",
       "type": "rect",
       "position": {
-        "x": 0.492,
-        "y": 0.399
+        "x": 0.416,
+        "y": 0.564
       },
       "size": {
-        "width": 0.133,
-        "height": 0.065
+        "width": 0.112,
+        "height": 0.184
       },
-      "rotation": 15,
-      "style": "abstract"
-    },
-    {
-      "id": "obs-4",
-      "type": "rect",
-      "position": {
-        "x": 0.685,
-        "y": 0.788
-      },
-      "size": {
-        "width": 0.091,
-        "height": 0.065
-      },
-      "rotation": 45,
+      "rotation": -20,
       "style": "abstract"
     }
   ]

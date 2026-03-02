@@ -6,76 +6,90 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 162,
-    "dy": 0
+    "dx": 178,
+    "dy": 53
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.349
+    "y": 0.285
   },
   "goalRadius": 35,
   "initialGravityDown": true,
-  "parTime": 8.9,
-  "parFlips": 4,
+  "parTime": 9.9,
+  "parFlips": 3,
   "collectibles": [
     {
       "position": {
-        "x": 0.438,
-        "y": 0.448
+        "x": 0.377,
+        "y": 0.353
       }
     },
     {
       "position": {
-        "x": 0.546,
-        "y": 0.633
+        "x": 0.615,
+        "y": 0.528
       }
     },
     {
       "position": {
-        "x": 0.78,
-        "y": 0.545
+        "x": 0.758,
+        "y": 0.614
       }
     }
   ],
   "obstacles": [
     {
+      "id": "top-bar",
+      "type": "rect",
+      "position": {
+        "x": 0.5,
+        "y": 0.12
+      },
+      "size": {
+        "width": 0.65,
+        "height": 0.025
+      },
+      "rotation": 0,
+      "style": "texture_fill"
+    },
+    {
+      "id": "bot-bar",
+      "type": "rect",
+      "position": {
+        "x": 0.5,
+        "y": 0.88
+      },
+      "size": {
+        "width": 0.65,
+        "height": 0.025
+      },
+      "rotation": 0,
+      "style": "texture_fill"
+    },
+    {
       "id": "obs-0",
       "type": "rect",
       "position": {
-        "x": 0.448,
-        "y": 0.603
+        "x": 0.282,
+        "y": 0.579
       },
       "size": {
-        "width": 0.078,
-        "height": 0.053
+        "width": 0.055,
+        "height": 0.185
       },
-      "rotation": 45,
+      "rotation": 0,
       "style": "texture_fill"
     },
     {
       "id": "obs-1",
       "type": "rect",
       "position": {
-        "x": 0.718,
-        "y": 0.206
+        "x": 0.637,
+        "y": 0.243
       },
       "size": {
-        "width": 0.104,
-        "height": 0.065
-      },
-      "rotation": 0,
-      "style": "texture_fill"
-    },
-    {
-      "id": "obs-2",
-      "type": "rect",
-      "position": {
-        "x": 0.287,
-        "y": 0.328
-      },
-      "size": {
-        "width": 0.076,
-        "height": 0.084
+        "width": 0.055,
+        "height": 0.161
       },
       "rotation": 0,
       "style": "texture_fill"

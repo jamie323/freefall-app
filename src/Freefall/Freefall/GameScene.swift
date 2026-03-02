@@ -13,7 +13,7 @@ final class GameScene: SKScene {
 
     enum Constants {
         static let sphereDiameter: CGFloat = 28
-        static let gravityMagnitude: CGFloat = 500
+        static let gravityMagnitude: CGFloat = 280
         static let backgroundScale: CGFloat = 1.2
         static let parallaxMultiplier: CGFloat = 0.2
         static let backgroundResetDuration: TimeInterval = 0.3

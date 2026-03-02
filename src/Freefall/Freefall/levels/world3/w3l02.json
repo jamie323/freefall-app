@@ -6,62 +6,62 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 172,
-    "dy": 0
+    "dx": 187,
+    "dy": 49
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.7
+    "y": 0.714
   },
   "goalRadius": 35,
   "initialGravityDown": true,
-  "parTime": 10.3,
-  "parFlips": 5,
+  "parTime": 11.3,
+  "parFlips": 4,
   "collectibles": [
     {
       "position": {
-        "x": 0.428,
-        "y": 0.494
+        "x": 0.367,
+        "y": 0.469
       }
     },
     {
       "position": {
-        "x": 0.554,
-        "y": 0.476
+        "x": 0.562,
+        "y": 0.301
       }
     },
     {
       "position": {
-        "x": 0.781,
-        "y": 0.394
+        "x": 0.782,
+        "y": 0.555
       }
     }
   ],
   "obstacles": [
     {
-      "id": "upper-bar",
+      "id": "top-bar",
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.22174700144554402
+        "y": 0.12
       },
       "size": {
-        "width": 0.7807692307692307,
-        "height": 0.035
+        "width": 0.65,
+        "height": 0.025
       },
       "rotation": 0,
       "style": "pulsing_glow"
     },
     {
-      "id": "lower-bar",
+      "id": "bot-bar",
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.8578641400810615
+        "y": 0.88
       },
       "size": {
-        "width": 0.7807692307692307,
-        "height": 0.035
+        "width": 0.65,
+        "height": 0.025
       },
       "rotation": 0,
       "style": "pulsing_glow"
@@ -70,56 +70,42 @@
       "id": "obs-0",
       "type": "rect",
       "position": {
-        "x": 0.317,
-        "y": 0.479
+        "x": 0.549,
+        "y": 0.763
       },
       "size": {
-        "width": 0.104,
-        "height": 0.069
+        "width": 0.054,
+        "height": 0.113
       },
-      "rotation": 15,
+      "rotation": 0,
       "style": "pulsing_glow"
     },
     {
       "id": "obs-1",
       "type": "rect",
       "position": {
-        "x": 0.725,
-        "y": 0.735
+        "x": 0.584,
+        "y": 0.293
       },
       "size": {
-        "width": 0.111,
-        "height": 0.077
+        "width": 0.063,
+        "height": 0.123
       },
-      "rotation": 30,
+      "rotation": 20,
       "style": "pulsing_glow"
     },
     {
       "id": "obs-2",
       "type": "rect",
       "position": {
-        "x": 0.463,
-        "y": 0.744
+        "x": 0.342,
+        "y": 0.581
       },
       "size": {
-        "width": 0.097,
-        "height": 0.049
+        "width": 0.062,
+        "height": 0.15
       },
-      "rotation": 45,
-      "style": "pulsing_glow"
-    },
-    {
-      "id": "obs-3",
-      "type": "rect",
-      "position": {
-        "x": 0.487,
-        "y": 0.356
-      },
-      "size": {
-        "width": 0.081,
-        "height": 0.073
-      },
-      "rotation": 45,
+      "rotation": 0,
       "style": "pulsing_glow"
     }
   ]
