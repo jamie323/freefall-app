@@ -1,0 +1,6 @@
+
+# Xcode user data
+*.xcuserdata
+xcuserdata/
+*.xcworkspace/xcuserdata/
+.DS_Store
