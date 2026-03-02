@@ -16,7 +16,8 @@ final class GameScene: SKScene {
         static let gravityMagnitude: CGFloat = 60
         static let maxVerticalVelocity: CGFloat = 160   // hard cap vertical speed
         static let flipImpulse: CGFloat = 40             // vertical kick on flip (in new gravity direction)
-        static let linearDamping: CGFloat = 0.6          // air resistance — higher = more floaty
+        static let linearDamping: CGFloat = 0.0          // NO global damping — kills horizontal momentum
+        static let verticalDamping: CGFloat = 0.015      // per-frame vertical drag only (applied manually)
         static let backgroundScale: CGFloat = 1.2
         static let parallaxMultiplier: CGFloat = 0.2
         static let backgroundResetDuration: TimeInterval = 0.3
@@ -152,11 +153,17 @@ final class GameScene: SKScene {
 
     private func clampSphereVelocity() {
         guard let body = sphereNode?.physicsBody, sceneState == .playing else { return }
-        let dy = body.velocity.dy
+        let dx = body.velocity.dx
+        var dy = body.velocity.dy
+
+        // Vertical-only damping — horizontal momentum is preserved fully
+        dy *= (1.0 - Constants.verticalDamping)
+
+        // Hard cap on vertical speed
         let maxDY = Constants.maxVerticalVelocity
-        if abs(dy) > maxDY {
-            body.velocity = CGVector(dx: body.velocity.dx, dy: dy > 0 ? maxDY : -maxDY)
-        }
+        dy = min(max(dy, -maxDY), maxDY)
+
+        body.velocity = CGVector(dx: dx, dy: dy)
     }
 
     private func checkSphereOutOfBounds() {
