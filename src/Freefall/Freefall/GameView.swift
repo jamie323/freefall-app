@@ -7,25 +7,26 @@ struct GameView: View {
     let level: LevelDefinition
     let onQuit: () -> Void
 
-    // SceneProxy is a plain class — @State holds it stable across re-renders,
-    // but mutations to proxy.coordinator don't trigger SwiftUI updates.
     @State private var proxy = SceneProxy()
+    @State private var debugLines: [String] = []
+    @State private var tapCount = 0
+    @State private var debugTimer: Timer?
 
     var body: some View {
         ZStack {
             SpriteKitView(level: level, world: world, proxy: proxy)
                 .ignoresSafeArea()
 
-            // Full-screen invisible tap target — SwiftUI owns all taps,
-            // routes them directly into the scene via proxy.
+            // Full-screen tap target
             Color.clear
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
                 .onTapGesture {
+                    tapCount += 1
                     proxy.handleTap()
                 }
 
-            // HUD — level label, decorative only
+            // HUD — level label
             Text("L\(level.levelId)")
                 .font(.system(size: 16, weight: .medium, design: .monospaced))
                 .foregroundStyle(.white.opacity(0.5))
@@ -34,10 +35,8 @@ struct GameView: View {
                 .padding(.top, 16)
                 .allowsHitTesting(false)
 
-            // Pause button — sits above tap layer in ZStack, gets priority
-            Button(action: {
-                // Pause to be wired
-            }) {
+            // Pause button
+            Button(action: { }) {
                 Image(systemName: "pause.circle")
                     .font(.system(size: 24, weight: .medium))
                     .foregroundStyle(.white.opacity(0.5))
@@ -46,7 +45,55 @@ struct GameView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             .padding(.trailing, 4)
             .padding(.top, 8)
+
+            // ── DEBUG OVERLAY ──────────────────────────────────────
+            VStack(alignment: .leading, spacing: 2) {
+                ForEach(debugLines, id: \.self) { line in
+                    Text(line)
+                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .foregroundStyle(.yellow)
+                }
+            }
+            .padding(8)
+            .background(Color.black.opacity(0.7))
+            .cornerRadius(6)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+            .padding(.bottom, 40)
+            .padding(.leading, 8)
+            .allowsHitTesting(false)
+            // ── END DEBUG ──────────────────────────────────────────
         }
         .navigationBarBackButtonHidden(true)
+        .onAppear { startDebugTimer() }
+        .onDisappear { debugTimer?.invalidate() }
+    }
+
+    private func startDebugTimer() {
+        debugTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+            refreshDebug()
+        }
+    }
+
+    private func refreshDebug() {
+        guard let scene = proxy.coordinator?.scene else {
+            debugLines = ["proxy=NIL — tap not wired!"]
+            return
+        }
+        let sphere = scene.sphereNode
+        let pos = sphere?.position ?? .zero
+        let vel = sphere?.physicsBody?.velocity ?? .zero
+        let isDyn = sphere?.physicsBody?.isDynamic ?? false
+        let grav = scene.physicsWorld.gravity
+        let state = scene.sceneState.rawValue
+        let sz = scene.size
+
+        debugLines = [
+            "TAPS:\(tapCount) STATE:\(state)",
+            "POS x:\(Int(pos.x)) y:\(Int(pos.y))",
+            "VEL dx:\(Int(vel.dx)) dy:\(Int(vel.dy))",
+            "GRAV dy:\(Int(grav.dy)) DYN:\(isDyn ? "Y" : "N")",
+            "SCENE \(Int(sz.width))x\(Int(sz.height))",
+            "PROXY:\(proxy.coordinator == nil ? "NIL" : "OK")",
+        ]
     }
 }
