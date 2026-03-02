@@ -471,9 +471,11 @@ final class GameScene: SKScene {
     }
 
     private func createObstacles(from definition: LevelDefinition) {
+        let worldColor = UIColor(worldDefinition?.primaryColor ?? Color(red: 0, green: 0.831, blue: 1))
         for obstacle in definition.obstacles {
             let node = ObstacleNode(obstacle: obstacle, normalizedToScreenSize: size)
             node.zPosition = 5
+            node.applyWorldColor(worldColor)
             addChild(node)
             obstacleNodes.append(node)
         }
@@ -520,7 +522,7 @@ final class GameScene: SKScene {
     private func createCollectibles(from definition: LevelDefinition, world: WorldDefinition) {
         clearCollectibles()
         guard let collectibles = definition.collectibles, !collectibles.isEmpty else { return }
-        let worldColor = UIColor(world.primaryColor)
+        let worldColor = UIColor(worldDefinition?.primaryColor ?? Color(red: 0, green: 0.831, blue: 1))
         for collectible in collectibles {
             let position = CGPoint(x: collectible.position.x * size.width, y: collectible.position.y * size.height)
             let node = CollectibleNode(position: position, worldColor: worldColor, id: collectible.id)

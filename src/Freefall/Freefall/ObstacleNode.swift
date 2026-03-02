@@ -71,8 +71,14 @@ final class ObstacleNode: SKShapeNode {
         fillColor = .clear
         strokeColor = Constants.neonOutlineColor
         lineWidth = Constants.neonOutlineWidth
+        glowWidth = Constants.neonGlowWidth
         lineCap = .round
         lineJoin = .round
+    }
+
+    func applyWorldColor(_ color: UIColor) {
+        strokeColor = color
+        glowWidth = 6
     }
 }
 
