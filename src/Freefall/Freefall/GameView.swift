@@ -17,10 +17,10 @@ struct GameView: View {
             SpriteKitView(level: level, world: world, proxy: proxy)
                 .ignoresSafeArea()
 
-            // Full-screen tap target
-            Color.clear
+            // Full-screen tap target — Color.clear needs contentShape to receive taps
+            // Use opacity(0.001) as belt-and-braces: guarantees hit testing works
+            Color.white.opacity(0.001)
                 .ignoresSafeArea()
-                .contentShape(Rectangle())
                 .onTapGesture {
                     tapCount += 1
                     proxy.handleTap()
@@ -87,8 +87,9 @@ struct GameView: View {
         let state = scene.sceneState.rawValue
         let sz = scene.size
 
+        let flips = scene.flipCount
         debugLines = [
-            "TAPS:\(tapCount) STATE:\(state)",
+            "TAPS:\(tapCount) FLIPS:\(flips) STATE:\(state)",
             "POS x:\(Int(pos.x)) y:\(Int(pos.y))",
             "VEL dx:\(Int(vel.dx)) dy:\(Int(vel.dy))",
             "GRAV dy:\(Int(grav.dy)) DYN:\(isDyn ? "Y" : "N")",

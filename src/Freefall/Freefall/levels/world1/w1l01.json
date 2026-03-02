@@ -2,38 +2,38 @@
   "worldId": 1,
   "levelId": 1,
   "launchPosition": {
-    "x": 0.08,
+    "x": 0.1,
     "y": 0.5
   },
   "launchVelocity": {
     "dx": 140,
-    "dy": 80
+    "dy": 0
   },
   "goalPosition": {
-    "x": 0.9,
+    "x": 0.88,
     "y": 0.5
   },
   "goalRadius": 40,
   "initialGravityDown": true,
-  "parTime": 7.0,
-  "parFlips": 2,
+  "parTime": 10.0,
+  "parFlips": 3,
   "collectibles": [
     {
       "position": {
-        "x": 0.419,
-        "y": 0.571
+        "x": 0.35,
+        "y": 0.65
       }
     },
     {
       "position": {
-        "x": 0.611,
-        "y": 0.335
+        "x": 0.55,
+        "y": 0.35
       }
     },
     {
       "position": {
-        "x": 0.754,
-        "y": 0.312
+        "x": 0.72,
+        "y": 0.55
       }
     }
   ],
@@ -43,11 +43,11 @@
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.12
+        "y": 0.08
       },
       "size": {
-        "width": 0.65,
-        "height": 0.025
+        "width": 0.7,
+        "height": 0.02
       },
       "rotation": 0,
       "style": "neon_outline"
@@ -57,25 +57,25 @@
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.88
+        "y": 0.92
       },
       "size": {
-        "width": 0.65,
-        "height": 0.025
+        "width": 0.7,
+        "height": 0.02
       },
       "rotation": 0,
       "style": "neon_outline"
     },
     {
-      "id": "obs-0",
+      "id": "mid-block",
       "type": "rect",
       "position": {
-        "x": 0.538,
-        "y": 0.215
+        "x": 0.5,
+        "y": 0.5
       },
       "size": {
-        "width": 0.047,
-        "height": 0.102
+        "width": 0.04,
+        "height": 0.18
       },
       "rotation": 0,
       "style": "neon_outline"

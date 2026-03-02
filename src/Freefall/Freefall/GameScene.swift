@@ -226,13 +226,16 @@ final class GameScene: SKScene {
         print("🚀 BEGIN PLAYING — pos=\(sphere.position) vel=\(launchVelocity) gravity=\(physicsWorld.gravity) sceneSize=\(size)")
     }
 
+    private(set) var flipCount: Int = 0
+
     private func flipGravity() {
         guard sceneState == .playing else { return }
         isGravityDown.toggle()
         totalFlipsDuringLevel += 1
+        flipCount += 1
         applyGravityDirection()
         triggerHapticIfNeeded()
-        print("🔄 FLIP — gravity now \(isGravityDown ? "DOWN" : "UP") physicsGravity=\(physicsWorld.gravity)")
+        print("🔄 FLIP #\(flipCount) — gravity now \(isGravityDown ? "DOWN" : "UP") physicsGravity=\(physicsWorld.gravity)")
     }
 
     private func applyGravityDirection() {
