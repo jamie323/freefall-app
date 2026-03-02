@@ -4,3 +4,7 @@
 xcuserdata/
 *.xcworkspace/xcuserdata/
 .DS_Store
+
+# Xcode user data - never commit these
+src/Freefall/Freefall.xcodeproj/project.xcworkspace/xcuserdata/
+src/Freefall/Freefall.xcodeproj/xcuserdata/
