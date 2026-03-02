@@ -1,64 +1,14 @@
 import CoreGraphics
 import Foundation
 
-// MARK: - CGPoint / CGSize / CGVector Codable extensions
-extension CGPoint: @retroactive Codable {
-    public init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        self.init(x: try c.decode(CGFloat.self, forKey: .x),
-                  y: try c.decode(CGFloat.self, forKey: .y))
-    }
-    public func encode(to encoder: Encoder) throws {
-        var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(x, forKey: .x); try c.encode(y, forKey: .y)
-    }
-    enum CodingKeys: String, CodingKey { case x, y }
-}
-
-extension CGSize: @retroactive Codable {
-    public init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        self.init(width: try c.decode(CGFloat.self, forKey: .width),
-                  height: try c.decode(CGFloat.self, forKey: .height))
-    }
-    public func encode(to encoder: Encoder) throws {
-        var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(width, forKey: .width); try c.encode(height, forKey: .height)
-    }
-    enum CodingKeys: String, CodingKey { case width, height }
-}
-
-extension CGVector: @retroactive Codable {
-    public init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        self.init(dx: try c.decode(CGFloat.self, forKey: .dx),
-                  dy: try c.decode(CGFloat.self, forKey: .dy))
-    }
-    public func encode(to encoder: Encoder) throws {
-        var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(dx, forKey: .dx); try c.encode(dy, forKey: .dy)
-    }
-    enum CodingKeys: String, CodingKey { case dx, dy }
-}
-
 // MARK: - LevelDefinition
 
-struct LevelDefinition: Codable, Identifiable {
-    struct ObstacleDefinition: Codable, Identifiable {
-        enum ObstacleType: String, Codable {
+struct LevelDefinition: Identifiable {
+    struct ObstacleDefinition: Identifiable {
+        enum ObstacleType: String {
             case rect, circle, polygon, line
         }
-
-        var id: String {
-            if let identifier { return identifier }
-            return "\(type.rawValue)-\(position.x)-\(position.y)-\(rotation)"
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case identifier = "id"
-            case type, position, size, radius, points, rotation, style
-        }
-
+        var id: String { identifier ?? "\(type.rawValue)-\(Int(position.x*1000))-\(Int(position.y*1000))" }
         var identifier: String?
         let type: ObstacleType
         let position: CGPoint
@@ -69,8 +19,8 @@ struct LevelDefinition: Codable, Identifiable {
         let style: String
     }
 
-    struct CollectibleDefinition: Codable, Identifiable {
-        var id: String { "\(position.x)-\(position.y)" }
+    struct CollectibleDefinition: Identifiable {
+        var id: String { "\(Int(position.x*1000))-\(Int(position.y*1000))" }
         let position: CGPoint
     }
 
@@ -87,42 +37,104 @@ struct LevelDefinition: Codable, Identifiable {
     let parTime: TimeInterval
     let obstacles: [ObstacleDefinition]
     let collectibles: [CollectibleDefinition]?
+}
 
-    private enum CodingKeys: String, CodingKey {
-        case worldId, levelId, launchPosition, launchVelocity
-        case goalPosition, goalRadius, initialGravityDown
-        case parFlips, parTime, obstacles, collectibles
-    }
+// MARK: - Manual JSON decoding helpers
 
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        worldId          = try container.decode(Int.self,      forKey: .worldId)
-        levelId          = try container.decode(Int.self,      forKey: .levelId)
-        launchPosition   = try container.decode(CGPoint.self,  forKey: .launchPosition)
-        launchVelocity   = try container.decode(CGVector.self, forKey: .launchVelocity)
-        goalPosition     = try container.decode(CGPoint.self,  forKey: .goalPosition)
-        goalRadius       = try container.decode(CGFloat.self,  forKey: .goalRadius)
-        initialGravityDown = try container.decode(Bool.self,   forKey: .initialGravityDown)
-        parFlips         = try container.decode(Int.self,      forKey: .parFlips)
-        obstacles        = try container.decode([ObstacleDefinition].self,   forKey: .obstacles)
-        collectibles     = try container.decodeIfPresent([CollectibleDefinition].self, forKey: .collectibles)
-        parTime          = try container.decodeIfPresent(TimeInterval.self,  forKey: .parTime) ?? 10.0
-    }
+private func decodePoint(_ container: KeyedDecodingContainer<GenericKeys>, key: GenericKeys) throws -> CGPoint {
+    let nested = try container.nestedContainer(keyedBy: GenericKeys.self, forKey: key)
+    let x = try nested.decode(Double.self, forKey: .x)
+    let y = try nested.decode(Double.self, forKey: .y)
+    return CGPoint(x: x, y: y)
+}
 
-    func encode(to encoder: Encoder) throws {
-        var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(worldId, forKey: .worldId)
-        try c.encode(levelId, forKey: .levelId)
-        try c.encode(launchPosition, forKey: .launchPosition)
-        try c.encode(launchVelocity, forKey: .launchVelocity)
-        try c.encode(goalPosition, forKey: .goalPosition)
-        try c.encode(goalRadius, forKey: .goalRadius)
-        try c.encode(initialGravityDown, forKey: .initialGravityDown)
-        try c.encode(parFlips, forKey: .parFlips)
-        try c.encode(parTime, forKey: .parTime)
-        try c.encode(obstacles, forKey: .obstacles)
-        try c.encodeIfPresent(collectibles, forKey: .collectibles)
+private func decodeVector(_ container: KeyedDecodingContainer<GenericKeys>, key: GenericKeys) throws -> CGVector {
+    let nested = try container.nestedContainer(keyedBy: GenericKeys.self, forKey: key)
+    let dx = try nested.decode(Double.self, forKey: .dx)
+    let dy = try nested.decode(Double.self, forKey: .dy)
+    return CGVector(dx: dx, dy: dy)
+}
+
+private func decodeSize(_ container: KeyedDecodingContainer<GenericKeys>, key: GenericKeys) throws -> CGSize {
+    let nested = try container.nestedContainer(keyedBy: GenericKeys.self, forKey: key)
+    let w = try nested.decode(Double.self, forKey: .width)
+    let h = try nested.decode(Double.self, forKey: .height)
+    return CGSize(width: w, height: h)
+}
+
+private enum GenericKeys: String, CodingKey {
+    case id, type, position, size, radius, points, rotation, style
+    case worldId, levelId, launchPosition, launchVelocity, goalPosition
+    case goalRadius, initialGravityDown, parFlips, parTime
+    case obstacles, collectibles
+    case x, y, dx, dy, width, height
+}
+
+extension LevelDefinition {
+    init(from data: Data) throws {
+        let decoder = JSONDecoder()
+        let raw = try decoder.decode(RawLevel.self, from: data)
+
+        worldId           = raw.worldId
+        levelId           = raw.levelId
+        launchPosition    = CGPoint(x: raw.launchPosition.x, y: raw.launchPosition.y)
+        launchVelocity    = CGVector(dx: raw.launchVelocity.dx, dy: raw.launchVelocity.dy)
+        goalPosition      = CGPoint(x: raw.goalPosition.x, y: raw.goalPosition.y)
+        goalRadius        = CGFloat(raw.goalRadius)
+        initialGravityDown = raw.initialGravityDown
+        parFlips          = raw.parFlips
+        parTime           = raw.parTime ?? 10.0
+        obstacles         = raw.obstacles.map { o in
+            ObstacleDefinition(
+                identifier: o.id,
+                type: ObstacleDefinition.ObstacleType(rawValue: o.type) ?? .rect,
+                position: CGPoint(x: o.position.x, y: o.position.y),
+                size: o.size.map { CGSize(width: $0.width, height: $0.height) },
+                radius: o.radius.map { CGFloat($0) },
+                points: o.points?.map { CGPoint(x: $0.x, y: $0.y) },
+                rotation: CGFloat(o.rotation ?? 0),
+                style: o.style
+            )
+        }
+        collectibles = raw.collectibles?.map { c in
+            CollectibleDefinition(position: CGPoint(x: c.position.x, y: c.position.y))
+        }
     }
+}
+
+// MARK: - Raw Decodable structs (plain Double, no CG types)
+
+private struct RawPoint: Decodable { let x: Double; let y: Double }
+private struct RawSize: Decodable  { let width: Double; let height: Double }
+private struct RawVector: Decodable { let dx: Double; let dy: Double }
+
+private struct RawObstacle: Decodable {
+    let id: String?
+    let type: String
+    let position: RawPoint
+    let size: RawSize?
+    let radius: Double?
+    let points: [RawPoint]?
+    let rotation: Double?
+    let style: String
+}
+
+private struct RawCollectible: Decodable {
+    let position: RawPoint
+}
+
+private struct RawLevel: Decodable {
+    let worldId: Int
+    let levelId: Int
+    let launchPosition: RawPoint
+    let launchVelocity: RawVector
+    let goalPosition: RawPoint
+    let goalRadius: Double
+    let initialGravityDown: Bool
+    let parFlips: Int
+    let parTime: Double?
+    let obstacles: [RawObstacle]
+    let collectibles: [RawCollectible]?
 }
 
 // MARK: - LevelLoader
@@ -133,20 +145,16 @@ enum LevelLoaderError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .fileNotFound(let file):   return "Level file not found: \(file)"
-        case .failedToDecode(let msg):  return "Failed to decode level: \(msg)"
+        case .fileNotFound(let file): return "Level file not found: \(file)"
+        case .failedToDecode(let msg): return "Failed to decode level: \(msg)"
         }
     }
 }
 
 struct LevelLoader {
     private let bundle: Bundle
-    private let decoder: JSONDecoder
 
-    init(bundle: Bundle = .main, decoder: JSONDecoder = JSONDecoder()) {
-        self.bundle = bundle
-        self.decoder = decoder
-    }
+    init(bundle: Bundle = .main) { self.bundle = bundle }
 
     func loadLevel(world: Int, level: Int) throws -> LevelDefinition {
         let fileName = LevelLoader.fileName(world: world, level: level)
@@ -158,22 +166,7 @@ struct LevelLoader {
 
         do {
             let data = try Data(contentsOf: url)
-            do {
-                return try decoder.decode(LevelDefinition.self, from: data)
-            } catch let decodingError as DecodingError {
-                switch decodingError {
-                case .keyNotFound(let key, let context):
-                    throw LevelLoaderError.failedToDecode("Missing key '\(key.stringValue)' at \(context.codingPath.map(\.stringValue).joined(separator: "."))")
-                case .typeMismatch(let type, let context):
-                    throw LevelLoaderError.failedToDecode("Type mismatch: expected \(type) at \(context.codingPath.map(\.stringValue).joined(separator: "."))")
-                case .valueNotFound(let type, let context):
-                    throw LevelLoaderError.failedToDecode("Value not found: \(type) at \(context.codingPath.map(\.stringValue).joined(separator: "."))")
-                case .dataCorrupted(let context):
-                    throw LevelLoaderError.failedToDecode("Data corrupted at \(context.codingPath.map(\.stringValue).joined(separator: ".")): \(context.debugDescription)")
-                @unknown default:
-                    throw LevelLoaderError.failedToDecode(decodingError.localizedDescription)
-                }
-            }
+            return try LevelDefinition(from: data)
         } catch let e as LevelLoaderError {
             throw e
         } catch {
