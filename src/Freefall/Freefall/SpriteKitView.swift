@@ -1,19 +1,23 @@
 import SpriteKit
 import SwiftUI
 
+/// Reference box so GameView can hold a stable pointer to the scene
+/// without triggering SwiftUI state updates.
+final class SceneProxy {
+    var coordinator: SpriteKitView.Coordinator?
+    func handleTap() { coordinator?.handleTap() }
+}
+
 struct SpriteKitView: UIViewRepresentable {
     @Environment(GameState.self) private var gameState
 
     let level: LevelDefinition
     let world: WorldDefinition
-    @Binding var coordinatorBinding: Coordinator?
+    let proxy: SceneProxy
 
     func makeCoordinator() -> Coordinator {
         let c = Coordinator(gameState: gameState)
-        // Expose coordinator to GameView via binding (called on main thread after makeCoordinator)
-        DispatchQueue.main.async {
-            coordinatorBinding = c
-        }
+        proxy.coordinator = c   // plain assignment — no binding, no state mutation
         return c
     }
 
@@ -21,7 +25,6 @@ struct SpriteKitView: UIViewRepresentable {
         let view = SKView()
         view.backgroundColor = .clear
         view.ignoresSiblingOrder = true
-        // SKView touch handling disabled — SwiftUI gesture owns all taps
         view.isUserInteractionEnabled = false
         context.coordinator.configureIfNeeded(with: view)
         context.coordinator.update(level: level, world: world)

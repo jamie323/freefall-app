@@ -7,7 +7,7 @@
   },
   "launchVelocity": {
     "dx": 160,
-    "dy": 60
+    "dy": 0
   },
   "goalPosition": {
     "x": 0.9,

@@ -7,23 +7,25 @@ struct GameView: View {
     let level: LevelDefinition
     let onQuit: () -> Void
 
-    // Scene reference so the SwiftUI tap gesture can call scene methods directly
-    @State private var sceneCoordinator: SpriteKitView.Coordinator?
+    // SceneProxy is a plain class — @State holds it stable across re-renders,
+    // but mutations to proxy.coordinator don't trigger SwiftUI updates.
+    @State private var proxy = SceneProxy()
 
     var body: some View {
         ZStack {
-            SpriteKitView(level: level, world: world, coordinatorBinding: $sceneCoordinator)
+            SpriteKitView(level: level, world: world, proxy: proxy)
                 .ignoresSafeArea()
 
-            // Full-screen tap target — sits above SpriteKit, below HUD buttons
+            // Full-screen invisible tap target — SwiftUI owns all taps,
+            // routes them directly into the scene via proxy.
             Color.clear
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    sceneCoordinator?.handleTap()
+                    proxy.handleTap()
                 }
 
-            // HUD — decorative label, non-interactive
+            // HUD — level label, decorative only
             Text("L\(level.levelId)")
                 .font(.system(size: 16, weight: .medium, design: .monospaced))
                 .foregroundStyle(.white.opacity(0.5))
@@ -32,9 +34,9 @@ struct GameView: View {
                 .padding(.top, 16)
                 .allowsHitTesting(false)
 
-            // Pause button — top right, interactive (sits on top of tap layer)
+            // Pause button — sits above tap layer in ZStack, gets priority
             Button(action: {
-                // Pause functionality to be added
+                // Pause to be wired
             }) {
                 Image(systemName: "pause.circle")
                     .font(.system(size: 24, weight: .medium))
