@@ -6,14 +6,14 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 160,
-    "dy": 0
+    "dx": 140,
+    "dy": 80
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.672
+    "y": 0.5
   },
-  "goalRadius": 35,
+  "goalRadius": 40,
   "initialGravityDown": true,
   "parTime": 7.0,
   "parFlips": 2,

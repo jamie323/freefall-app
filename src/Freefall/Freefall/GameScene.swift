@@ -13,7 +13,7 @@ final class GameScene: SKScene {
 
     enum Constants {
         static let sphereDiameter: CGFloat = 28
-        static let gravityMagnitude: CGFloat = 180
+        static let gravityMagnitude: CGFloat = 120
         static let backgroundScale: CGFloat = 1.2
         static let parallaxMultiplier: CGFloat = 0.2
         static let backgroundResetDuration: TimeInterval = 0.3
@@ -131,10 +131,8 @@ final class GameScene: SKScene {
         super.didChangeSize(oldSize)
         updateBackgroundLayout()
         layoutScoreLabel()
-        // Only reconfigure layout if not actively playing — never interrupt a live run
-        if sceneState == .ready {
-            configureForCurrentLevelIfPossible()
-        }
+        // Never reconfigure from a resize — it resets gravity/obstacles mid-game.
+        // configureForCurrentLevelIfPossible is only called from loadLevel and didMove.
     }
 
     override func update(_ currentTime: TimeInterval) {

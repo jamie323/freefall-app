@@ -32,10 +32,10 @@ struct SpriteKitView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: SKView, context: Context) {
-        // Only resize/re-present scene when not playing — avoids triggering
-        // didChangeSize → configureForCurrentLevelIfPossible during a live run
-        let scene = context.coordinator.scene
-        if scene.sceneState == .ready || scene.sceneState == .dead {
+        // Never resize scene in updateUIView — scene is presented once in makeUIView.
+        // Resizing triggers didChangeSize which previously corrupted gravity mid-game.
+        // Only re-present if scene was somehow evicted (edge case).
+        if uiView.scene !== context.coordinator.scene {
             context.coordinator.configureIfNeeded(with: uiView)
         }
         context.coordinator.update(level: level, world: world)
