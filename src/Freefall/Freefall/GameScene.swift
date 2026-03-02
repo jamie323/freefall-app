@@ -153,6 +153,7 @@ final class GameScene: SKScene {
         let buffer = Constants.sphereOutOfBoundsBuffer
         let extendedFrame = CGRect(x: -buffer, y: -buffer, width: size.width + buffer * 2, height: size.height + buffer * 2)
         if !extendedFrame.contains(sphere.position) {
+            print("💀 OUT OF BOUNDS — pos=\(sphere.position) sceneSize=\(size) frame=\(extendedFrame)")
             enterDeadState()
         }
     }
@@ -165,7 +166,9 @@ final class GameScene: SKScene {
 
     /// Public entry point for tap — called by SwiftUI gesture via SpriteKitView.Coordinator
     func handleTap() {
+        print("🎮 TAP — state=\(sceneState.rawValue) gravity=\(isGravityDown ? "down" : "up") sphereVel=\(sphereNode?.physicsBody?.velocity ?? .zero)")
         handlePrimaryTap()
+        print("🎮 POST-TAP — state=\(sceneState.rawValue) isDynamic=\(sphereNode?.physicsBody?.isDynamic ?? false)")
     }
 
     func resetScene() {
@@ -218,6 +221,7 @@ final class GameScene: SKScene {
         stopSphereMotion()
         sphere.physicsBody?.velocity = launchVelocity
         createTrail()
+        print("🚀 BEGIN PLAYING — pos=\(sphere.position) vel=\(launchVelocity) gravity=\(physicsWorld.gravity) sceneSize=\(size)")
     }
 
     private func flipGravity() {
@@ -226,6 +230,7 @@ final class GameScene: SKScene {
         totalFlipsDuringLevel += 1
         applyGravityDirection()
         triggerHapticIfNeeded()
+        print("🔄 FLIP — gravity now \(isGravityDown ? "DOWN" : "UP") physicsGravity=\(physicsWorld.gravity)")
     }
 
     private func applyGravityDirection() {
