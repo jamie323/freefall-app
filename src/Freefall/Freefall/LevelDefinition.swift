@@ -158,7 +158,24 @@ struct LevelLoader {
 
         do {
             let data = try Data(contentsOf: url)
-            return try decoder.decode(LevelDefinition.self, from: data)
+            do {
+                return try decoder.decode(LevelDefinition.self, from: data)
+            } catch let decodingError as DecodingError {
+                switch decodingError {
+                case .keyNotFound(let key, let context):
+                    throw LevelLoaderError.failedToDecode("Missing key '\(key.stringValue)' at \(context.codingPath.map(\.stringValue).joined(separator: "."))")
+                case .typeMismatch(let type, let context):
+                    throw LevelLoaderError.failedToDecode("Type mismatch: expected \(type) at \(context.codingPath.map(\.stringValue).joined(separator: "."))")
+                case .valueNotFound(let type, let context):
+                    throw LevelLoaderError.failedToDecode("Value not found: \(type) at \(context.codingPath.map(\.stringValue).joined(separator: "."))")
+                case .dataCorrupted(let context):
+                    throw LevelLoaderError.failedToDecode("Data corrupted at \(context.codingPath.map(\.stringValue).joined(separator: ".")): \(context.debugDescription)")
+                @unknown default:
+                    throw LevelLoaderError.failedToDecode(decodingError.localizedDescription)
+                }
+            }
+        } catch let e as LevelLoaderError {
+            throw e
         } catch {
             throw LevelLoaderError.failedToDecode(error.localizedDescription)
         }
