@@ -14,8 +14,9 @@ final class GameScene: SKScene {
     enum Constants {
         static let sphereDiameter: CGFloat = 28
         static let gravityMagnitude: CGFloat = 60
-        static let maxVerticalVelocity: CGFloat = 220   // cap vertical speed
-        static let linearDamping: CGFloat = 0.4          // air resistance
+        static let maxVerticalVelocity: CGFloat = 160   // hard cap vertical speed
+        static let flipImpulse: CGFloat = 40             // vertical kick on flip (in new gravity direction)
+        static let linearDamping: CGFloat = 0.6          // air resistance — higher = more floaty
         static let backgroundScale: CGFloat = 1.2
         static let parallaxMultiplier: CGFloat = 0.2
         static let backgroundResetDuration: TimeInterval = 0.3
@@ -246,9 +247,10 @@ final class GameScene: SKScene {
         totalFlipsDuringLevel += 1
         flipCount += 1
         applyGravityDirection()
-        // Bleed vertical velocity on flip — keeps horizontal momentum, kills vertical
-        // so the reversal feels controlled rather than violent
-        body.velocity = CGVector(dx: body.velocity.dx, dy: 0)
+        // On flip: zero vertical + apply small impulse in new direction
+        // Keeps horizontal momentum, gives instant directional feedback
+        let impulse = isGravityDown ? -Constants.flipImpulse : Constants.flipImpulse
+        body.velocity = CGVector(dx: body.velocity.dx, dy: impulse)
         triggerHapticIfNeeded()
         print("🔄 FLIP #\(flipCount) — gravity now \(isGravityDown ? "DOWN" : "UP")")
     }
