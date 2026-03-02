@@ -127,6 +127,8 @@ private struct GameDestinationView: View {
             } catch {
                 loadError = error
             }
+            // Start world music when level loads
+            audioManager.playMusic(world: worldId, level: levelId)
         }
     }
 }
