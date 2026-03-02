@@ -160,6 +160,11 @@ final class GameScene: SKScene {
         handlePrimaryTap()
     }
 
+    /// Public entry point for tap — called by SwiftUI gesture via SpriteKitView.Coordinator
+    func handleTap() {
+        handlePrimaryTap()
+    }
+
     func resetScene() {
         stopSphereMotion()
         enterReadyState(shouldReposition: true, animateBackgroundReset: true)

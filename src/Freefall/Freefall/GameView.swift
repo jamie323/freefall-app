@@ -7,31 +7,44 @@ struct GameView: View {
     let level: LevelDefinition
     let onQuit: () -> Void
 
+    // Scene reference so the SwiftUI tap gesture can call scene methods directly
+    @State private var sceneCoordinator: SpriteKitView.Coordinator?
+
     var body: some View {
-        SpriteKitView(level: level, world: world)
-            .ignoresSafeArea()
-            .overlay(alignment: .topLeading) {
-                // Level label — top left corner, decorative only
-                Text("L\(level.levelId)")
-                    .font(.system(size: 16, weight: .medium, design: .monospaced))
-                    .foregroundStyle(.white.opacity(0.5))
-                    .padding(.leading, 16)
-                    .padding(.top, 16)
-                    .allowsHitTesting(false)
-            }
-            .overlay(alignment: .topTrailing) {
-                // Pause button — top right corner, interactive
-                Button(action: {
-                    // Pause functionality to be added
-                }) {
-                    Image(systemName: "pause.circle")
-                        .font(.system(size: 24, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.5))
-                        .padding(12)
+        ZStack {
+            SpriteKitView(level: level, world: world, coordinatorBinding: $sceneCoordinator)
+                .ignoresSafeArea()
+
+            // Full-screen tap target — sits above SpriteKit, below HUD buttons
+            Color.clear
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    sceneCoordinator?.handleTap()
                 }
-                .padding(.trailing, 4)
-                .padding(.top, 8)
+
+            // HUD — decorative label, non-interactive
+            Text("L\(level.levelId)")
+                .font(.system(size: 16, weight: .medium, design: .monospaced))
+                .foregroundStyle(.white.opacity(0.5))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(.leading, 16)
+                .padding(.top, 16)
+                .allowsHitTesting(false)
+
+            // Pause button — top right, interactive (sits on top of tap layer)
+            Button(action: {
+                // Pause functionality to be added
+            }) {
+                Image(systemName: "pause.circle")
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.5))
+                    .padding(12)
             }
-            .navigationBarBackButtonHidden(true)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 4)
+            .padding(.top, 8)
+        }
+        .navigationBarBackButtonHidden(true)
     }
 }

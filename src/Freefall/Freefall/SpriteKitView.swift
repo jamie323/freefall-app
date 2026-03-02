@@ -6,15 +6,23 @@ struct SpriteKitView: UIViewRepresentable {
 
     let level: LevelDefinition
     let world: WorldDefinition
+    @Binding var coordinatorBinding: Coordinator?
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(gameState: gameState)
+        let c = Coordinator(gameState: gameState)
+        // Expose coordinator to GameView via binding (called on main thread after makeCoordinator)
+        DispatchQueue.main.async {
+            coordinatorBinding = c
+        }
+        return c
     }
 
     func makeUIView(context: Context) -> SKView {
         let view = SKView()
         view.backgroundColor = .clear
         view.ignoresSiblingOrder = true
+        // SKView touch handling disabled — SwiftUI gesture owns all taps
+        view.isUserInteractionEnabled = false
         context.coordinator.configureIfNeeded(with: view)
         context.coordinator.update(level: level, world: world)
         return view
@@ -26,7 +34,7 @@ struct SpriteKitView: UIViewRepresentable {
     }
 
     final class Coordinator {
-        private let scene: GameScene
+        let scene: GameScene
         private var cachedLevelID: String?
         private var cachedWorldID: Int?
 
@@ -40,7 +48,6 @@ struct SpriteKitView: UIViewRepresentable {
             if boundsSize != .zero {
                 scene.size = boundsSize
             }
-
             if view.scene !== scene {
                 view.presentScene(scene)
             }
@@ -51,6 +58,10 @@ struct SpriteKitView: UIViewRepresentable {
             scene.loadLevel(level, world: world)
             cachedLevelID = level.id
             cachedWorldID = world.id
+        }
+
+        func handleTap() {
+            scene.handleTap()
         }
     }
 }
