@@ -130,8 +130,11 @@ final class GameScene: SKScene {
     override func didChangeSize(_ oldSize: CGSize) {
         super.didChangeSize(oldSize)
         updateBackgroundLayout()
-        configureForCurrentLevelIfPossible()
         layoutScoreLabel()
+        // Only reconfigure layout if not actively playing — never interrupt a live run
+        if sceneState == .ready {
+            configureForCurrentLevelIfPossible()
+        }
     }
 
     override func update(_ currentTime: TimeInterval) {

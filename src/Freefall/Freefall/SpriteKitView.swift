@@ -32,7 +32,12 @@ struct SpriteKitView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: SKView, context: Context) {
-        context.coordinator.configureIfNeeded(with: uiView)
+        // Only resize/re-present scene when not playing — avoids triggering
+        // didChangeSize → configureForCurrentLevelIfPossible during a live run
+        let scene = context.coordinator.scene
+        if scene.sceneState == .ready || scene.sceneState == .dead {
+            context.coordinator.configureIfNeeded(with: uiView)
+        }
         context.coordinator.update(level: level, world: world)
     }
 
