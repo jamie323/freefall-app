@@ -54,7 +54,7 @@ struct ContentView: View {
             SettingsView()
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.hidden)
-                .presentationBackground(.thinMaterial)
+                .presentationBackground(Material.thin)
         }
         .environment(gameState)
         .onAppear {
