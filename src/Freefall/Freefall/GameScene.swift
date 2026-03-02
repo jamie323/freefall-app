@@ -51,6 +51,7 @@ final class GameScene: SKScene {
 
     var stateDidChange: ((SceneState) -> Void)?
     var levelCompleted: (() -> Void)?
+    var onSizeReady: (() -> Void)?
 
     var sphereNode: SKSpriteNode?
     var backgroundNode: SKSpriteNode?
@@ -129,10 +130,13 @@ final class GameScene: SKScene {
 
     override func didChangeSize(_ oldSize: CGSize) {
         super.didChangeSize(oldSize)
+        guard size.width > 0, size.height > 0 else { return }
         updateBackgroundLayout()
         layoutScoreLabel()
-        // Never reconfigure from a resize — it resets gravity/obstacles mid-game.
-        // configureForCurrentLevelIfPossible is only called from loadLevel and didMove.
+        // Notify coordinator that scene now has a real size — triggers pending level load
+        if oldSize.width == 0 || oldSize.height == 0 {
+            onSizeReady?()
+        }
     }
 
     override func update(_ currentTime: TimeInterval) {

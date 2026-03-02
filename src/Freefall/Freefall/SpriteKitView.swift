@@ -17,7 +17,7 @@ struct SpriteKitView: UIViewRepresentable {
 
     func makeCoordinator() -> Coordinator {
         let c = Coordinator(gameState: gameState)
-        proxy.coordinator = c   // plain assignment — no binding, no state mutation
+        proxy.coordinator = c
         return c
     }
 
@@ -26,46 +26,69 @@ struct SpriteKitView: UIViewRepresentable {
         view.backgroundColor = .clear
         view.ignoresSiblingOrder = true
         view.isUserInteractionEnabled = false
-        context.coordinator.configureIfNeeded(with: view)
-        context.coordinator.update(level: level, world: world)
+
+        // Store pending level — will load once scene has real size
+        context.coordinator.pendingLevel = level
+        context.coordinator.pendingWorld = world
+
+        // Present scene now; level loads when didChangeSize fires with real size
+        context.coordinator.presentScene(in: view)
         return view
     }
 
     func updateUIView(_ uiView: SKView, context: Context) {
-        // Never resize scene in updateUIView — scene is presented once in makeUIView.
-        // Resizing triggers didChangeSize which previously corrupted gravity mid-game.
-        // Only re-present if scene was somehow evicted (edge case).
+        // Re-present only if scene was evicted
         if uiView.scene !== context.coordinator.scene {
-            context.coordinator.configureIfNeeded(with: uiView)
+            context.coordinator.presentScene(in: uiView)
         }
-        context.coordinator.update(level: level, world: world)
+        // Queue level update — coordinator will apply once size is valid
+        context.coordinator.queueLevelIfNeeded(level: level, world: world)
     }
 
     final class Coordinator {
         let scene: GameScene
+        var pendingLevel: LevelDefinition?
+        var pendingWorld: WorldDefinition?
         private var cachedLevelID: String?
         private var cachedWorldID: Int?
 
         init(gameState: GameState) {
-            scene = GameScene(size: UIScreen.main.bounds.size, gameState: gameState)
+            // Use screen size as initial hint; resizeFill will correct it
+            let screenSize = UIScreen.main.bounds.size
+            scene = GameScene(size: screenSize, gameState: gameState)
+            // Do NOT use resizeFill — it sets scene size to zero before layout
             scene.scaleMode = .resizeFill
-        }
-
-        func configureIfNeeded(with view: SKView) {
-            let boundsSize = view.bounds.size
-            if boundsSize != .zero {
-                scene.size = boundsSize
-            }
-            if view.scene !== scene {
-                view.presentScene(scene)
+            // Notify us when size is set so we can load the level
+            scene.onSizeReady = { [weak self] in
+                self?.applyPendingLevel()
             }
         }
 
-        func update(level: LevelDefinition, world: WorldDefinition) {
+        func presentScene(in view: SKView) {
+            view.presentScene(scene)
+        }
+
+        func queueLevelIfNeeded(level: LevelDefinition, world: WorldDefinition) {
+            guard cachedLevelID != level.id || cachedWorldID != world.id else { return }
+            pendingLevel = level
+            pendingWorld = world
+            // Apply immediately if scene already has valid size
+            if scene.size.width > 0 && scene.size.height > 0 {
+                applyPendingLevel()
+            }
+        }
+
+        func applyPendingLevel() {
+            guard let level = pendingLevel,
+                  let world = pendingWorld,
+                  scene.size.width > 0,
+                  scene.size.height > 0 else { return }
             guard cachedLevelID != level.id || cachedWorldID != world.id else { return }
             scene.loadLevel(level, world: world)
             cachedLevelID = level.id
             cachedWorldID = world.id
+            pendingLevel = nil
+            pendingWorld = nil
         }
 
         func handleTap() {
