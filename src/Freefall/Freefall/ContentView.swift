@@ -43,7 +43,16 @@ struct ContentView: View {
                         gameState: gameState,
                         audioManager: audioManager ?? AudioManager(gameState: gameState),
                         navigationPath: $navigationPath,
-                        onQuit: popDestination
+                        onQuit: {
+                            // Return to level select, play menu music
+                            audioManager?.playMenuMusic()
+                            popDestination()
+                        },
+                        onNextLevel: { nextLevelId in
+                            // Replace current game destination with next level
+                            navigationPath.removeLast()
+                            navigationPath.append(AppDestination.game(worldId: worldId, levelId: nextLevelId))
+                        }
                     )
                 case .settings:
                     SettingsView()
@@ -86,6 +95,7 @@ private struct GameDestinationView: View {
     let audioManager: AudioManager
     @Binding var navigationPath: NavigationPath
     let onQuit: () -> Void
+    let onNextLevel: (Int) -> Void
 
     @State private var level: LevelDefinition?
     @State private var loadError: Error?
@@ -97,7 +107,10 @@ private struct GameDestinationView: View {
                     GameView(
                         world: world,
                         level: level,
-                        onQuit: onQuit
+                        onQuit: onQuit,
+                        onNextLevel: { nextLevelId in
+                            onNextLevel(nextLevelId)
+                        }
                     )
 
                     if gameState.isIntermissionActive {
@@ -108,8 +121,7 @@ private struct GameDestinationView: View {
                                 gameState.lastIntermissionScore = finalScore
                                 gameState.lastIntermissionSurvivalTime = time
                                 gameState.isIntermissionActive = false
-                                navigationPath.removeLast()
-                                navigationPath.append(AppDestination.game(worldId: worldId, levelId: levelId + 1))
+                                onNextLevel(levelId + 1)
                             }
                         )
                         .ignoresSafeArea()
@@ -127,7 +139,6 @@ private struct GameDestinationView: View {
             } catch {
                 loadError = error
             }
-            // Start world music when level loads
             audioManager.playMusic(world: worldId, level: levelId)
         }
     }

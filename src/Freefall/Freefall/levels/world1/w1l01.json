@@ -1,48 +1,40 @@
 {
   "worldId": 1,
   "levelId": 1,
-  "launchPosition": {
-    "x": 0.1,
-    "y": 0.5
-  },
-  "launchVelocity": {
-    "dx": 120,
-    "dy": 0
-  },
-  "goalPosition": {
-    "x": 0.88,
-    "y": 0.5
-  },
-  "goalRadius": 50,
+  "launchPosition": { "x": 0.08, "y": 0.5 },
+  "launchVelocity": { "dx": 120, "dy": 0 },
+  "goalPosition": { "x": 0.88, "y": 0.5 },
+  "goalRadius": 44,
   "initialGravityDown": true,
-  "parTime": 15.0,
+  "parTime": 12.0,
   "parFlips": 3,
   "collectibles": [
-    {
-      "position": {
-        "x": 0.4,
-        "y": 0.4
-      }
-    },
-    {
-      "position": {
-        "x": 0.65,
-        "y": 0.6
-      }
-    }
+    { "position": { "x": 0.35, "y": 0.65 } },
+    { "position": { "x": 0.55, "y": 0.35 } },
+    { "position": { "x": 0.72, "y": 0.6 } }
   ],
   "obstacles": [
     {
+      "id": "top-bar",
+      "type": "rect",
+      "position": { "x": 0.5, "y": 0.06 },
+      "size": { "width": 0.72, "height": 0.018 },
+      "rotation": 0,
+      "style": "neon_outline"
+    },
+    {
+      "id": "bot-bar",
+      "type": "rect",
+      "position": { "x": 0.5, "y": 0.94 },
+      "size": { "width": 0.72, "height": 0.018 },
+      "rotation": 0,
+      "style": "neon_outline"
+    },
+    {
       "id": "mid-block",
       "type": "rect",
-      "position": {
-        "x": 0.5,
-        "y": 0.5
-      },
-      "size": {
-        "width": 0.04,
-        "height": 0.15
-      },
+      "position": { "x": 0.52, "y": 0.5 },
+      "size": { "width": 0.035, "height": 0.16 },
       "rotation": 0,
       "style": "neon_outline"
     }
