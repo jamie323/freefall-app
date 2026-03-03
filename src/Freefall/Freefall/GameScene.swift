@@ -58,8 +58,8 @@ final class GameScene: SKScene {
     var onSizeReady: (() -> Void)?
 
     // Exposed for GameView to read after completion
-    private(set) var lastCompletionWord: String = "CLEAN"
-    private(set) var lastSpeedBonus: Int = 0
+    var lastCompletionWord: String = "CLEAN"
+    var lastSpeedBonus: Int = 0
 
     var sphereNode: SKSpriteNode?
     var backgroundNode: SKSpriteNode?
@@ -74,7 +74,7 @@ final class GameScene: SKScene {
     private var scoreLabel: SKLabelNode?
     private let scoreLabelPulseKey = "scoreLabelPulse"
     private var lastDisplayedScore: Int = 0
-    private var levelStartTime: TimeInterval?
+    var levelStartTime: TimeInterval?
     private var hasAppliedCompletionScore = false
 
     private var isGravityDown: Bool = true
