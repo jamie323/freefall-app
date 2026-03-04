@@ -16,6 +16,25 @@ struct GameView: View {
     private var isLastLevelInWorld: Bool { level.levelId == 10 }
     private var isLastLevelOverall: Bool { world.id == 4 && level.levelId == 10 }
 
+    private func wireLevelCompleteCallback() {
+        if let scene = proxy.coordinator?.scene {
+            scene.levelCompleted = { [self] in
+                self.completionWord = scene.lastCompletionWord
+                self.speedBonus = scene.lastSpeedBonus
+                DispatchQueue.main.async {
+                    withAnimation(.easeIn(duration: 0.2)) {
+                        self.showLevelComplete = true
+                    }
+                }
+            }
+        } else {
+            // Scene not ready yet — retry on next frame
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                wireLevelCompleteCallback()
+            }
+        }
+    }
+
     var body: some View {
         ZStack {
             SpriteKitView(level: level, world: world, proxy: proxy)
@@ -78,17 +97,9 @@ struct GameView: View {
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
-            // Wire level complete callback once scene is ready
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                proxy.coordinator?.scene.levelCompleted = {
-                    guard let scene = self.proxy.coordinator?.scene else { return }
-                    self.completionWord = scene.lastCompletionWord
-                    self.speedBonus = scene.lastSpeedBonus
-                    withAnimation(.easeIn(duration: 0.2)) {
-                        self.showLevelComplete = true
-                    }
-                }
-            }
+            // Wire immediately — proxy.coordinator is set synchronously in makeCoordinator
+            // Retry loop handles edge case where scene isn't ready yet
+            wireLevelCompleteCallback()
         }
     }
 }

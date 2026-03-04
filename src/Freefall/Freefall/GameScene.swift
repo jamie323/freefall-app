@@ -14,10 +14,10 @@ final class GameScene: SKScene {
     enum Constants {
         static let sphereDiameter: CGFloat = 28
         static let gravityMagnitude: CGFloat = 60
-        static let maxVerticalVelocity: CGFloat = 160   // hard cap vertical speed
-        static let flipImpulse: CGFloat = 40             // vertical kick on flip (in new gravity direction)
-        static let linearDamping: CGFloat = 0.0          // NO global damping — kills horizontal momentum
-        static let verticalDamping: CGFloat = 0.015      // per-frame vertical drag only (applied manually)
+        static let maxVerticalVelocity: CGFloat = 160
+        static let flipImpulse: CGFloat = 40
+        static let linearDamping: CGFloat = 0.0
+        static let verticalDamping: CGFloat = 0.015
         static let backgroundScale: CGFloat = 1.2
         static let parallaxMultiplier: CGFloat = 0.2
         static let backgroundResetDuration: TimeInterval = 0.3
@@ -35,6 +35,9 @@ final class GameScene: SKScene {
         static let deathParticleDurationRange: ClosedRange<TimeInterval> = 0.3...0.5
         static let deathResetDelay: TimeInterval = 0.35
         static let deathResetActionKey = "deathReset"
+        // Trail distance scoring
+        static let trailScorePerUnit: CGFloat = 0.08     // points per SpriteKit unit travelled
+        static let trailScorePopupThreshold: Int = 10    // show popup every N trail points earned
     }
 
     let gameState: GameState
@@ -82,7 +85,12 @@ final class GameScene: SKScene {
     private lazy var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
     private var lastUpdateTimestamp: TimeInterval = 0
     var totalFlipsDuringLevel: Int = 0
-    
+
+    // Trail distance scoring
+    private var lastSpherePosition: CGPoint = .zero
+    private var trailScoreAccumulator: CGFloat = 0
+    private var trailPointsBuffer: Int = 0  // accumulated trail points waiting to be shown
+
     private var beatTimer: Timer?
     private var beatInterval: TimeInterval = 0
 
@@ -152,7 +160,36 @@ final class GameScene: SKScene {
         clampSphereVelocity()
         updateBackgroundParallax(currentTime: currentTime)
         updateTrail()
+        updateTrailScore()
         checkSphereOutOfBounds()
+    }
+
+    private func updateTrailScore() {
+        guard sceneState == .playing, let sphere = sphereNode else { return }
+        let pos = sphere.position
+        guard lastSpherePosition != .zero else {
+            lastSpherePosition = pos
+            return
+        }
+        let dx = pos.x - lastSpherePosition.x
+        let dy = pos.y - lastSpherePosition.y
+        let dist = sqrt(dx * dx + dy * dy)
+        lastSpherePosition = pos
+
+        trailScoreAccumulator += dist * Constants.trailScorePerUnit
+        let earned = Int(trailScoreAccumulator)
+        if earned > 0 {
+            trailScoreAccumulator -= CGFloat(earned)
+            trailPointsBuffer += earned
+            gameState.addScore(earned)
+            updateScoreLabel(animated: true)
+
+            // Show popup every threshold points
+            if trailPointsBuffer >= Constants.trailScorePopupThreshold {
+                spawnScorePopup("+\(trailPointsBuffer)", at: pos, color: UIColor(worldDefinition?.primaryColor ?? .cyan))
+                trailPointsBuffer = 0
+            }
+        }
     }
 
     private func clampSphereVelocity() {
@@ -238,6 +275,9 @@ final class GameScene: SKScene {
         gameState.resetCurrentLevelScore()
         collectiblesCollectedThisAttempt = 0
         lastDisplayedScore = 0
+        trailScoreAccumulator = 0
+        trailPointsBuffer = 0
+        lastSpherePosition = .zero
         updateScoreLabel(animated: false)
         levelStartTime = CACurrentMediaTime()
         hasAppliedCompletionScore = false
@@ -247,7 +287,6 @@ final class GameScene: SKScene {
         stopSphereMotion()
         sphere.physicsBody?.velocity = launchVelocity
         createTrail()
-        print("🚀 BEGIN PLAYING — pos=\(sphere.position) vel=\(launchVelocity) gravity=\(physicsWorld.gravity) sceneSize=\(size)")
     }
 
     private(set) var flipCount: Int = 0
@@ -414,6 +453,30 @@ final class GameScene: SKScene {
             label.run(sequence, withKey: scoreLabelPulseKey)
         }
         lastDisplayedScore = newScore
+    }
+
+    /// Spawns a floating score text at the given scene position
+    func spawnScorePopup(_ text: String, at position: CGPoint, color: UIColor) {
+        let label = SKLabelNode(fontNamed: "Menlo-Bold")
+        label.text = text
+        label.fontSize = 18
+        label.fontColor = color
+        label.alpha = 1.0
+        label.zPosition = 60
+        label.blendMode = .add
+        label.position = position
+        addChild(label)
+
+        let rise = SKAction.moveBy(x: CGFloat.random(in: -12...12), y: 48, duration: 0.7)
+        rise.timingMode = .easeOut
+        let scaleDown = SKAction.scale(to: 0.5, duration: 0.7)
+        let fade = SKAction.sequence([
+            SKAction.wait(forDuration: 0.3),
+            SKAction.fadeOut(withDuration: 0.4)
+        ])
+        label.run(SKAction.group([rise, fade, scaleDown])) {
+            label.removeFromParent()
+        }
     }
 
     func applyCompletionScoreIfNeeded() {

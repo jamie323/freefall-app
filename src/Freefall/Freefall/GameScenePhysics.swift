@@ -82,6 +82,7 @@ extension GameScene: SKPhysicsContactDelegate {
         collectiblesCollectedThisAttempt += 1
         gameState.addScore(50)
         updateScoreLabel(animated: true)
+        spawnScorePopup("+50", at: collectPos, color: worldColor)
 
         // Haptic ping
         if hapticsEnabled {
@@ -177,57 +178,64 @@ extension GameScene: SKPhysicsContactDelegate {
         guard sceneState == .playing else { return }
         sceneState = .complete
         applyCompletionScoreIfNeeded()
-        stopSphereMotion()
         stopBeatTimer()
+        pauseBackgroundMovement()
+
+        // Disable sphere physics immediately
+        sphereNode?.physicsBody?.isDynamic = false
 
         // Heavy haptic
         let haptic = UINotificationFeedbackGenerator()
         haptic.notificationOccurred(.success)
 
-        // Goal flash
+        // Goal: expand ring, then suck ball in
+        let goalPos = goalNode?.position ?? CGPoint(x: size.width / 2, y: size.height / 2)
         if let goal = goalNode {
             goal.removeAction(forKey: Constants.goalPulseActionKey)
-            performGoalFlash(goal: goal)
+            // Ring expands then contracts (inhale)
+            goal.run(SKAction.sequence([
+                SKAction.group([
+                    SKAction.scale(to: 1.6, duration: 0.18),
+                    SKAction.run { goal.strokeColor = .white }
+                ]),
+                SKAction.scale(to: 0.1, duration: 0.25)
+            ]))
         }
 
-        // Sphere flash then fade
+        // Sphere flies to goal centre, shrinks, disappears
         if let sphere = sphereNode {
-            let worldColor = UIColor(worldDefinition?.primaryColor ?? .cyan)
-            sphere.color = worldColor
-            sphere.colorBlendFactor = 1
-            let flash = SKAction.sequence([
-                SKAction.colorize(with: .white, colorBlendFactor: 1, duration: 0.05),
-                SKAction.colorize(with: worldColor, colorBlendFactor: 1, duration: 0.1),
-                SKAction.fadeOut(withDuration: 0.4)
-            ])
-            sphere.run(flash)
+            sphere.run(SKAction.sequence([
+                SKAction.wait(forDuration: 0.08),
+                SKAction.group([
+                    SKAction.move(to: goalPos, duration: 0.22),
+                    SKAction.scale(to: 0.1, duration: 0.22)
+                ]),
+                SKAction.removeFromParent()
+            ]))
         }
 
-        // Screen flash overlay
-        let flash = SKSpriteNode(color: UIColor(worldDefinition?.primaryColor ?? .cyan).withAlphaComponent(0.4),
-                                 size: size)
-        flash.position = CGPoint(x: size.width/2, y: size.height/2)
-        flash.zPosition = 50
-        flash.blendMode = .add
-        addChild(flash)
-        flash.run(SKAction.sequence([
-            SKAction.fadeOut(withDuration: 0.3),
-            .removeFromParent()
-        ]))
+        // Screen flash after ball is absorbed
+        run(SKAction.sequence([SKAction.wait(forDuration: 0.32), SKAction.run { [weak self] in
+            guard let self else { return }
+            let worldColor = UIColor(self.worldDefinition?.primaryColor ?? .cyan)
+            let flash = SKSpriteNode(color: worldColor.withAlphaComponent(0.5), size: self.size)
+            flash.position = CGPoint(x: self.size.width / 2, y: self.size.height / 2)
+            flash.zPosition = 50
+            flash.blendMode = .add
+            self.addChild(flash)
+            flash.run(SKAction.sequence([SKAction.fadeOut(withDuration: 0.25), .removeFromParent()]))
+        }]))
 
-        // Fireworks — 3 waves of bursts
-        let goalPos = goalNode?.position ?? CGPoint(x: size.width/2, y: size.height/2)
-        createFireworksBurst(at: goalPos, delay: 0.0)
-        createFireworksBurst(at: CGPoint(x: goalPos.x - 80, y: goalPos.y + 60), delay: 0.15)
-        createFireworksBurst(at: CGPoint(x: goalPos.x + 80, y: goalPos.y - 40), delay: 0.3)
-        createFireworksBurst(at: CGPoint(x: size.width * 0.3, y: size.height * 0.4), delay: 0.45)
-        createFireworksBurst(at: CGPoint(x: size.width * 0.7, y: size.height * 0.6), delay: 0.6)
+        // Fireworks — 5 staggered bursts across screen
+        createFireworksBurst(at: goalPos, delay: 0.35)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.2, y: size.height * 0.65), delay: 0.5)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.8, y: size.height * 0.35), delay: 0.65)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.35, y: size.height * 0.25), delay: 0.8)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.65, y: size.height * 0.75), delay: 0.95)
 
-        pauseBackgroundMovement()
-
-        // Show complete UI after celebration fires
+        // Show complete UI
         let delayAction = SKAction.sequence([
-            SKAction.wait(forDuration: 0.9),
+            SKAction.wait(forDuration: 1.2),
             SKAction.run { [weak self] in
                 self?.emitLevelCompleteMessage()
                 self?.levelCompleted?()
@@ -236,47 +244,63 @@ extension GameScene: SKPhysicsContactDelegate {
         run(delayAction)
     }
 
+    // Street art fireworks palette — used across all worlds
+    private var fireworksPalette: [UIColor] {[
+        UIColor(red: 1.0,  green: 0.84, blue: 0.0,  alpha: 1), // gold
+        UIColor(red: 1.0,  green: 0.08, blue: 0.58, alpha: 1), // hot pink
+        UIColor(red: 0.39, green: 1.0,  blue: 0.08, alpha: 1), // lime
+        UIColor(red: 1.0,  green: 1.0,  blue: 1.0,  alpha: 1), // white
+        UIColor(red: 1.0,  green: 0.4,  blue: 0.0,  alpha: 1), // orange
+        UIColor(red: 0.54, green: 0.17, blue: 0.89, alpha: 1), // purple
+        UIColor(red: 0.0,  green: 1.0,  blue: 1.0,  alpha: 1), // cyan
+        UIColor(red: 1.0,  green: 0.25, blue: 0.25, alpha: 1), // red
+    ]}
+
     private func createFireworksBurst(at position: CGPoint, delay: TimeInterval) {
         let worldColor = UIColor(worldDefinition?.primaryColor ?? .cyan)
-        let colors: [UIColor] = [worldColor, .white, worldColor.withAlphaComponent(0.7), .cyan]
+        // Mix world colour with full palette for variety
+        var colors = fireworksPalette
+        colors.append(worldColor)
+        colors.append(worldColor)  // double weight the world colour
 
         run(SKAction.wait(forDuration: delay)) { [weak self] in
             guard let self else { return }
 
             // Haptic per burst
             let haptic = UIImpactFeedbackGenerator(style: .medium)
-            haptic.impactOccurred(intensity: 0.7)
+            haptic.impactOccurred(intensity: 0.8)
 
-            // Central flash ring
+            // Central flash ring in a random palette colour
+            let ringColor = colors.randomElement() ?? worldColor
             let ring = SKShapeNode(circleOfRadius: 6)
             ring.position = position
-            ring.strokeColor = worldColor
-            ring.fillColor = worldColor.withAlphaComponent(0.3)
+            ring.strokeColor = ringColor
+            ring.fillColor = ringColor.withAlphaComponent(0.25)
             ring.lineWidth = 3
             ring.zPosition = 25
             ring.blendMode = .add
             self.addChild(ring)
             ring.run(SKAction.sequence([
                 SKAction.group([
-                    SKAction.scale(to: 6.0, duration: 0.4),
-                    SKAction.fadeOut(withDuration: 0.4)
+                    SKAction.scale(to: 7.0, duration: 0.45),
+                    SKAction.fadeOut(withDuration: 0.45)
                 ]),
                 .removeFromParent()
             ]))
 
-            // Particle shower — 30 particles per burst
-            for i in 0..<30 {
+            // 32 particles per burst — each picks a random palette colour
+            for i in 0..<32 {
                 let color = colors[i % colors.count]
-                let size: CGFloat = CGFloat.random(in: 3...7)
-                let particle = SKSpriteNode(color: color, size: CGSize(width: size, height: size))
+                let sz: CGFloat = CGFloat.random(in: 3...8)
+                let particle = SKSpriteNode(color: color, size: CGSize(width: sz, height: sz))
                 particle.position = position
                 particle.zPosition = 22
                 particle.blendMode = .add
                 self.addChild(particle)
 
-                let angle = CGFloat(i) * (2 * .pi / 30) + CGFloat.random(in: -0.2...0.2)
-                let speed = CGFloat.random(in: 120...320)
-                let dur = TimeInterval.random(in: 0.5...0.9)
+                let angle = CGFloat(i) * (2 * .pi / 32) + CGFloat.random(in: -0.15...0.15)
+                let speed = CGFloat.random(in: 140...360)
+                let dur = TimeInterval.random(in: 0.55...1.0)
                 let dx = cos(angle) * speed * CGFloat(dur)
                 let dy = sin(angle) * speed * CGFloat(dur)
 
@@ -284,8 +308,8 @@ extension GameScene: SKPhysicsContactDelegate {
                     SKAction.group([
                         SKAction.moveBy(x: dx, y: dy, duration: dur),
                         SKAction.sequence([
-                            SKAction.wait(forDuration: dur * 0.4),
-                            SKAction.fadeOut(withDuration: dur * 0.6)
+                            SKAction.wait(forDuration: dur * 0.35),
+                            SKAction.fadeOut(withDuration: dur * 0.65)
                         ])
                     ]),
                     .removeFromParent()

@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 
 struct LevelCompleteView: View {
     let world: WorldDefinition
@@ -13,6 +14,7 @@ struct LevelCompleteView: View {
     @State private var scale: CGFloat = 0.5
     @State private var opacity: CGFloat = 0
     @State private var showScoreDetails = false
+    @State private var scratchPlayer: AVAudioPlayer?
 
     private var isLastLevel: Bool {
         level.levelId == 10
@@ -49,18 +51,21 @@ struct LevelCompleteView: View {
                     .scaleEffect(scale)
                     .opacity(opacity)
                     .onAppear {
-                        withAnimation(.spring(response: 0.6, dampingFraction: 0.7, blendDuration: 0.4).delay(0.1)) {
+                        // Record scratch SFX on completion word appearance
+                        playRecordScratch()
+
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.6, blendDuration: 0.3).delay(0.05)) {
                             scale = 1.0
                             opacity = 1.0
                         }
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
                             withAnimation(.easeIn(duration: 0.3)) {
                                 showScoreDetails = true
                             }
                         }
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
                             withAnimation(.easeIn(duration: 0.3)) {
                                 showButtons = true
                             }
@@ -113,6 +118,13 @@ struct LevelCompleteView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+
+    private func playRecordScratch() {
+        guard let url = Bundle.main.url(forResource: "record-scratch", withExtension: "mp3", subdirectory: "audio/sfx") else { return }
+        scratchPlayer = try? AVAudioPlayer(contentsOf: url)
+        scratchPlayer?.volume = 0.8
+        scratchPlayer?.play()
     }
 }
 
