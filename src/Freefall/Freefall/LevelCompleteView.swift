@@ -11,6 +11,7 @@ struct LevelCompleteView: View {
     let bestScore: Int
     let stars: Int
     let onNextLevel: () -> Void
+    let onReplay: () -> Void
     let onLevels: () -> Void
 
     @State private var showButtons = false
@@ -141,17 +142,33 @@ struct LevelCompleteView: View {
                 Spacer()
 
                 // Bottom buttons
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     Button(action: onLevels) {
-                        Text("← LEVELS")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.6))
+                        Text("LEVELS")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.5))
                     }
 
                     Spacer()
 
+                    Button(action: onReplay) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.system(size: 13, weight: .bold))
+                            Text("REPLAY")
+                                .font(.system(size: 14, weight: .bold))
+                        }
+                        .foregroundStyle(.white.opacity(0.7))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(.white.opacity(0.3), lineWidth: 1)
+                        )
+                    }
+
                     Button(action: onNextLevel) {
-                        Text(isLastLevelOverall ? "YOU'RE DONE 🔥" : (isLastLevel ? "NEXT WORLD →" : "NEXT LEVEL →"))
+                        Text(isLastLevelOverall ? "DONE" : (isLastLevel ? "NEXT WORLD →" : "NEXT →"))
                             .font(.system(size: 16, weight: .heavy, design: .default))
                             .foregroundStyle(world.primaryColor)
                             .padding(.horizontal, 16)
@@ -160,7 +177,7 @@ struct LevelCompleteView: View {
                             .cornerRadius(6)
                     }
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
                 .padding(.bottom, 24)
                 .opacity(showButtons ? 1 : 0)
             }

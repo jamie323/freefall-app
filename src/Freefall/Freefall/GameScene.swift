@@ -334,6 +334,10 @@ final class GameScene: SKScene {
     }
 
     private func createSphereIfNeeded() {
+        // If the sphere was removed from parent (e.g. completion animation), clear and recreate
+        if let existing = sphereNode, existing.parent == nil {
+            sphereNode = nil
+        }
         guard sphereNode == nil else { return }
         let texture = GameScene.makeSphereTexture(diameter: Constants.sphereDiameter)
         let node = SKSpriteNode(texture: texture)
@@ -442,9 +446,9 @@ final class GameScene: SKScene {
     private func setupScoreLabelIfNeeded() {
         guard scoreLabel == nil else { return }
         let label = SKLabelNode(fontNamed: "Menlo-Bold")
-        label.fontSize = 20
-        label.fontColor = UIColor(worldDefinition?.primaryColor ?? .white)
-        label.alpha = 0.85
+        label.fontSize = 24
+        label.fontColor = .white
+        label.alpha = 0.95
         label.horizontalAlignmentMode = .right
         label.verticalAlignmentMode = .top
         label.zPosition = 50
@@ -457,7 +461,8 @@ final class GameScene: SKScene {
     private func layoutScoreLabel() {
         guard let label = scoreLabel else { return }
         let padding: CGFloat = 16
-        label.position = CGPoint(x: size.width - padding, y: size.height - padding)
+        // Position below the pause button area
+        label.position = CGPoint(x: size.width - padding, y: size.height - 52)
     }
 
     func updateScoreLabel(animated: Bool) {
@@ -775,12 +780,11 @@ final class GameScene: SKScene {
             ]))
         }
 
-        // Obstacle glow pulse
+        // Obstacle glow pulse — smooth alpha fade (gradual, not flashing)
         for obstacle in obstacleNodes {
             obstacle.run(SKAction.sequence([
-                SKAction.run { obstacle.glowWidth = 10 },
-                SKAction.wait(forDuration: 0.06),
-                SKAction.run { obstacle.glowWidth = 6 }
+                SKAction.fadeAlpha(to: 1.0, duration: 0.08),
+                SKAction.fadeAlpha(to: 0.7, duration: 0.3)
             ]))
         }
     }

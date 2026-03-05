@@ -54,6 +54,7 @@ struct ContentView: View {
                             navigationPath.append(AppDestination.game(worldId: worldId, levelId: nextLevelId))
                         }
                     )
+                    .id("game-\(worldId)-\(levelId)")
                 case .settings:
                     SettingsView()
                 }

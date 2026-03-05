@@ -15,6 +15,7 @@ struct GameView: View {
     @State private var completionWord = "CLEAN"
     @State private var speedBonus = 0
     @State private var isNewBest = false
+    @State private var fadeIn = true
 
     private var isLastLevelInWorld: Bool { level.levelId == 10 }
     private var isLastLevelOverall: Bool { world.id == 4 && level.levelId == 10 }
@@ -86,6 +87,14 @@ struct GameView: View {
                 .zIndex(99)
             }
 
+            // Fade-in overlay
+            if fadeIn {
+                Color.black
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+                    .zIndex(200)
+            }
+
             // Level complete overlay
             if showLevelComplete {
                 LevelCompleteView(
@@ -108,6 +117,10 @@ struct GameView: View {
                             onNextLevel(level.levelId + 1)
                         }
                     },
+                    onReplay: {
+                        showLevelComplete = false
+                        handleRestart()
+                    },
                     onLevels: {
                         showLevelComplete = false
                         onQuit()
@@ -122,6 +135,10 @@ struct GameView: View {
             // Wire immediately — proxy.coordinator is set synchronously in makeCoordinator
             // Retry loop handles edge case where scene isn't ready yet
             wireLevelCompleteCallback()
+            // Fade in from black
+            withAnimation(.easeOut(duration: 0.5)) {
+                fadeIn = false
+            }
         }
     }
 

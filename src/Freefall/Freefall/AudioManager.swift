@@ -64,24 +64,35 @@ final class AudioManager {
             withExtension: "mp3",
             subdirectory: subdirectory
         ) else {
-            print("Music file not found: \(named) in \(subdirectory)")
             return
         }
 
         do {
             let newPlayer = try AVAudioPlayer(contentsOf: url)
             newPlayer.numberOfLoops = -1
-            newPlayer.volume = currentVolume
 
             if let currentPlayer = currentMusicPlayer {
                 crossfadeMusic(from: currentPlayer, to: newPlayer, duration: 2.0)
                 nextMusicPlayer = newPlayer
             } else {
+                // First track — fade in from silence
+                newPlayer.volume = 0
                 newPlayer.play()
+                fadeInMusic(player: newPlayer, targetVolume: currentVolume, duration: 1.5)
                 currentMusicPlayer = newPlayer
             }
         } catch {
             print("Failed to load music: \(error.localizedDescription)")
+        }
+    }
+
+    private func fadeInMusic(player: AVAudioPlayer, targetVolume: Float, duration: TimeInterval) {
+        let fadeSteps = Int(duration * 30)
+        let volumeStep = targetVolume / Float(fadeSteps)
+        for i in 0..<fadeSteps {
+            DispatchQueue.main.asyncAfter(deadline: .now() + (Double(i) / 30.0)) {
+                player.volume = min(targetVolume, Float(i + 1) * volumeStep)
+            }
         }
     }
 
@@ -118,8 +129,10 @@ final class AudioManager {
     func playSFX(_ name: String) {
         guard gameState.sfxEnabled else { return }
 
-        guard let url = Bundle.main.url(forResource: name, withExtension: "mp3", subdirectory: "audio/sfx") else {
-            print("SFX file not found: \(name)")
+        // Try mp3 first, then wav
+        let url: URL? = Bundle.main.url(forResource: name, withExtension: "mp3", subdirectory: "audio/sfx")
+            ?? Bundle.main.url(forResource: name, withExtension: "wav", subdirectory: "audio/sfx")
+        guard let url else {
             return
         }
 
