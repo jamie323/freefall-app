@@ -19,6 +19,7 @@ struct WorldSelectView: View {
                             world: world,
                             isUnlocked: gameState.isWorldUnlocked(world: world.id),
                             completedCount: gameState.completedCountForWorld(world: world.id),
+                            worldBestScore: gameState.bestScoreForWorld(world: world.id),
                             onUnlockedTap: {
                                 gameState.currentWorldId = world.id
                                 onWorldSelected(world)
@@ -63,6 +64,7 @@ private struct WorldCardView: View {
     let world: WorldDefinition
     let isUnlocked: Bool
     let completedCount: Int
+    let worldBestScore: Int
     let onUnlockedTap: () -> Void
 
     @State private var shakeTrigger: CGFloat = 0
@@ -119,9 +121,16 @@ private struct WorldCardView: View {
 
     private var progressRow: some View {
         HStack {
-            Text(isUnlocked ? "\(completedCount)/10 completed" : "LOCKED")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(isUnlocked ? .white.opacity(0.7) : .white.opacity(0.5))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(isUnlocked ? "\(completedCount)/10 completed" : "LOCKED")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(isUnlocked ? .white.opacity(0.7) : .white.opacity(0.5))
+                if isUnlocked && worldBestScore > 0 {
+                    Text("BEST: \(worldBestScore)")
+                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                        .foregroundStyle(world.primaryColor.opacity(0.7))
+                }
+            }
             Spacer()
             Image(systemName: "arrow.right")
                 .font(.system(size: 18, weight: .bold))

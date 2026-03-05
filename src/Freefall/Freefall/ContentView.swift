@@ -107,6 +107,7 @@ private struct GameDestinationView: View {
                     GameView(
                         world: world,
                         level: level,
+                        audioManager: audioManager,
                         onQuit: onQuit,
                         onNextLevel: { nextLevelId in
                             onNextLevel(nextLevelId)

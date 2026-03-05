@@ -18,6 +18,7 @@ final class GameState {
         static let hapticsEnabled = "freefall.hapticsEnabled"
         static let worldScores = "freefall.worldScores"
         static let totalScore = "freefall.totalScore"
+        static let levelBestScores = "freefall.levelBestScores"
     }
 
     private let defaults: UserDefaults
@@ -72,6 +73,13 @@ final class GameState {
         }
     }
 
+    var levelBestScores: [String: Int] {
+        didSet {
+            guard oldValue != levelBestScores else { return }
+            persistLevelBestScores()
+        }
+    }
+
     var currentWorldId: Int?
     var currentLevelId: Int?
     var gameplayState: GameplayState
@@ -84,6 +92,7 @@ final class GameState {
         self.hapticsEnabled = defaults.object(forKey: DefaultsKeys.hapticsEnabled) as? Bool ?? true
         self.worldScores = GameState.loadWorldScores(from: defaults)
         self.totalScore = defaults.object(forKey: DefaultsKeys.totalScore) as? Int ?? 0
+        self.levelBestScores = GameState.loadLevelBestScores(from: defaults)
         self.currentWorldId = nil
         self.currentLevelId = nil
         self.gameplayState = .ready
@@ -123,8 +132,10 @@ final class GameState {
         currentLevelScore = 0
         worldScores = [:]
         totalScore = 0
+        levelBestScores = [:]
         defaults.removeObject(forKey: DefaultsKeys.worldScores)
         defaults.removeObject(forKey: DefaultsKeys.totalScore)
+        defaults.removeObject(forKey: DefaultsKeys.levelBestScores)
     }
 
     func addScore(_ points: Int) {
@@ -138,6 +149,49 @@ final class GameState {
 
     func shouldTriggerIntermission(world: Int, level: Int) -> Bool {
         level == 5 || level == 10
+    }
+
+    func bestScoreForLevel(world: Int, level: Int) -> Int {
+        levelBestScores[levelKey(world: world, level: level)] ?? 0
+    }
+
+    /// Updates the best score for a level if the new score beats the old one.
+    /// Returns `true` if this is a new best.
+    @discardableResult
+    func updateBestScoreIfNeeded(world: Int, level: Int, score: Int) -> Bool {
+        let key = levelKey(world: world, level: level)
+        let previous = levelBestScores[key] ?? 0
+        if score > previous {
+            levelBestScores[key] = score
+            return true
+        }
+        return false
+    }
+
+    /// Star thresholds: 1★ = completed (200+), 2★ = 350+, 3★ = 550+
+    func starsForLevel(world: Int, level: Int) -> Int {
+        let best = bestScoreForLevel(world: world, level: level)
+        if best >= 550 { return 3 }
+        if best >= 350 { return 2 }
+        if best > 0 { return 1 }
+        return 0
+    }
+
+    /// Sum of all per-level best scores for a world
+    func bestScoreForWorld(world: Int) -> Int {
+        (1...10).reduce(0) { $0 + bestScoreForLevel(world: world, level: $1) }
+    }
+
+    /// Sum of all per-level best scores across all worlds
+    var totalBestScore: Int {
+        levelBestScores.values.reduce(0, +)
+    }
+
+    /// Total stars earned across all worlds
+    var totalStars: Int {
+        (1...4).reduce(0) { total, world in
+            total + (1...10).reduce(0) { $0 + starsForLevel(world: world, level: $1) }
+        }
     }
 
     func resetCurrentLevelScore() {
@@ -170,6 +224,13 @@ final class GameState {
         }
     }
 
+    private func persistLevelBestScores() {
+        let encoder = JSONEncoder()
+        if let data = try? encoder.encode(levelBestScores) {
+            defaults.set(data, forKey: DefaultsKeys.levelBestScores)
+        }
+    }
+
     private static func loadCompletedLevels(from defaults: UserDefaults) -> Set<String> {
         guard let data = defaults.data(forKey: DefaultsKeys.completedLevels),
               let decoded = try? JSONDecoder().decode([String].self, from: data) else {
@@ -181,6 +242,14 @@ final class GameState {
     private static func loadWorldScores(from defaults: UserDefaults) -> [Int: Int] {
         guard let data = defaults.data(forKey: DefaultsKeys.worldScores),
               let decoded = try? JSONDecoder().decode([Int: Int].self, from: data) else {
+            return [:]
+        }
+        return decoded
+    }
+
+    private static func loadLevelBestScores(from defaults: UserDefaults) -> [String: Int] {
+        guard let data = defaults.data(forKey: DefaultsKeys.levelBestScores),
+              let decoded = try? JSONDecoder().decode([String: Int].self, from: data) else {
             return [:]
         }
         return decoded

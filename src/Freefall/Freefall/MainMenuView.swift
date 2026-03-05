@@ -26,6 +26,13 @@ struct MainMenuView: View {
                     .foregroundStyle(cyan)
                     .shadow(color: cyan.opacity(0.8), radius: 20)
 
+                if gameState.totalBestScore > 0 {
+                    Text("\(gameState.totalBestScore)")
+                        .font(.system(size: 18, weight: .bold, design: .monospaced))
+                        .foregroundStyle(cyan.opacity(0.6))
+                        .padding(.top, 4)
+                }
+
                 Spacer().frame(height: 40)
 
                 Button(action: handlePlayTapped) {

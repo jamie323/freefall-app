@@ -51,8 +51,14 @@ extension GameScene: SKPhysicsContactDelegate {
         let collectPos = node.position
         let worldColor = UIColor(worldDefinition?.primaryColor ?? .cyan)
 
-        // Burst: 10 particles in world colour
-        spawnCollectBurst(at: collectPos, color: worldColor)
+        // Combo system: increment count, compute multiplied score
+        collectibleComboCount += 1
+        let basePoints = 50
+        let points = Int(CGFloat(basePoints) * comboMultiplier)
+
+        // Scale burst particles with combo (10 → 15 → 20)
+        let burstCount = min(20, 10 + (collectibleComboCount - 1) * 5)
+        spawnCollectBurst(at: collectPos, color: worldColor, count: burstCount)
 
         // Ring flash: quick expanding ring
         let ring = SKShapeNode(circleOfRadius: 8)
@@ -80,9 +86,28 @@ extension GameScene: SKPhysicsContactDelegate {
         collectibleNodes.removeAll { $0 === node }
 
         collectiblesCollectedThisAttempt += 1
-        gameState.addScore(50)
+        gameState.addScore(points)
         updateScoreLabel(animated: true)
-        spawnScorePopup("+50", at: collectPos, color: worldColor)
+
+        // Show combo text when multiplier > 1
+        if collectibleComboCount > 1 {
+            let comboText = "+\(points) ×\(collectibleComboCount)"
+            spawnScorePopup(comboText, at: collectPos, color: worldColor)
+        } else {
+            spawnScorePopup("+\(points)", at: collectPos, color: worldColor)
+        }
+
+        // Check if all collectibles collected — bonus!
+        if collectibleNodes.isEmpty && collectiblesCollectedThisAttempt > 1 {
+            let bonusPos = CGPoint(x: collectPos.x, y: collectPos.y + 30)
+            gameState.addScore(100)
+            updateScoreLabel(animated: true)
+            spawnScorePopup("ALL COLLECTED +100", at: bonusPos, color: .white)
+            audioManager?.playSFX("all-collected")
+        }
+
+        // SFX
+        audioManager?.playSFX("collectible")
 
         // Haptic ping
         if hapticsEnabled {
@@ -91,8 +116,8 @@ extension GameScene: SKPhysicsContactDelegate {
         }
     }
 
-    private func spawnCollectBurst(at position: CGPoint, color: UIColor) {
-        for _ in 0..<10 {
+    private func spawnCollectBurst(at position: CGPoint, color: UIColor, count: Int = 10) {
+        for _ in 0..<count {
             let size: CGFloat = CGFloat.random(in: 2...5)
             let particle = SKSpriteNode(color: color, size: CGSize(width: size, height: size))
             particle.position = position
@@ -126,10 +151,26 @@ extension GameScene: SKPhysicsContactDelegate {
             UINotificationFeedbackGenerator().notificationOccurred(.error)
         }
 
+        audioManager?.playSFX("death")
+
         createDeathParticleBurst()
+        shakeScreen()
         fadeOutTrailNodes()
         resetBackgroundPosition(animated: true)
         scheduleDeathReset()
+    }
+
+    private func shakeScreen() {
+        guard let bg = backgroundNode else { return }
+        let shakeAmount: CGFloat = 8
+        let shakeDuration: TimeInterval = 0.08
+        let shake = SKAction.sequence([
+            SKAction.moveBy(x: shakeAmount, y: shakeAmount, duration: shakeDuration),
+            SKAction.moveBy(x: -shakeAmount * 2, y: -shakeAmount, duration: shakeDuration),
+            SKAction.moveBy(x: shakeAmount, y: -shakeAmount, duration: shakeDuration),
+            SKAction.move(to: bg.position, duration: shakeDuration)
+        ])
+        bg.run(shake)
     }
 
     private func createDeathParticleBurst() {
@@ -191,6 +232,8 @@ extension GameScene: SKPhysicsContactDelegate {
         // Heavy haptic
         let haptic = UINotificationFeedbackGenerator()
         haptic.notificationOccurred(.success)
+
+        audioManager?.playSFX("level-complete")
 
         // Goal: expand ring, then suck ball in
         let goalPos = goalNode?.position ?? CGPoint(x: size.width / 2, y: size.height / 2)
@@ -359,6 +402,11 @@ extension GameScene: SKPhysicsContactDelegate {
                 lastSpeedBonus = 0
             }
         }
+
+        // Record best score
+        let finalScore = gameState.currentLevelScore
+        lastIsNewBest = gameState.updateBestScoreIfNeeded(world: world.id, level: definition.levelId, score: finalScore)
+
         // Always mark level as completed first
         gameState.markLevelCompleted(world: world.id, level: definition.levelId)
 

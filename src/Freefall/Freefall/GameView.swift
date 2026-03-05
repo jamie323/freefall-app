@@ -5,6 +5,7 @@ struct GameView: View {
 
     let world: WorldDefinition
     let level: LevelDefinition
+    var audioManager: AudioManager?
     let onQuit: () -> Void
     let onNextLevel: (Int) -> Void
 
@@ -13,6 +14,7 @@ struct GameView: View {
     @State private var showPauseOverlay = false
     @State private var completionWord = "CLEAN"
     @State private var speedBonus = 0
+    @State private var isNewBest = false
 
     private var isLastLevelInWorld: Bool { level.levelId == 10 }
     private var isLastLevelOverall: Bool { world.id == 4 && level.levelId == 10 }
@@ -22,6 +24,7 @@ struct GameView: View {
             scene.levelCompleted = { [self] in
                 self.completionWord = scene.lastCompletionWord
                 self.speedBonus = scene.lastSpeedBonus
+                self.isNewBest = scene.lastIsNewBest
                 DispatchQueue.main.async {
                     withAnimation(.easeIn(duration: 0.2)) {
                         self.showLevelComplete = true
@@ -38,7 +41,7 @@ struct GameView: View {
 
     var body: some View {
         ZStack {
-            SpriteKitView(level: level, world: world, proxy: proxy)
+            SpriteKitView(level: level, world: world, proxy: proxy, audioManager: audioManager)
                 .ignoresSafeArea()
 
             // Full-screen tap target — SpriteKit gesture handler
@@ -91,6 +94,9 @@ struct GameView: View {
                     completionWord: completionWord,
                     collectiblesCollected: proxy.coordinator?.scene.collectiblesCollectedThisAttempt ?? 0,
                     speedBonus: speedBonus,
+                    isNewBest: isNewBest,
+                    bestScore: gameState.bestScoreForLevel(world: world.id, level: level.levelId),
+                    stars: gameState.starsForLevel(world: world.id, level: level.levelId),
                     onNextLevel: {
                         showLevelComplete = false
                         if isLastLevelOverall {

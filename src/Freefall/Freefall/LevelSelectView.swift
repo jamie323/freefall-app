@@ -30,6 +30,8 @@ struct LevelSelectView: View {
                                 isCompleted: gameState.completedLevels.contains("W\(world.id)L\(levelId)"),
                                 isUnlocked: gameState.isLevelUnlocked(world: world.id, level: levelId),
                                 isNextToPlay: isNextLevel(levelId),
+                                stars: gameState.starsForLevel(world: world.id, level: levelId),
+                                bestScore: gameState.bestScoreForLevel(world: world.id, level: levelId),
                                 onTap: {
                                     if gameState.isLevelUnlocked(world: world.id, level: levelId) {
                                         gameState.currentLevelId = levelId
@@ -41,15 +43,26 @@ struct LevelSelectView: View {
                     }
                     .padding(.horizontal, 24)
 
-                    // Progress indicator
+                    // Progress indicator with star count
                     let completed = gameState.completedCountForWorld(world: world.id)
-                    HStack(spacing: 8) {
-                        Text("\(completed)/10")
-                            .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                            .foregroundStyle(world.primaryColor)
-                        Text("LEVELS COMPLETE")
-                            .font(.system(size: 11, weight: .medium, design: .monospaced))
-                            .foregroundStyle(.white.opacity(0.4))
+                    let worldStars = (1...10).reduce(0) { $0 + gameState.starsForLevel(world: world.id, level: $1) }
+                    VStack(spacing: 4) {
+                        HStack(spacing: 8) {
+                            Text("\(completed)/10")
+                                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                                .foregroundStyle(world.primaryColor)
+                            Text("LEVELS COMPLETE")
+                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                                .foregroundStyle(.white.opacity(0.4))
+                        }
+                        HStack(spacing: 4) {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(world.primaryColor)
+                            Text("\(worldStars)/30")
+                                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                                .foregroundStyle(world.primaryColor.opacity(0.7))
+                        }
                     }
                     .padding(.top, 8)
                     .padding(.bottom, 32)
@@ -108,6 +121,8 @@ private struct LevelCellView: View {
     let isCompleted: Bool
     let isUnlocked: Bool
     let isNextToPlay: Bool
+    let stars: Int
+    let bestScore: Int
     let onTap: () -> Void
 
     @State private var isPulsing = false
@@ -123,13 +138,23 @@ private struct LevelCellView: View {
                     )
 
                 if isCompleted {
-                    VStack(spacing: 4) {
+                    VStack(spacing: 3) {
                         Text("\(levelId)")
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(.white.opacity(0.5))
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundStyle(world.primaryColor)
+                        // Mini star display
+                        HStack(spacing: 2) {
+                            ForEach(1...3, id: \.self) { i in
+                                Image(systemName: i <= stars ? "star.fill" : "star")
+                                    .font(.system(size: 9))
+                                    .foregroundStyle(i <= stars ? world.primaryColor : .white.opacity(0.2))
+                            }
+                        }
+                        if bestScore > 0 {
+                            Text("\(bestScore)")
+                                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                .foregroundStyle(world.primaryColor.opacity(0.6))
+                        }
                     }
                 } else if isUnlocked {
                     Text("\(levelId)")

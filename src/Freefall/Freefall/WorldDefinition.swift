@@ -1,5 +1,12 @@
 import SwiftUI
 
+struct PhysicsConfig: Hashable {
+    let gravityMagnitude: CGFloat
+    let flipImpulse: CGFloat
+    let maxVerticalVelocity: CGFloat
+    let verticalDamping: CGFloat
+}
+
 struct WorldDefinition: Identifiable, Hashable {
     let id: Int
     let name: String
@@ -12,6 +19,7 @@ struct WorldDefinition: Identifiable, Hashable {
     let musicFolderName: String
     let bpmA: Double  // BPM for track A (levels 1-5)
     let bpmB: Double  // BPM for track B (levels 6-10)
+    let physicsConfig: PhysicsConfig
 
     var accentColorOpacity: Color {
         primaryColor.opacity(0.15)
@@ -20,6 +28,7 @@ struct WorldDefinition: Identifiable, Hashable {
 
 enum WorldLibrary {
     static let allWorlds: [WorldDefinition] = [
+        // W1: Floaty/forgiving — low gravity, high damping, chill BPM. Learning world.
         WorldDefinition(
             id: 1,
             name: "THE BLOCK",
@@ -31,8 +40,10 @@ enum WorldLibrary {
             backgroundImageName: "world1-bg",
             musicFolderName: "world1-the-block",
             bpmA: 88,
-            bpmB: 95
+            bpmB: 95,
+            physicsConfig: PhysicsConfig(gravityMagnitude: 50, flipImpulse: 35, maxVerticalVelocity: 140, verticalDamping: 0.02)
         ),
+        // W2: Snappy/twitchy — strong flip impulse, low damping, bouncy. Fast BPM.
         WorldDefinition(
             id: 2,
             name: "NEON YARD",
@@ -44,8 +55,10 @@ enum WorldLibrary {
             backgroundImageName: "world2-bg",
             musicFolderName: "world2-neon-yard",
             bpmA: 172,
-            bpmB: 174
+            bpmB: 174,
+            physicsConfig: PhysicsConfig(gravityMagnitude: 65, flipImpulse: 48, maxVerticalVelocity: 180, verticalDamping: 0.008)
         ),
+        // W3: Heavy/sluggish — strong gravity, high damping, weak flip. Gritty, deliberate.
         WorldDefinition(
             id: 3,
             name: "UNDERGROUND",
@@ -57,8 +70,10 @@ enum WorldLibrary {
             backgroundImageName: "world3-bg",
             musicFolderName: "world3-underground",
             bpmA: 160,
-            bpmB: 165
+            bpmB: 165,
+            physicsConfig: PhysicsConfig(gravityMagnitude: 75, flipImpulse: 32, maxVerticalVelocity: 130, verticalDamping: 0.03)
         ),
+        // W4: Wild/precise — strong gravity, near-zero damping, high max velocity. Demands precision.
         WorldDefinition(
             id: 4,
             name: "STATIC",
@@ -70,7 +85,8 @@ enum WorldLibrary {
             backgroundImageName: "world4-bg",
             musicFolderName: "world4-static",
             bpmA: 132,
-            bpmB: 138
+            bpmB: 138,
+            physicsConfig: PhysicsConfig(gravityMagnitude: 70, flipImpulse: 42, maxVerticalVelocity: 200, verticalDamping: 0.005)
         )
     ]
 

@@ -33,7 +33,7 @@ final class GameScene: SKScene {
         static let deathParticleRadiusRange: ClosedRange<CGFloat> = 3.0...5.0
         static let deathParticleSpeedRange: ClosedRange<CGFloat> = 120.0...220.0
         static let deathParticleDurationRange: ClosedRange<TimeInterval> = 0.3...0.5
-        static let deathResetDelay: TimeInterval = 0.35
+        static let deathResetDelay: TimeInterval = 0.55
         static let deathResetActionKey = "deathReset"
         // Trail distance scoring
         static let trailScorePerUnit: CGFloat = 0.08     // points per SpriteKit unit travelled
@@ -41,6 +41,7 @@ final class GameScene: SKScene {
     }
 
     let gameState: GameState
+    weak var audioManager: AudioManager?
 
     var hapticsEnabled: Bool = true
 
@@ -63,6 +64,20 @@ final class GameScene: SKScene {
     // Exposed for GameView to read after completion
     var lastCompletionWord: String = "CLEAN"
     var lastSpeedBonus: Int = 0
+    var lastIsNewBest: Bool = false
+
+    // Combo system
+    var collectibleComboCount: Int = 0
+    var comboMultiplier: CGFloat { min(3.0, 1.0 + CGFloat(max(0, collectibleComboCount - 1)) * 0.5) }
+
+    // Close call system
+    private let closeCallThreshold: CGFloat = 20
+    private let closeCallMinDistance: CGFloat = 3
+    private var closeCallTriggeredObstacles: Set<String> = []
+    private let closeCallPoints: Int = 25
+
+    // Tap to start
+    private var tapToStartLabel: SKLabelNode?
 
     var sphereNode: SKSpriteNode?
     var backgroundNode: SKSpriteNode?
@@ -161,6 +176,7 @@ final class GameScene: SKScene {
         updateBackgroundParallax(currentTime: currentTime)
         updateTrail()
         updateTrailScore()
+        checkNearMisses()
         checkSphereOutOfBounds()
     }
 
@@ -194,14 +210,16 @@ final class GameScene: SKScene {
 
     private func clampSphereVelocity() {
         guard let body = sphereNode?.physicsBody, sceneState == .playing else { return }
+        let physics = worldDefinition?.physicsConfig
         let dx = body.velocity.dx
         var dy = body.velocity.dy
 
         // Vertical-only damping — horizontal momentum is preserved fully
-        dy *= (1.0 - Constants.verticalDamping)
+        let damping = physics?.verticalDamping ?? Constants.verticalDamping
+        dy *= (1.0 - damping)
 
         // Hard cap on vertical speed
-        let maxDY = Constants.maxVerticalVelocity
+        let maxDY = physics?.maxVerticalVelocity ?? Constants.maxVerticalVelocity
         dy = min(max(dy, -maxDY), maxDY)
 
         body.velocity = CGVector(dx: dx, dy: dy)
@@ -271,6 +289,8 @@ final class GameScene: SKScene {
         guard let sphere = sphereNode else { return }
         gameState.resetCurrentLevelScore()
         collectiblesCollectedThisAttempt = 0
+        collectibleComboCount = 0
+        closeCallTriggeredObstacles.removeAll()
         lastDisplayedScore = 0
         trailScoreAccumulator = 0
         trailPointsBuffer = 0
@@ -284,6 +304,8 @@ final class GameScene: SKScene {
         stopSphereMotion()
         sphere.physicsBody?.velocity = launchVelocity
         createTrail()
+        hideTapToStart()
+        audioManager?.playSFX("level-start")
     }
 
     private(set) var flipCount: Int = 0
@@ -294,16 +316,20 @@ final class GameScene: SKScene {
         totalFlipsDuringLevel += 1
         flipCount += 1
         applyGravityDirection()
+        let physics = worldDefinition?.physicsConfig
         // Pendulum feel: carry 30% of existing vertical velocity into the new direction,
         // then add a small impulse. Gives swing/arc rather than dead stop + restart.
         let carry = -body.velocity.dy * 0.3   // reverse 30% of current dy
-        let impulse = isGravityDown ? -Constants.flipImpulse : Constants.flipImpulse
+        let flipImpulse = physics?.flipImpulse ?? Constants.flipImpulse
+        let impulse = isGravityDown ? -flipImpulse : flipImpulse
         body.velocity = CGVector(dx: body.velocity.dx, dy: carry + impulse)
         triggerHapticIfNeeded()
+        audioManager?.playSFX("flip")
     }
 
     private func applyGravityDirection() {
-        let dy = isGravityDown ? -Constants.gravityMagnitude : Constants.gravityMagnitude
+        let gravity = worldDefinition?.physicsConfig.gravityMagnitude ?? Constants.gravityMagnitude
+        let dy = isGravityDown ? -gravity : gravity
         physicsWorld.gravity = CGVector(dx: 0, dy: dy)
     }
 
@@ -415,10 +441,10 @@ final class GameScene: SKScene {
 
     private func setupScoreLabelIfNeeded() {
         guard scoreLabel == nil else { return }
-        let label = SKLabelNode(fontNamed: "Menlo")
-        label.fontSize = 16
-        label.fontColor = .white
-        label.alpha = 0.7
+        let label = SKLabelNode(fontNamed: "Menlo-Bold")
+        label.fontSize = 20
+        label.fontColor = UIColor(worldDefinition?.primaryColor ?? .white)
+        label.alpha = 0.85
         label.horizontalAlignmentMode = .right
         label.verticalAlignmentMode = .top
         label.zPosition = 50
@@ -534,6 +560,8 @@ final class GameScene: SKScene {
         sphereNode?.physicsBody?.isDynamic = false
         sphereNode?.alpha = 1
         stopSphereMotion()
+        collectibleComboCount = 0
+        closeCallTriggeredObstacles.removeAll()
         if shouldReposition {
             gameState.resetCurrentLevelScore()
             collectiblesCollectedThisAttempt = 0
@@ -550,6 +578,7 @@ final class GameScene: SKScene {
         resetGravityToInitialDirection()
         backgroundNode?.isPaused = false
         resetBackgroundPosition(animated: animateBackgroundReset)
+        showTapToStart()
     }
 
     func stopSphereMotion() {
@@ -596,9 +625,10 @@ final class GameScene: SKScene {
 
     private func createObstacles(from definition: LevelDefinition) {
         let worldColor = UIColor(worldDefinition?.primaryColor ?? Color(red: 0, green: 0.831, blue: 1))
-        for obstacle in definition.obstacles {
+        for (index, obstacle) in definition.obstacles.enumerated() {
             let node = ObstacleNode(obstacle: obstacle, normalizedToScreenSize: size)
             node.zPosition = 5
+            node.name = obstacle.identifier ?? "obs-\(index)"
             node.applyWorldColor(worldColor)
             addChild(node)
             obstacleNodes.append(node)
@@ -725,15 +755,34 @@ final class GameScene: SKScene {
     }
     
     private func onBeat() {
-        guard sceneState == .playing, let background = backgroundNode else { return }
-        
-        // Background brightness pulse
-        let originalAlpha = background.alpha
-        let brightUp = SKAction.sequence([
-            SKAction.fadeAlpha(to: originalAlpha + 0.08, duration: 0.05),
-            SKAction.fadeAlpha(to: originalAlpha, duration: 0.15)
-        ])
-        background.run(brightUp)
+        guard sceneState == .playing else { return }
+
+        // Background brightness pulse (stronger)
+        if let background = backgroundNode {
+            let originalAlpha = background.alpha
+            background.run(SKAction.sequence([
+                SKAction.fadeAlpha(to: originalAlpha + 0.15, duration: 0.04),
+                SKAction.fadeAlpha(to: originalAlpha, duration: 0.12)
+            ]))
+        }
+
+        // Sphere glow pulse on beat
+        if let sphere = sphereNode {
+            let worldColor = UIColor(worldDefinition?.primaryColor ?? .cyan)
+            sphere.run(SKAction.sequence([
+                SKAction.colorize(with: worldColor, colorBlendFactor: 0.8, duration: 0.04),
+                SKAction.colorize(with: .white, colorBlendFactor: 1.0, duration: 0.12)
+            ]))
+        }
+
+        // Obstacle glow pulse
+        for obstacle in obstacleNodes {
+            obstacle.run(SKAction.sequence([
+                SKAction.run { obstacle.glowWidth = 10 },
+                SKAction.wait(forDuration: 0.06),
+                SKAction.run { obstacle.glowWidth = 6 }
+            ]))
+        }
     }
     
     func stopBeatTimer() {
@@ -741,6 +790,104 @@ final class GameScene: SKScene {
         beatTimer = nil
     }
     
+    // MARK: - Tap to Start
+
+    private func showTapToStart() {
+        hideTapToStart()
+        let label = SKLabelNode(fontNamed: "Menlo-Bold")
+        label.text = "TAP"
+        label.fontSize = 16
+        label.fontColor = UIColor(worldDefinition?.primaryColor ?? .cyan)
+        label.alpha = 0.6
+        label.position = CGPoint(x: size.width / 2, y: size.height * 0.12)
+        label.zPosition = 50
+        addChild(label)
+        let pulse = SKAction.sequence([
+            SKAction.fadeAlpha(to: 0.25, duration: 0.8),
+            SKAction.fadeAlpha(to: 0.6, duration: 0.8)
+        ])
+        label.run(SKAction.repeatForever(pulse))
+        tapToStartLabel = label
+    }
+
+    private func hideTapToStart() {
+        tapToStartLabel?.removeFromParent()
+        tapToStartLabel = nil
+    }
+
+    // MARK: - Close Call / Near-Miss
+
+    private func checkNearMisses() {
+        guard sceneState == .playing, let sphere = sphereNode else { return }
+        let spherePos = sphere.position
+        let sphereRadius = Constants.sphereDiameter / 2
+
+        for obstacleNode in obstacleNodes {
+            guard let obstacleId = obstacleNode.name,
+                  !closeCallTriggeredObstacles.contains(obstacleId) else { continue }
+
+            let obstacleFrame = obstacleNode.calculateAccumulatedFrame()
+            let closestPoint = closestPointOnRect(obstacleFrame, to: spherePos)
+            let distance = hypot(spherePos.x - closestPoint.x, spherePos.y - closestPoint.y) - sphereRadius
+
+            if distance > closeCallMinDistance && distance < closeCallThreshold {
+                closeCallTriggeredObstacles.insert(obstacleId)
+                triggerCloseCall(at: spherePos, obstaclePosition: closestPoint)
+            }
+        }
+    }
+
+    private func closestPointOnRect(_ rect: CGRect, to point: CGPoint) -> CGPoint {
+        let x = min(max(point.x, rect.minX), rect.maxX)
+        let y = min(max(point.y, rect.minY), rect.maxY)
+        return CGPoint(x: x, y: y)
+    }
+
+    private func triggerCloseCall(at spherePos: CGPoint, obstaclePosition: CGPoint) {
+        gameState.addScore(closeCallPoints)
+        updateScoreLabel(animated: true)
+        spawnScorePopup("CLOSE! +\(closeCallPoints)", at: spherePos, color: .yellow)
+
+        // Spark particles
+        let midpoint = CGPoint(
+            x: (spherePos.x + obstaclePosition.x) / 2,
+            y: (spherePos.y + obstaclePosition.y) / 2
+        )
+        spawnCloseCallSparks(at: midpoint)
+
+        // Sphere flash
+        sphereNode?.run(SKAction.sequence([
+            SKAction.colorize(with: .yellow, colorBlendFactor: 1.0, duration: 0.05),
+            SKAction.colorize(with: .white, colorBlendFactor: 1.0, duration: 0.15)
+        ]))
+
+        // Haptic + SFX
+        if hapticsEnabled {
+            UIImpactFeedbackGenerator(style: .rigid).impactOccurred(intensity: 0.4)
+        }
+        audioManager?.playSFX("close-call")
+    }
+
+    private func spawnCloseCallSparks(at position: CGPoint) {
+        for _ in 0..<6 {
+            let spark = SKSpriteNode(color: .yellow, size: CGSize(width: 2, height: 2))
+            spark.position = position
+            spark.zPosition = 20
+            spark.blendMode = .add
+            addChild(spark)
+            let angle = CGFloat.random(in: 0..<(2 * .pi))
+            let speed = CGFloat.random(in: 40...100)
+            let dur = TimeInterval.random(in: 0.15...0.3)
+            spark.run(SKAction.sequence([
+                SKAction.group([
+                    SKAction.moveBy(x: cos(angle) * speed * CGFloat(dur), y: sin(angle) * speed * CGFloat(dur), duration: dur),
+                    SKAction.fadeOut(withDuration: dur)
+                ]),
+                .removeFromParent()
+            ]))
+        }
+    }
+
     static func makeSphereTexture(diameter: CGFloat) -> SKTexture {
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: diameter, height: diameter))
         let image = renderer.image { context in

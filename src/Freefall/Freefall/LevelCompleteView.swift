@@ -7,6 +7,9 @@ struct LevelCompleteView: View {
     let completionWord: String
     let collectiblesCollected: Int
     let speedBonus: Int
+    let isNewBest: Bool
+    let bestScore: Int
+    let stars: Int
     let onNextLevel: () -> Void
     let onLevels: () -> Void
 
@@ -14,6 +17,8 @@ struct LevelCompleteView: View {
     @State private var scale: CGFloat = 0.5
     @State private var opacity: CGFloat = 0
     @State private var showScoreDetails = false
+    @State private var showStars = false
+    @State private var newBestScale: CGFloat = 0.3
     @State private var scratchPlayer: AVAudioPlayer?
 
     private var isLastLevel: Bool {
@@ -59,18 +64,53 @@ struct LevelCompleteView: View {
                             opacity = 1.0
                         }
 
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) {
+                                showStars = true
+                            }
+                        }
+
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.65) {
                             withAnimation(.easeIn(duration: 0.3)) {
                                 showScoreDetails = true
                             }
                         }
 
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
                             withAnimation(.easeIn(duration: 0.3)) {
                                 showButtons = true
                             }
                         }
+
+                        if isNewBest {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.45)) {
+                                    newBestScale = 1.0
+                                }
+                            }
+                        }
                     }
+
+                // 3-Star display
+                if showStars {
+                    HStack(spacing: 8) {
+                        ForEach(1...3, id: \.self) { i in
+                            Image(systemName: i <= stars ? "star.fill" : "star")
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundStyle(i <= stars ? world.primaryColor : .white.opacity(0.2))
+                        }
+                    }
+                    .transition(.scale.combined(with: .opacity))
+                }
+
+                // NEW BEST badge
+                if isNewBest && showScoreDetails {
+                    Text("NEW BEST!")
+                        .font(.system(size: 20, weight: .black, design: .monospaced))
+                        .foregroundStyle(.yellow)
+                        .shadow(color: .yellow.opacity(0.6), radius: 8)
+                        .scaleEffect(newBestScale)
+                }
 
                 if showScoreDetails {
                     VStack(spacing: 6) {
@@ -81,10 +121,18 @@ struct LevelCompleteView: View {
                             Text("Base: +\(baseLevelScore)")
                             Text("Collectibles: +\(collectiblesCollected)×50")
                             Text("Speed bonus: +\(speedBonus)")
-                            Text("Total this level: \(totalLevelScore)")
+                            Text("Total: \(totalLevelScore)")
+                                .font(.system(size: 15, weight: .black, design: .monospaced))
                         }
                         .font(.system(size: 14, weight: .semibold, design: .monospaced))
                         .foregroundStyle(world.primaryColor)
+
+                        if bestScore > 0 {
+                            Text("BEST: \(bestScore)")
+                                .font(.system(size: 13, weight: .bold, design: .monospaced))
+                                .foregroundStyle(.white.opacity(0.5))
+                                .padding(.top, 4)
+                        }
                     }
                     .padding(.top, 12)
                     .transition(.opacity)
