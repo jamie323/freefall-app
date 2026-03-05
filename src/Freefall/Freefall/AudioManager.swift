@@ -124,15 +124,38 @@ final class AudioManager {
         nextMusicPlayer = nil
     }
 
+    /// Fade out current music over the given duration, then stop
+    func fadeOutMusic(duration: TimeInterval = 1.0, completion: (() -> Void)? = nil) {
+        guard let player = currentMusicPlayer else {
+            completion?()
+            return
+        }
+        let fadeSteps = Int(duration * 30)
+        let volumeStep = player.volume / Float(max(1, fadeSteps))
+        for i in 0..<fadeSteps {
+            DispatchQueue.main.asyncAfter(deadline: .now() + (Double(i) / 30.0)) { [weak self] in
+                player.volume = max(0, player.volume - volumeStep)
+                if i == fadeSteps - 1 {
+                    self?.stopMusic()
+                    completion?()
+                }
+            }
+        }
+    }
+
     // MARK: - SFX Playback
 
     func playSFX(_ name: String) {
-        guard gameState.sfxEnabled else { return }
+        guard gameState.sfxEnabled else {
+            print("[SFX] Skipped '\(name)' — SFX disabled")
+            return
+        }
 
         // Try mp3 first, then wav
         let url: URL? = Bundle.main.url(forResource: name, withExtension: "mp3", subdirectory: "audio/sfx")
             ?? Bundle.main.url(forResource: name, withExtension: "wav", subdirectory: "audio/sfx")
         guard let url else {
+            print("[SFX] File not found in bundle: '\(name)' (tried .mp3 and .wav in audio/sfx)")
             return
         }
 
@@ -143,7 +166,7 @@ final class AudioManager {
             // Clean up finished players
             activeSFXPlayers.removeAll { !$0.isPlaying }
         } catch {
-            print("Failed to play SFX: \(error.localizedDescription)")
+            print("[SFX] Failed to play '\(name)': \(error.localizedDescription)")
         }
     }
 

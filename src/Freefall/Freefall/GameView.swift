@@ -16,6 +16,7 @@ struct GameView: View {
     @State private var speedBonus = 0
     @State private var isNewBest = false
     @State private var fadeIn = true
+    @State private var fadeOut = false
 
     private var isLastLevelInWorld: Bool { level.levelId == 10 }
     private var isLastLevelOverall: Bool { world.id == 4 && level.levelId == 10 }
@@ -80,19 +81,29 @@ struct GameView: View {
                     onRestart: handleRestart,
                     onQuit: {
                         showPauseOverlay = false
-                        onQuit()
+                        handleQuitWithFade()
                     }
                 )
                 .transition(.opacity)
                 .zIndex(99)
             }
 
-            // Fade-in overlay
+            // Fade-in overlay — white flash "loading" feel
             if fadeIn {
-                Color.black
+                Color.white
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
+                    .transition(.opacity)
                     .zIndex(200)
+            }
+
+            // Fade-out overlay — smooth exit
+            if fadeOut {
+                Color.black
+                    .ignoresSafeArea()
+                    .allowsHitTesting(true)
+                    .transition(.opacity)
+                    .zIndex(201)
             }
 
             // Level complete overlay
@@ -109,10 +120,9 @@ struct GameView: View {
                     onNextLevel: {
                         showLevelComplete = false
                         if isLastLevelOverall {
-                            onQuit()
+                            handleQuitWithFade()
                         } else if isLastLevelInWorld {
-                            // Go back to world select for next world
-                            onQuit()
+                            handleQuitWithFade()
                         } else {
                             onNextLevel(level.levelId + 1)
                         }
@@ -123,7 +133,7 @@ struct GameView: View {
                     },
                     onLevels: {
                         showLevelComplete = false
-                        onQuit()
+                        handleQuitWithFade()
                     }
                 )
                 .transition(.opacity)
@@ -135,9 +145,11 @@ struct GameView: View {
             // Wire immediately — proxy.coordinator is set synchronously in makeCoordinator
             // Retry loop handles edge case where scene isn't ready yet
             wireLevelCompleteCallback()
-            // Fade in from black
-            withAnimation(.easeOut(duration: 0.5)) {
-                fadeIn = false
+            // Brief hold on white overlay, then fade to reveal game
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                withAnimation(.easeOut(duration: 0.6)) {
+                    fadeIn = false
+                }
             }
         }
     }
@@ -166,6 +178,17 @@ struct GameView: View {
         scene.view?.isPaused = false
         showPauseOverlay = false
         scene.resetScene()
+    }
+
+    /// Fade to black + fade music, then call onQuit
+    private func handleQuitWithFade() {
+        audioManager?.fadeOutMusic(duration: 0.5)
+        withAnimation(.easeIn(duration: 0.4)) {
+            fadeOut = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+            onQuit()
+        }
     }
 }
 

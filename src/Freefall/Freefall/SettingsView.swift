@@ -57,6 +57,10 @@ struct SettingsView: View {
                     .background(Color.hex("#00D4FF").opacity(0.2))
                     .padding(.horizontal, 24)
 
+                // Scoring Guide
+                ScoringGuideView()
+                    .padding(.horizontal, 24)
+
                 Spacer()
 
                 // Version footer
@@ -86,6 +90,106 @@ private struct SettingsRow: View {
 
             Toggle("", isOn: $isOn)
                 .tint(tintColor)
+        }
+    }
+}
+
+private struct ScoringGuideView: View {
+    @State private var isExpanded = false
+
+    private let cyan = Color.hex("#00D4FF")
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded.toggle()
+                }
+            }) {
+                HStack {
+                    Text("HOW SCORING WORKS")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundStyle(cyan.opacity(0.8))
+
+                    Spacer()
+
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(cyan.opacity(0.5))
+                }
+                .padding(.vertical, 12)
+            }
+
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 12) {
+                    // Points breakdown
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("POINTS")
+                            .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                            .foregroundStyle(cyan.opacity(0.6))
+
+                        scoreRow("Complete level", "+200")
+                        scoreRow("Speed bonus", "up to +300")
+                        scoreRow("Collectible (1st)", "+50")
+                        scoreRow("Collectible (2nd)", "+75  ×1.5")
+                        scoreRow("Collectible (3rd)", "+100  ×2")
+                        scoreRow("All collected bonus", "+100")
+                        scoreRow("Close call", "+25 each")
+                        scoreRow("Trail distance", "+1 per distance")
+                    }
+
+                    Divider()
+                        .background(cyan.opacity(0.15))
+
+                    // Star thresholds
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("STARS")
+                            .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                            .foregroundStyle(cyan.opacity(0.6))
+
+                        starRow(1, "Complete the level")
+                        starRow(2, "Score 350+")
+                        starRow(3, "Score 550+")
+                    }
+
+                    Divider()
+                        .background(cyan.opacity(0.15))
+
+                    Text("Replay levels to beat your best score and earn all 3 stars.")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(.white.opacity(0.4))
+                        .padding(.top, 2)
+                }
+                .padding(.bottom, 12)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+    }
+
+    private func scoreRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 12, weight: .regular))
+                .foregroundStyle(.white.opacity(0.6))
+            Spacer()
+            Text(value)
+                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.white.opacity(0.8))
+        }
+    }
+
+    private func starRow(_ count: Int, _ description: String) -> some View {
+        HStack(spacing: 6) {
+            HStack(spacing: 2) {
+                ForEach(1...3, id: \.self) { i in
+                    Image(systemName: i <= count ? "star.fill" : "star")
+                        .font(.system(size: 10))
+                        .foregroundStyle(i <= count ? .yellow : .white.opacity(0.15))
+                }
+            }
+            Text(description)
+                .font(.system(size: 12, weight: .regular))
+                .foregroundStyle(.white.opacity(0.6))
         }
     }
 }
