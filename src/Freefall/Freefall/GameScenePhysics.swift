@@ -122,6 +122,10 @@ extension GameScene: SKPhysicsContactDelegate {
         sphereNode?.physicsBody?.isDynamic = false
         stopSphereMotion()
 
+        if hapticsEnabled {
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+        }
+
         createDeathParticleBurst()
         fadeOutTrailNodes()
         resetBackgroundPosition(animated: true)
@@ -322,16 +326,6 @@ extension GameScene: SKPhysicsContactDelegate {
         backgroundNode?.isPaused = true
     }
 
-    private func performGoalFlash(goal: SKShapeNode) {
-        let originalColor = goal.strokeColor
-        let white = SKAction.run { goal.strokeColor = .white }
-        let wait1 = SKAction.wait(forDuration: 0.1)
-        let back = SKAction.run { goal.strokeColor = originalColor }
-        let wait2 = SKAction.wait(forDuration: 0.2)
-        let sequence = SKAction.sequence([white, wait1, back, wait2])
-        goal.run(sequence)
-    }
-
     private func emitLevelCompleteMessage() {
         guard let definition = levelDefinition, let world = worldDefinition else { return }
         
@@ -365,36 +359,13 @@ extension GameScene: SKPhysicsContactDelegate {
                 lastSpeedBonus = 0
             }
         }
-        print("LEVEL COMPLETE - flips: \(flipCount), word: \(word), speedBonus: \(lastSpeedBonus)")
+        // Always mark level as completed first
+        gameState.markLevelCompleted(world: world.id, level: definition.levelId)
 
-        // Check if should trigger intermission
-        if gameState.shouldTriggerIntermission(world: world.id, level: definition.levelId) == true {
+        // Then check if should trigger intermission
+        if gameState.shouldTriggerIntermission(world: world.id, level: definition.levelId) {
             gameState.isIntermissionActive = true
-        } else {
-            // Mark level as completed
-            gameState.markLevelCompleted(world: world.id, level: definition.levelId)
         }
     }
 
-    private func createGoalCelebrationBurst() {
-        guard let goalNode = goalNode else { return }
-        
-        for _ in 0..<20 {
-            let angle = CGFloat.random(in: 0..<(2 * .pi))
-            let speed = CGFloat.random(in: 100...250)
-            let duration: TimeInterval = 0.6
-            let dx = cos(angle) * speed * CGFloat(duration)
-            let dy = sin(angle) * speed * CGFloat(duration)
-            
-            let particle = SKSpriteNode(color: UIColor(red: 0, green: 1, blue: 1, alpha: 1), size: CGSize(width: 3, height: 3))
-            particle.position = goalNode.position
-            particle.zPosition = 15
-            addChild(particle)
-            
-            let moveAction = SKAction.moveBy(x: dx, y: dy, duration: duration)
-            let fadeAction = SKAction.fadeOut(withDuration: duration)
-            let group = SKAction.group([moveAction, fadeAction])
-            particle.run(SKAction.sequence([group, .removeFromParent()]))
-        }
-    }
 }

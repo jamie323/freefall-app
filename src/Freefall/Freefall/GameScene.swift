@@ -216,7 +216,6 @@ final class GameScene: SKScene {
         let buffer = Constants.sphereOutOfBoundsBuffer
         let extendedFrame = CGRect(x: -buffer, y: -buffer, width: size.width + buffer * 2, height: size.height + buffer * 2)
         if !extendedFrame.contains(sphere.position) {
-            print("💀 OUT OF BOUNDS — pos=\(sphere.position) sceneSize=\(size) frame=\(extendedFrame)")
             enterDeadState()
         }
     }
@@ -229,9 +228,7 @@ final class GameScene: SKScene {
 
     /// Public entry point for tap — called by SwiftUI gesture via SpriteKitView.Coordinator
     func handleTap() {
-        print("🎮 TAP — state=\(sceneState.rawValue) gravity=\(isGravityDown ? "down" : "up") sphereVel=\(sphereNode?.physicsBody?.velocity ?? .zero)")
         handlePrimaryTap()
-        print("🎮 POST-TAP — state=\(sceneState.rawValue) isDynamic=\(sphereNode?.physicsBody?.isDynamic ?? false)")
     }
 
     func resetScene() {
@@ -303,7 +300,6 @@ final class GameScene: SKScene {
         let impulse = isGravityDown ? -Constants.flipImpulse : Constants.flipImpulse
         body.velocity = CGVector(dx: body.velocity.dx, dy: carry + impulse)
         triggerHapticIfNeeded()
-        print("🔄 FLIP #\(flipCount) — gravity now \(isGravityDown ? "DOWN" : "UP")")
     }
 
     private func applyGravityDirection() {
@@ -552,6 +548,7 @@ final class GameScene: SKScene {
             hasAppliedCompletionScore = false
         }
         resetGravityToInitialDirection()
+        backgroundNode?.isPaused = false
         resetBackgroundPosition(animated: animateBackgroundReset)
     }
 
@@ -671,16 +668,19 @@ final class GameScene: SKScene {
         
         guard let sphere = sphereNode else { return }
         
+        let trailStart = worldDefinition.map { UIColor($0.trailStartColor) } ?? UIColor(red: 0, green: 0.831, blue: 1, alpha: 1)
+        let trailEnd = worldDefinition.map { UIColor($0.trailEndColor) } ?? UIColor(red: 1, green: 0.078, blue: 0.576, alpha: 1)
+
         let trail = TrailNode(
             startPosition: sphere.position,
-            startColor: UIColor(red: 0, green: 0.831, blue: 1, alpha: 1),
-            endColor: UIColor(red: 1, green: 0.078, blue: 0.576, alpha: 1),
+            startColor: trailStart,
+            endColor: trailEnd,
             estimatedLevelLength: size.width
         )
         addChild(trail)
         trailNode = trail
-        
-        let spray = TrailSprayNode(color: UIColor(red: 0, green: 0.831, blue: 1, alpha: 1))
+
+        let spray = TrailSprayNode(color: trailStart)
         addChild(spray)
         trailSprayNode = spray
     }

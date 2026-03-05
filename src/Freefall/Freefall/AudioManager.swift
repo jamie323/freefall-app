@@ -5,6 +5,7 @@ import Observation
 final class AudioManager {
     private var currentMusicPlayer: AVAudioPlayer?
     private var nextMusicPlayer: AVAudioPlayer?
+    private var activeSFXPlayers: [AVAudioPlayer] = []
     private var currentVolume: Float = 1.0
     private var targetVolume: Float = 1.0
 
@@ -30,8 +31,8 @@ final class AudioManager {
     func playMusic(world: Int, level: Int) {
         guard gameState.musicEnabled else { return }
 
-        let track = musicTrack(for: world, level: level)
-        loadAndPlayMusic(named: track, inSubdirectory: "audio/music")
+        let (track, folder) = musicTrack(for: world, level: level)
+        loadAndPlayMusic(named: track, inSubdirectory: "audio/music/\(folder)")
     }
 
     func playMenuMusic() {
@@ -44,7 +45,7 @@ final class AudioManager {
         loadAndPlayMusic(named: "intermission-track", inSubdirectory: "audio/music/intermission")
     }
 
-    private func musicTrack(for world: Int, level: Int) -> String {
+    private func musicTrack(for world: Int, level: Int) -> (name: String, folder: String) {
         let suffix = level <= 5 ? "track-a" : "track-b"
         let worldFolder: String
         switch world {
@@ -54,7 +55,7 @@ final class AudioManager {
         case 4: worldFolder = "world4-static"
         default: worldFolder = "world1-the-block"
         }
-        return "world\(world)-\(suffix)"
+        return ("world\(world)-\(suffix)", worldFolder)
     }
 
     private func loadAndPlayMusic(named: String, inSubdirectory subdirectory: String) {
@@ -125,6 +126,9 @@ final class AudioManager {
         do {
             let player = try AVAudioPlayer(contentsOf: url)
             player.play()
+            activeSFXPlayers.append(player)
+            // Clean up finished players
+            activeSFXPlayers.removeAll { !$0.isPlaying }
         } catch {
             print("Failed to play SFX: \(error.localizedDescription)")
         }

@@ -52,6 +52,7 @@ final class GameState {
 
     // Runtime (non-persisted)
     var currentLevelScore: Int = 0
+    private(set) var currentAttemptScore: Int = 0
     var isIntermissionActive: Bool = false
     var lastIntermissionScore: Int = 0
     var lastIntermissionSurvivalTime: TimeInterval = 0
@@ -128,6 +129,7 @@ final class GameState {
 
     func addScore(_ points: Int) {
         currentLevelScore += points
+        currentAttemptScore += points
         if let world = currentWorldId {
             worldScores[world, default: 0] += points
         }
@@ -139,7 +141,15 @@ final class GameState {
     }
 
     func resetCurrentLevelScore() {
+        // Roll back the current attempt's contribution to cumulative scores
+        if currentAttemptScore > 0 {
+            if let world = currentWorldId {
+                worldScores[world, default: 0] = max(0, (worldScores[world] ?? 0) - currentAttemptScore)
+            }
+            totalScore = max(0, totalScore - currentAttemptScore)
+        }
         currentLevelScore = 0
+        currentAttemptScore = 0
     }
 
     private func levelKey(world: Int, level: Int) -> String {

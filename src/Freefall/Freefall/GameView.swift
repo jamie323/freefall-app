@@ -10,6 +10,7 @@ struct GameView: View {
 
     @State private var proxy = SceneProxy()
     @State private var showLevelComplete = false
+    @State private var showPauseOverlay = false
     @State private var completionWord = "CLEAN"
     @State private var speedBonus = 0
 
@@ -57,7 +58,7 @@ struct GameView: View {
                 .allowsHitTesting(false)
 
             // Pause button
-            Button(action: { }) {
+            Button(action: handlePause) {
                 Image(systemName: "pause.circle")
                     .font(.system(size: 24, weight: .medium))
                     .foregroundStyle(.white.opacity(0.5))
@@ -66,6 +67,21 @@ struct GameView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             .padding(.trailing, 4)
             .padding(.top, 8)
+
+            // Pause overlay
+            if showPauseOverlay {
+                PauseOverlayView(
+                    world: world,
+                    onResume: handleResume,
+                    onRestart: handleRestart,
+                    onQuit: {
+                        showPauseOverlay = false
+                        onQuit()
+                    }
+                )
+                .transition(.opacity)
+                .zIndex(99)
+            }
 
             // Level complete overlay
             if showLevelComplete {
@@ -100,6 +116,82 @@ struct GameView: View {
             // Wire immediately — proxy.coordinator is set synchronously in makeCoordinator
             // Retry loop handles edge case where scene isn't ready yet
             wireLevelCompleteCallback()
+        }
+    }
+
+    private func handlePause() {
+        guard let scene = proxy.coordinator?.scene,
+              scene.sceneState == .playing else { return }
+        scene.sceneState = .paused
+        scene.view?.isPaused = true
+        withAnimation(.easeIn(duration: 0.15)) {
+            showPauseOverlay = true
+        }
+    }
+
+    private func handleResume() {
+        guard let scene = proxy.coordinator?.scene else { return }
+        scene.view?.isPaused = false
+        scene.sceneState = .playing
+        withAnimation(.easeOut(duration: 0.15)) {
+            showPauseOverlay = false
+        }
+    }
+
+    private func handleRestart() {
+        guard let scene = proxy.coordinator?.scene else { return }
+        scene.view?.isPaused = false
+        showPauseOverlay = false
+        scene.resetScene()
+    }
+}
+
+private struct PauseOverlayView: View {
+    let world: WorldDefinition
+    let onResume: () -> Void
+    let onRestart: () -> Void
+    let onQuit: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.6)
+                .ignoresSafeArea()
+
+            VStack(spacing: 24) {
+                Text("PAUSED")
+                    .font(.system(size: 48, weight: .black, design: .default))
+                    .foregroundStyle(world.primaryColor)
+
+                VStack(spacing: 14) {
+                    Button(action: onResume) {
+                        Text("RESUME")
+                            .font(.system(size: 18, weight: .heavy))
+                            .foregroundStyle(world.primaryColor)
+                            .frame(width: 200)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(world.primaryColor, lineWidth: 2)
+                            )
+                    }
+
+                    Button(action: onRestart) {
+                        Text("RESTART")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.6))
+                            .frame(width: 200)
+                            .padding(.vertical, 12)
+                    }
+
+                    Button(action: onQuit) {
+                        Text("QUIT")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.4))
+                            .frame(width: 200)
+                            .padding(.vertical, 12)
+                    }
+                }
+            }
         }
     }
 }
