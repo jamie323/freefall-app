@@ -141,10 +141,15 @@ final class GameState {
     func addScore(_ points: Int) {
         currentLevelScore += points
         currentAttemptScore += points
+    }
+
+    func commitCurrentAttemptScore() {
+        guard currentAttemptScore > 0 else { return }
         if let world = currentWorldId {
-            worldScores[world, default: 0] += points
+            worldScores[world, default: 0] += currentAttemptScore
         }
-        totalScore += points
+        totalScore += currentAttemptScore
+        currentAttemptScore = 0
     }
 
     func shouldTriggerIntermission(world: Int, level: Int) -> Bool {
@@ -189,19 +194,12 @@ final class GameState {
 
     /// Total stars earned across all worlds
     var totalStars: Int {
-        (1...4).reduce(0) { total, world in
-            total + (1...10).reduce(0) { $0 + starsForLevel(world: world, level: $1) }
+        WorldLibrary.allWorlds.reduce(0) { total, world in
+            total + (1...10).reduce(0) { $0 + starsForLevel(world: world.id, level: $1) }
         }
     }
 
     func resetCurrentLevelScore() {
-        // Roll back the current attempt's contribution to cumulative scores
-        if currentAttemptScore > 0 {
-            if let world = currentWorldId {
-                worldScores[world, default: 0] = max(0, (worldScores[world] ?? 0) - currentAttemptScore)
-            }
-            totalScore = max(0, totalScore - currentAttemptScore)
-        }
         currentLevelScore = 0
         currentAttemptScore = 0
     }

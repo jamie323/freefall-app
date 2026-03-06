@@ -1,17 +1,23 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var gameState = GameState()
+    @State private var gameState: GameState
     @State private var navigationPath = NavigationPath()
     @State private var isSettingsPresented = false
-    @State private var audioManager: AudioManager?
+    @State private var audioManager: AudioManager
 
     private let worlds = WorldLibrary.allWorlds
+
+    init() {
+        let gameState = GameState()
+        _gameState = State(initialValue: gameState)
+        _audioManager = State(initialValue: AudioManager(gameState: gameState))
+    }
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
             MainMenuView(
-                audioManager: audioManager ?? AudioManager(gameState: gameState),
+                audioManager: audioManager,
                 onPlay: { navigationPath.append(AppDestination.worldSelect) },
                 onOpenSettings: { isSettingsPresented = true },
                 onToggleMusic: handleMusicToggle
@@ -41,17 +47,23 @@ struct ContentView: View {
                         worldId: worldId,
                         levelId: levelId,
                         gameState: gameState,
-                        audioManager: audioManager ?? AudioManager(gameState: gameState),
-                        navigationPath: $navigationPath,
+                        audioManager: audioManager,
                         onQuit: {
                             // Return to level select, play menu music
-                            audioManager?.playMenuMusic()
+                            audioManager.playMenuMusic()
                             popDestination()
                         },
-                        onNextLevel: { nextLevelId in
-                            // Replace current game destination with next level
+                        onAdvance: { action in
                             navigationPath.removeLast()
-                            navigationPath.append(AppDestination.game(worldId: worldId, levelId: nextLevelId))
+                            switch action {
+                            case .nextLevel(let nextLevelId):
+                                navigationPath.append(AppDestination.game(worldId: worldId, levelId: nextLevelId))
+                            case .nextWorld(let nextWorldId):
+                                audioManager.playMenuMusic()
+                                navigationPath.append(AppDestination.levelSelect(worldId: nextWorldId))
+                            case .quitToLevels:
+                                audioManager.playMenuMusic()
+                            }
                         }
                     )
                     .id("game-\(worldId)-\(levelId)")
@@ -67,18 +79,23 @@ struct ContentView: View {
                 .presentationBackground(Material.thin)
         }
         .environment(gameState)
-        .onAppear {
-            if audioManager == nil {
-                audioManager = AudioManager(gameState: gameState)
-            }
+        .onChange(of: gameState.musicEnabled) { _, _ in
+            handleMusicToggle()
         }
     }
 
     private func handleMusicToggle() {
-        if gameState.musicEnabled {
-            audioManager?.playMenuMusic()
+        guard gameState.musicEnabled else {
+            audioManager.stopMusic()
+            return
+        }
+
+        if gameState.isIntermissionActive {
+            audioManager.playIntermissionMusic()
+        } else if let worldId = gameState.currentWorldId, let levelId = gameState.currentLevelId {
+            audioManager.playMusic(world: worldId, level: levelId)
         } else {
-            audioManager?.stopMusic()
+            audioManager.playMenuMusic()
         }
     }
 
@@ -94,9 +111,8 @@ private struct GameDestinationView: View {
     let levelId: Int
     let gameState: GameState
     let audioManager: AudioManager
-    @Binding var navigationPath: NavigationPath
     let onQuit: () -> Void
-    let onNextLevel: (Int) -> Void
+    let onAdvance: (GameAdvanceAction) -> Void
 
     @State private var level: LevelDefinition?
     @State private var loadError: Error?
@@ -110,9 +126,7 @@ private struct GameDestinationView: View {
                         level: level,
                         audioManager: audioManager,
                         onQuit: onQuit,
-                        onNextLevel: { nextLevelId in
-                            onNextLevel(nextLevelId)
-                        }
+                        onAdvance: onAdvance
                     )
 
                     if gameState.isIntermissionActive {
@@ -122,8 +136,9 @@ private struct GameDestinationView: View {
                                 gameState.addScore(finalScore)
                                 gameState.lastIntermissionScore = finalScore
                                 gameState.lastIntermissionSurvivalTime = time
+                                gameState.commitCurrentAttemptScore()
                                 gameState.isIntermissionActive = false
-                                onNextLevel(levelId + 1)
+                                onAdvance(nextAdvanceAction(forWorld: worldId, level: levelId))
                             }
                         )
                         .ignoresSafeArea()
@@ -144,6 +159,22 @@ private struct GameDestinationView: View {
             audioManager.playMusic(world: worldId, level: levelId)
         }
     }
+
+    private func nextAdvanceAction(forWorld worldId: Int, level: Int) -> GameAdvanceAction {
+        if level < 10 {
+            return .nextLevel(level + 1)
+        }
+        if worldId < WorldLibrary.allWorlds.count {
+            return .nextWorld(worldId + 1)
+        }
+        return .quitToLevels
+    }
+}
+
+enum GameAdvanceAction {
+    case nextLevel(Int)
+    case nextWorld(Int)
+    case quitToLevels
 }
 
 enum AppDestination: Hashable, Codable {

@@ -8,6 +8,7 @@ final class AudioManager {
     private var activeSFXPlayers: [AVAudioPlayer] = []
     private var currentVolume: Float = 1.0
     private var targetVolume: Float = 1.0
+    private var currentMusicTrackName: String?
 
     private let gameState: GameState
 
@@ -47,18 +48,16 @@ final class AudioManager {
 
     private func musicTrack(for world: Int, level: Int) -> (name: String, folder: String) {
         let suffix = level <= 5 ? "track-a" : "track-b"
-        let worldFolder: String
-        switch world {
-        case 1: worldFolder = "world1-the-block"
-        case 2: worldFolder = "world2-neon-yard"
-        case 3: worldFolder = "world3-underground"
-        case 4: worldFolder = "world4-static"
-        default: worldFolder = "world1-the-block"
-        }
+        let worldFolder = WorldLibrary.world(for: world)?.musicFolderName ?? "world1-the-block"
         return ("world\(world)-\(suffix)", worldFolder)
     }
 
     private func loadAndPlayMusic(named: String, inSubdirectory subdirectory: String) {
+        // Don't restart if already playing this track
+        if currentMusicTrackName == named, currentMusicPlayer?.isPlaying == true {
+            return
+        }
+
         guard let url = Bundle.main.url(
             forResource: named,
             withExtension: "mp3",
@@ -70,6 +69,8 @@ final class AudioManager {
         do {
             let newPlayer = try AVAudioPlayer(contentsOf: url)
             newPlayer.numberOfLoops = -1
+
+            currentMusicTrackName = named
 
             if let currentPlayer = currentMusicPlayer {
                 crossfadeMusic(from: currentPlayer, to: newPlayer, duration: 2.0)
@@ -122,6 +123,7 @@ final class AudioManager {
         nextMusicPlayer?.stop()
         currentMusicPlayer = nil
         nextMusicPlayer = nil
+        currentMusicTrackName = nil
     }
 
     /// Fade out current music over the given duration, then stop

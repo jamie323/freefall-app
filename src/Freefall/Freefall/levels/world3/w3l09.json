@@ -6,107 +6,135 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 196,
-    "dy": 46
+    "dx": 219.9,
+    "dy": 0
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.713
+    "y": 0.238
   },
-  "goalRadius": 35,
+  "goalRadius": 32,
   "initialGravityDown": true,
-  "parTime": 12.7,
-  "parFlips": 5,
-  "collectibles": [
-    {
-      "position": {
-        "x": 0.386,
-        "y": 0.516
-      }
-    },
-    {
-      "position": {
-        "x": 0.551,
-        "y": 0.393
-      }
-    },
-    {
-      "position": {
-        "x": 0.776,
-        "y": 0.583
-      }
-    }
-  ],
+  "parFlips": 7,
+  "parTime": 1.7,
   "obstacles": [
     {
       "id": "top-bar",
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.12
+        "y": 0.06
       },
       "size": {
-        "width": 0.65,
-        "height": 0.025
+        "width": 1.0,
+        "height": 0.018
       },
       "rotation": 0,
-      "style": "pulsing_glow"
+      "style": "solid"
     },
     {
       "id": "bot-bar",
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.88
+        "y": 0.94
       },
       "size": {
-        "width": 0.65,
-        "height": 0.025
+        "width": 1.0,
+        "height": 0.018
       },
       "rotation": 0,
-      "style": "pulsing_glow"
-    },
-    {
-      "id": "obs-0",
-      "type": "rect",
-      "position": {
-        "x": 0.563,
-        "y": 0.479
-      },
-      "size": {
-        "width": 0.085,
-        "height": 0.2
-      },
-      "rotation": 0,
-      "style": "pulsing_glow"
+      "style": "solid"
     },
     {
       "id": "obs-1",
       "type": "rect",
       "position": {
-        "x": 0.455,
-        "y": 0.681
+        "x": 0.178,
+        "y": 0.222
       },
       "size": {
-        "width": 0.092,
-        "height": 0.208
+        "width": 0.057,
+        "height": 0.157
       },
-      "rotation": 35,
-      "style": "pulsing_glow"
+      "rotation": 12.3,
+      "style": "solid"
     },
     {
       "id": "obs-2",
       "type": "rect",
       "position": {
-        "x": 0.358,
-        "y": 0.464
+        "x": 0.341,
+        "y": 0.679
       },
       "size": {
-        "width": 0.094,
-        "height": 0.132
+        "width": 0.039,
+        "height": 0.268
       },
-      "rotation": 20,
-      "style": "pulsing_glow"
+      "rotation": 25.6,
+      "style": "solid"
+    },
+    {
+      "id": "obs-3",
+      "type": "rect",
+      "position": {
+        "x": 0.436,
+        "y": 0.333
+      },
+      "size": {
+        "width": 0.038,
+        "height": 0.243
+      },
+      "rotation": 6.2,
+      "style": "solid"
+    },
+    {
+      "id": "obs-4",
+      "type": "rect",
+      "position": {
+        "x": 0.53,
+        "y": 0.767
+      },
+      "size": {
+        "width": 0.05,
+        "height": 0.136
+      },
+      "rotation": -25.6,
+      "style": "solid"
+    },
+    {
+      "id": "obs-5",
+      "type": "rect",
+      "position": {
+        "x": 0.645,
+        "y": 0.462
+      },
+      "size": {
+        "width": 0.055,
+        "height": 0.271
+      },
+      "rotation": 0.4,
+      "style": "solid"
+    }
+  ],
+  "collectibles": [
+    {
+      "position": {
+        "x": 0.129,
+        "y": 0.318
+      }
+    },
+    {
+      "position": {
+        "x": 0.389,
+        "y": 0.627
+      }
+    },
+    {
+      "position": {
+        "x": 0.588,
+        "y": 0.597
+      }
     }
   ]
 }

@@ -27,7 +27,7 @@ struct LevelCompleteView: View {
     }
 
     private var isLastLevelOverall: Bool {
-        world.id == 4 && level.levelId == 10
+        world.id == WorldLibrary.allWorlds.count && level.levelId == 10
     }
 
     private var baseLevelScore: Int { 200 }
@@ -36,9 +36,10 @@ struct LevelCompleteView: View {
 
     var body: some View {
         ZStack {
-            // Semi-transparent black background
+            // Semi-transparent black background — blocks taps from reaching game beneath
             Color.black.opacity(0.4)
                 .ignoresSafeArea()
+                .contentShape(Rectangle())
 
             VStack(spacing: 24) {
                 Spacer()
@@ -180,6 +181,7 @@ struct LevelCompleteView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
                 .opacity(showButtons ? 1 : 0)
+                .allowsHitTesting(showButtons)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }

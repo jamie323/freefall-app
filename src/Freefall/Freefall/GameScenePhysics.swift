@@ -229,9 +229,12 @@ extension GameScene: SKPhysicsContactDelegate {
         // Disable sphere physics immediately
         sphereNode?.physicsBody?.isDynamic = false
 
-        // Heavy haptic
+        // Heavy haptic chain — initial slam + aftershock
         let haptic = UINotificationFeedbackGenerator()
         haptic.notificationOccurred(.success)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            UIImpactFeedbackGenerator(style: .heavy).impactOccurred(intensity: 1.0)
+        }
 
         audioManager?.playSFX("level-complete")
 
@@ -239,7 +242,6 @@ extension GameScene: SKPhysicsContactDelegate {
         let goalPos = goalNode?.position ?? CGPoint(x: size.width / 2, y: size.height / 2)
         if let goal = goalNode {
             goal.removeAction(forKey: Constants.goalPulseActionKey)
-            // Ring expands then contracts (inhale)
             goal.run(SKAction.sequence([
                 SKAction.group([
                     SKAction.scale(to: 1.6, duration: 0.18),
@@ -261,28 +263,117 @@ extension GameScene: SKPhysicsContactDelegate {
             ]))
         }
 
-        // Screen flash after ball is absorbed
+        // === MASSIVE EXPLOSION at goal after ball absorbed ===
+
+        // 1) Full-screen WHITE flash — hard slam
         run(SKAction.sequence([SKAction.wait(forDuration: 0.32), SKAction.run { [weak self] in
             guard let self else { return }
-            let worldColor = UIColor(self.worldDefinition?.primaryColor ?? .cyan)
-            let flash = SKSpriteNode(color: worldColor.withAlphaComponent(0.5), size: self.size)
+            let flash = SKSpriteNode(color: .white, size: self.size)
             flash.position = CGPoint(x: self.size.width / 2, y: self.size.height / 2)
             flash.zPosition = 50
+            flash.alpha = 0.9
             flash.blendMode = .add
             self.addChild(flash)
-            flash.run(SKAction.sequence([SKAction.fadeOut(withDuration: 0.25), .removeFromParent()]))
+            flash.run(SKAction.sequence([SKAction.fadeOut(withDuration: 0.35), .removeFromParent()]))
         }]))
 
-        // Fireworks — 5 staggered bursts across screen
-        createFireworksBurst(at: goalPos, delay: 0.35)
-        createFireworksBurst(at: CGPoint(x: size.width * 0.2, y: size.height * 0.65), delay: 0.5)
-        createFireworksBurst(at: CGPoint(x: size.width * 0.8, y: size.height * 0.35), delay: 0.65)
-        createFireworksBurst(at: CGPoint(x: size.width * 0.35, y: size.height * 0.25), delay: 0.8)
-        createFireworksBurst(at: CGPoint(x: size.width * 0.65, y: size.height * 0.75), delay: 0.95)
+        // 2) Heavy screen shake — earthquake feel
+        run(SKAction.sequence([SKAction.wait(forDuration: 0.33), SKAction.run { [weak self] in
+            guard let bg = self?.backgroundNode else { return }
+            let originalPos = bg.position
+            let shakeAmt: CGFloat = 14
+            let shakeSeq = SKAction.sequence([
+                SKAction.moveBy(x: shakeAmt, y: shakeAmt, duration: 0.04),
+                SKAction.moveBy(x: -shakeAmt * 2, y: -shakeAmt * 0.5, duration: 0.04),
+                SKAction.moveBy(x: shakeAmt * 1.5, y: -shakeAmt, duration: 0.04),
+                SKAction.moveBy(x: -shakeAmt, y: shakeAmt * 1.5, duration: 0.04),
+                SKAction.moveBy(x: shakeAmt * 0.5, y: -shakeAmt * 0.5, duration: 0.04),
+                SKAction.move(to: originalPos, duration: 0.06)
+            ])
+            bg.run(shakeSeq)
+            // Haptic aftershock
+            UIImpactFeedbackGenerator(style: .heavy).impactOccurred(intensity: 1.0)
+        }]))
 
-        // Show complete UI
+        // 3) Shockwave ring — expands from goal
+        run(SKAction.sequence([SKAction.wait(forDuration: 0.34), SKAction.run { [weak self] in
+            guard let self else { return }
+            let worldColor = UIColor(self.worldDefinition?.primaryColor ?? .cyan)
+            let shockwave = SKShapeNode(circleOfRadius: 10)
+            shockwave.position = goalPos
+            shockwave.strokeColor = worldColor
+            shockwave.fillColor = .clear
+            shockwave.lineWidth = 4
+            shockwave.zPosition = 30
+            shockwave.blendMode = .add
+            self.addChild(shockwave)
+            shockwave.run(SKAction.sequence([
+                SKAction.group([
+                    SKAction.scale(to: 25.0, duration: 0.6),
+                    SKAction.sequence([
+                        SKAction.wait(forDuration: 0.15),
+                        SKAction.fadeOut(withDuration: 0.45)
+                    ])
+                ]),
+                .removeFromParent()
+            ]))
+        }]))
+
+        // 4) Second world-color flash — pulsing afterglow
+        run(SKAction.sequence([SKAction.wait(forDuration: 0.5), SKAction.run { [weak self] in
+            guard let self else { return }
+            let worldColor = UIColor(self.worldDefinition?.primaryColor ?? .cyan)
+            let flash2 = SKSpriteNode(color: worldColor.withAlphaComponent(0.6), size: self.size)
+            flash2.position = CGPoint(x: self.size.width / 2, y: self.size.height / 2)
+            flash2.zPosition = 50
+            flash2.blendMode = .add
+            self.addChild(flash2)
+            flash2.run(SKAction.sequence([SKAction.fadeOut(withDuration: 0.4), .removeFromParent()]))
+        }]))
+
+        // 5) Massive particle explosion at goal — 60 particles, fast + far
+        run(SKAction.sequence([SKAction.wait(forDuration: 0.34), SKAction.run { [weak self] in
+            guard let self else { return }
+            let worldColor = UIColor(self.worldDefinition?.primaryColor ?? .cyan)
+            for _ in 0..<60 {
+                let sz: CGFloat = CGFloat.random(in: 4...12)
+                let colors: [UIColor] = [worldColor, .white, .yellow, worldColor]
+                let color = colors.randomElement() ?? worldColor
+                let particle = SKSpriteNode(color: color, size: CGSize(width: sz, height: sz))
+                particle.position = goalPos
+                particle.zPosition = 28
+                particle.blendMode = .add
+                self.addChild(particle)
+                let angle = CGFloat.random(in: 0..<(2 * .pi))
+                let speed = CGFloat.random(in: 200...600)
+                let dur = TimeInterval.random(in: 0.4...0.9)
+                let dx = cos(angle) * speed * CGFloat(dur)
+                let dy = sin(angle) * speed * CGFloat(dur)
+                particle.run(SKAction.sequence([
+                    SKAction.group([
+                        SKAction.moveBy(x: dx, y: dy, duration: dur),
+                        SKAction.sequence([
+                            SKAction.wait(forDuration: dur * 0.3),
+                            SKAction.fadeOut(withDuration: dur * 0.7)
+                        ])
+                    ]),
+                    .removeFromParent()
+                ]))
+            }
+        }]))
+
+        // 6) Fireworks — 7 staggered bursts across screen (more than before)
+        createFireworksBurst(at: goalPos, delay: 0.45)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.15, y: size.height * 0.7), delay: 0.55)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.85, y: size.height * 0.3), delay: 0.65)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.3, y: size.height * 0.2), delay: 0.75)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.7, y: size.height * 0.8), delay: 0.85)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.5, y: size.height * 0.5), delay: 0.95)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.45, y: size.height * 0.4), delay: 1.05)
+
+        // Show complete UI (slightly later to let explosions breathe)
         let delayAction = SKAction.sequence([
-            SKAction.wait(forDuration: 1.2),
+            SKAction.wait(forDuration: 1.4),
             SKAction.run { [weak self] in
                 self?.emitLevelCompleteMessage()
                 self?.levelCompleted?()
@@ -317,37 +408,37 @@ extension GameScene: SKPhysicsContactDelegate {
             let haptic = UIImpactFeedbackGenerator(style: .medium)
             haptic.impactOccurred(intensity: 0.8)
 
-            // Central flash ring in a random palette colour
+            // Central flash ring — big expanding shockwave
             let ringColor = colors.randomElement() ?? worldColor
-            let ring = SKShapeNode(circleOfRadius: 6)
+            let ring = SKShapeNode(circleOfRadius: 8)
             ring.position = position
             ring.strokeColor = ringColor
-            ring.fillColor = ringColor.withAlphaComponent(0.25)
-            ring.lineWidth = 3
+            ring.fillColor = ringColor.withAlphaComponent(0.35)
+            ring.lineWidth = 4
             ring.zPosition = 25
             ring.blendMode = .add
             self.addChild(ring)
             ring.run(SKAction.sequence([
                 SKAction.group([
-                    SKAction.scale(to: 7.0, duration: 0.45),
-                    SKAction.fadeOut(withDuration: 0.45)
+                    SKAction.scale(to: 10.0, duration: 0.5),
+                    SKAction.fadeOut(withDuration: 0.5)
                 ]),
                 .removeFromParent()
             ]))
 
-            // 32 particles per burst — each picks a random palette colour
-            for i in 0..<32 {
+            // 48 particles per burst — more dense, more impact
+            for i in 0..<48 {
                 let color = colors[i % colors.count]
-                let sz: CGFloat = CGFloat.random(in: 3...8)
+                let sz: CGFloat = CGFloat.random(in: 4...10)
                 let particle = SKSpriteNode(color: color, size: CGSize(width: sz, height: sz))
                 particle.position = position
                 particle.zPosition = 22
                 particle.blendMode = .add
                 self.addChild(particle)
 
-                let angle = CGFloat(i) * (2 * .pi / 32) + CGFloat.random(in: -0.15...0.15)
-                let speed = CGFloat.random(in: 140...360)
-                let dur = TimeInterval.random(in: 0.55...1.0)
+                let angle = CGFloat(i) * (2 * .pi / 48) + CGFloat.random(in: -0.15...0.15)
+                let speed = CGFloat.random(in: 180...450)
+                let dur = TimeInterval.random(in: 0.5...1.1)
                 let dx = cos(angle) * speed * CGFloat(dur)
                 let dy = sin(angle) * speed * CGFloat(dur)
 
@@ -406,14 +497,12 @@ extension GameScene: SKPhysicsContactDelegate {
         // Record best score
         let finalScore = gameState.currentLevelScore
         lastIsNewBest = gameState.updateBestScoreIfNeeded(world: world.id, level: definition.levelId, score: finalScore)
+        gameState.commitCurrentAttemptScore()
 
         // Always mark level as completed first
         gameState.markLevelCompleted(world: world.id, level: definition.levelId)
 
-        // Then check if should trigger intermission
-        if gameState.shouldTriggerIntermission(world: world.id, level: definition.levelId) {
-            gameState.isIntermissionActive = true
-        }
+        shouldOfferIntermissionAfterCompletion = gameState.shouldTriggerIntermission(world: world.id, level: definition.levelId)
     }
 
 }

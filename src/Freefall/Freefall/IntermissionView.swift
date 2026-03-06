@@ -11,6 +11,7 @@ struct IntermissionView: View {
     @State private var displayScore: Int = 0
     @State private var showResult = false
     @State private var showVoiceDrop = true
+    @State private var instructionOpacity: CGFloat = 1
 
     var body: some View {
         ZStack {
@@ -37,17 +38,26 @@ struct IntermissionView: View {
                         .padding(.trailing, 20)
                         .padding(.top, 60)
                     }
+                    Text("HOLD LEFT OR RIGHT TO STRAFE THROUGH THE DROP")
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        .foregroundColor(.white.opacity(instructionOpacity * 0.45))
+                        .padding(.top, 100)
                     Spacer()
                 }
             }
 
             // Voice drop overlay (shown briefly at start)
             if showVoiceDrop {
-                Text("INTERMISSION")
-                    .font(.system(size: 48, weight: .black, design: .default))
-                    .foregroundColor(.white)
-                    .shadow(color: .red, radius: 20)
-                    .transition(.opacity)
+                VStack(spacing: 10) {
+                    Text("DROP IN")
+                        .font(.system(size: 54, weight: .black, design: .default))
+                        .foregroundColor(.white)
+                        .shadow(color: .red, radius: 24)
+                    Text("FREEFALL PROTOCOL")
+                        .font(.system(size: 14, weight: .heavy, design: .monospaced))
+                        .foregroundColor(.white.opacity(0.6))
+                }
+                .transition(.opacity)
             }
 
             // Result screen
@@ -75,6 +85,7 @@ struct IntermissionView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 withAnimation(.easeOut(duration: 0.3)) {
                     showVoiceDrop = false
+                    instructionOpacity = 0
                 }
             }
         }
@@ -100,6 +111,7 @@ struct IntermissionView: View {
     }
 
     private func playIntermissionAudio() {
+        audioManager.fadeOutMusic(duration: 0.45)
         // Play voice drop first
         audioManager.playSFX("intermission-voice")
         // Then start music after 1.2s

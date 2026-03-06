@@ -87,6 +87,66 @@ enum WorldLibrary {
             bpmA: 132,
             bpmB: 138,
             physicsConfig: PhysicsConfig(gravityMagnitude: 70, flipImpulse: 42, maxVerticalVelocity: 200, verticalDamping: 0.005)
+        ),
+        // W5: Slippery/momentum — zero damping, ball never slows vertically. Ice-skating overshoot feel.
+        WorldDefinition(
+            id: 5,
+            name: "GLASS",
+            primaryColor: .hex("#A0E7FF"),
+            secondaryColor: .hex("#0A1A2E"),
+            accentColor: .hex("#E0F7FF"),
+            trailStartColor: .hex("#A0E7FF"),
+            trailEndColor: .hex("#E0F7FF"),
+            backgroundImageName: "world5-bg",
+            musicFolderName: "world5-glass",
+            bpmA: 110,
+            bpmB: 118,
+            physicsConfig: PhysicsConfig(gravityMagnitude: 40, flipImpulse: 30, maxVerticalVelocity: 220, verticalDamping: 0.0)
+        ),
+        // W6: Explosive/short hops — extreme gravity, huge impulse, high damping. Deliberate committed moves.
+        WorldDefinition(
+            id: 6,
+            name: "FURNACE",
+            primaryColor: .hex("#FF2200"),
+            secondaryColor: .hex("#1A0500"),
+            accentColor: .hex("#FF8800"),
+            trailStartColor: .hex("#FF2200"),
+            trailEndColor: .hex("#FF8800"),
+            backgroundImageName: "world6-bg",
+            musicFolderName: "world6-furnace",
+            bpmA: 180,
+            bpmB: 185,
+            physicsConfig: PhysicsConfig(gravityMagnitude: 95, flipImpulse: 60, maxVerticalVelocity: 120, verticalDamping: 0.04)
+        ),
+        // W7: Inverted start — gravity starts UP on every level. Mentally disorienting. Forces re-learning.
+        WorldDefinition(
+            id: 7,
+            name: "VOID",
+            primaryColor: .hex("#CC00FF"),
+            secondaryColor: .hex("#0A000F"),
+            accentColor: .hex("#FF66FF"),
+            trailStartColor: .hex("#CC00FF"),
+            trailEndColor: .hex("#FF66FF"),
+            backgroundImageName: "world7-bg",
+            musicFolderName: "world7-void",
+            bpmA: 140,
+            bpmB: 148,
+            physicsConfig: PhysicsConfig(gravityMagnitude: 60, flipImpulse: 38, maxVerticalVelocity: 170, verticalDamping: 0.012)
+        ),
+        // W8: Brutal precision — near-max everything. Fast, violent reactions. Expert-only.
+        WorldDefinition(
+            id: 8,
+            name: "MAINFRAME",
+            primaryColor: .hex("#00FF88"),
+            secondaryColor: .hex("#000A05"),
+            accentColor: .hex("#88FFCC"),
+            trailStartColor: .hex("#00FF88"),
+            trailEndColor: .hex("#88FFCC"),
+            backgroundImageName: "world8-bg",
+            musicFolderName: "world8-mainframe",
+            bpmA: 150,
+            bpmB: 158,
+            physicsConfig: PhysicsConfig(gravityMagnitude: 85, flipImpulse: 45, maxVerticalVelocity: 240, verticalDamping: 0.003)
         )
     ]
 

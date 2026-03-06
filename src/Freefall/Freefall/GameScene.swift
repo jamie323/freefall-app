@@ -42,8 +42,7 @@ final class GameScene: SKScene {
 
     let gameState: GameState
     weak var audioManager: AudioManager?
-
-    var hapticsEnabled: Bool = true
+    private var hapticsEnabled: Bool { gameState.hapticsEnabled }
 
     private(set) var levelDefinition: LevelDefinition?
     private(set) var worldDefinition: WorldDefinition?
@@ -65,6 +64,7 @@ final class GameScene: SKScene {
     var lastCompletionWord: String = "CLEAN"
     var lastSpeedBonus: Int = 0
     var lastIsNewBest: Bool = false
+    var shouldOfferIntermissionAfterCompletion: Bool = false
 
     // Combo system
     var collectibleComboCount: Int = 0
@@ -139,6 +139,7 @@ final class GameScene: SKScene {
         gameState.currentLevelId = level.levelId
         levelStartTime = nil
         hasAppliedCompletionScore = false
+        shouldOfferIntermissionAfterCompletion = false
         collectiblesCollectedThisAttempt = 0
         gameState.resetCurrentLevelScore()
         lastDisplayedScore = 0
@@ -562,6 +563,7 @@ final class GameScene: SKScene {
         sceneState = .ready
         lastUpdateTimestamp = 0
         levelStartTime = nil
+        shouldOfferIntermissionAfterCompletion = false
         sphereNode?.physicsBody?.isDynamic = false
         sphereNode?.alpha = 1
         stopSphereMotion()

@@ -7,7 +7,7 @@ struct GameView: View {
     let level: LevelDefinition
     var audioManager: AudioManager?
     let onQuit: () -> Void
-    let onNextLevel: (Int) -> Void
+    let onAdvance: (GameAdvanceAction) -> Void
 
     @State private var proxy = SceneProxy()
     @State private var showLevelComplete = false
@@ -19,7 +19,16 @@ struct GameView: View {
     @State private var fadeOut = false
 
     private var isLastLevelInWorld: Bool { level.levelId == 10 }
-    private var isLastLevelOverall: Bool { world.id == 4 && level.levelId == 10 }
+    private var isLastLevelOverall: Bool { world.id == WorldLibrary.allWorlds.count && level.levelId == 10 }
+    private var completionAdvanceAction: GameAdvanceAction {
+        if level.levelId < 10 {
+            return .nextLevel(level.levelId + 1)
+        }
+        if world.id < WorldLibrary.allWorlds.count {
+            return .nextWorld(world.id + 1)
+        }
+        return .quitToLevels
+    }
 
     private func wireLevelCompleteCallback() {
         if let scene = proxy.coordinator?.scene {
@@ -49,6 +58,7 @@ struct GameView: View {
             // Full-screen tap target — SpriteKit gesture handler
             Color.white.opacity(0.001)
                 .ignoresSafeArea()
+                .allowsHitTesting(!showLevelComplete && !showPauseOverlay)
                 .onTapGesture {
                     proxy.handleTap()
                 }
@@ -119,12 +129,12 @@ struct GameView: View {
                     stars: gameState.starsForLevel(world: world.id, level: level.levelId),
                     onNextLevel: {
                         showLevelComplete = false
-                        if isLastLevelOverall {
-                            handleQuitWithFade()
-                        } else if isLastLevelInWorld {
-                            handleQuitWithFade()
+                        if proxy.coordinator?.scene.shouldOfferIntermissionAfterCompletion == true {
+                            gameState.isIntermissionActive = true
+                        } else if isLastLevelOverall || isLastLevelInWorld {
+                            handleAdvanceWithFade(completionAdvanceAction)
                         } else {
-                            onNextLevel(level.levelId + 1)
+                            onAdvance(completionAdvanceAction)
                         }
                     },
                     onReplay: {
@@ -182,12 +192,21 @@ struct GameView: View {
 
     /// Fade to black + fade music, then call onQuit
     private func handleQuitWithFade() {
+        handleAdvanceWithFade(.quitToLevels)
+    }
+
+    private func handleAdvanceWithFade(_ action: GameAdvanceAction) {
         audioManager?.fadeOutMusic(duration: 0.5)
         withAnimation(.easeIn(duration: 0.4)) {
             fadeOut = true
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-            onQuit()
+            switch action {
+            case .quitToLevels:
+                onQuit()
+            case .nextLevel, .nextWorld:
+                onAdvance(action)
+            }
         }
     }
 }

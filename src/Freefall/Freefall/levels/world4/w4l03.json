@@ -6,121 +6,163 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 201,
-    "dy": 44
+    "dx": 223.7,
+    "dy": 0
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.594
+    "y": 0.35
   },
-  "goalRadius": 35,
+  "goalRadius": 31,
   "initialGravityDown": true,
-  "parTime": 13.6,
-  "parFlips": 6,
-  "collectibles": [
-    {
-      "position": {
-        "x": 0.411,
-        "y": 0.631
-      }
-    },
-    {
-      "position": {
-        "x": 0.597,
-        "y": 0.474
-      }
-    },
-    {
-      "position": {
-        "x": 0.779,
-        "y": 0.686
-      }
-    }
-  ],
+  "parFlips": 8,
+  "parTime": 1.6,
   "obstacles": [
     {
       "id": "top-bar",
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.12
+        "y": 0.06
       },
       "size": {
-        "width": 0.65,
-        "height": 0.025
+        "width": 1.0,
+        "height": 0.018
       },
       "rotation": 0,
-      "style": "abstract"
+      "style": "solid"
     },
     {
       "id": "bot-bar",
       "type": "rect",
       "position": {
         "x": 0.5,
-        "y": 0.88
+        "y": 0.94
       },
       "size": {
-        "width": 0.65,
-        "height": 0.025
+        "width": 1.0,
+        "height": 0.018
       },
       "rotation": 0,
-      "style": "abstract"
-    },
-    {
-      "id": "obs-0",
-      "type": "rect",
-      "position": {
-        "x": 0.428,
-        "y": 0.629
-      },
-      "size": {
-        "width": 0.059,
-        "height": 0.182
-      },
-      "rotation": -20,
-      "style": "abstract"
+      "style": "solid"
     },
     {
       "id": "obs-1",
       "type": "rect",
       "position": {
-        "x": 0.633,
-        "y": 0.56
+        "x": 0.191,
+        "y": 0.411
       },
       "size": {
-        "width": 0.062,
-        "height": 0.211
+        "width": 0.056,
+        "height": 0.308
       },
-      "rotation": 0,
-      "style": "abstract"
+      "rotation": 13.0,
+      "style": "solid"
     },
     {
       "id": "obs-2",
       "type": "rect",
       "position": {
-        "x": 0.406,
-        "y": 0.457
+        "x": 0.299,
+        "y": 0.837
       },
       "size": {
-        "width": 0.077,
-        "height": 0.163
+        "width": 0.056,
+        "height": 0.28
       },
-      "rotation": 20,
-      "style": "abstract"
+      "rotation": 13.7,
+      "style": "solid"
     },
     {
       "id": "obs-3",
       "type": "rect",
       "position": {
-        "x": 0.256,
-        "y": 0.452
+        "x": 0.424,
+        "y": 0.287
       },
       "size": {
-        "width": 0.084,
-        "height": 0.156
+        "width": 0.051,
+        "height": 0.303
       },
-      "rotation": 20,
-      "style": "abstract"
+      "rotation": 8.6,
+      "style": "solid"
+    },
+    {
+      "id": "obs-4",
+      "type": "rect",
+      "position": {
+        "x": 0.523,
+        "y": 0.813
+      },
+      "size": {
+        "width": 0.038,
+        "height": 0.15
+      },
+      "rotation": 14.3,
+      "style": "solid"
+    },
+    {
+      "id": "obs-5",
+      "type": "rect",
+      "position": {
+        "x": 0.628,
+        "y": 0.346
+      },
+      "size": {
+        "width": 0.054,
+        "height": 0.259
+      },
+      "rotation": -2.0,
+      "style": "solid"
+    },
+    {
+      "id": "obs-6",
+      "type": "rect",
+      "position": {
+        "x": 0.719,
+        "y": 0.764
+      },
+      "size": {
+        "width": 0.058,
+        "height": 0.262
+      },
+      "rotation": -27.7,
+      "style": "solid"
+    },
+    {
+      "id": "obs-7",
+      "type": "rect",
+      "position": {
+        "x": 0.811,
+        "y": 0.414
+      },
+      "size": {
+        "width": 0.052,
+        "height": 0.175
+      },
+      "rotation": -8.3,
+      "style": "solid"
+    }
+  ],
+  "collectibles": [
+    {
+      "position": {
+        "x": 0.136,
+        "y": 0.702
+      }
+    },
+    {
+      "position": {
+        "x": 0.361,
+        "y": 0.337
+      }
+    },
+    {
+      "position": {
+        "x": 0.673,
+        "y": 0.396
+      }
     }
   ]
 }
