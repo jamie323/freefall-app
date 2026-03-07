@@ -84,6 +84,7 @@ struct LevelSelectView: View {
                     .clipShape(Circle())
                     .overlay(Circle().stroke(world.primaryColor.opacity(0.3), lineWidth: 1))
             }
+            .accessibilityLabel("Back to world select")
 
             Spacer()
 
@@ -95,6 +96,7 @@ struct LevelSelectView: View {
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
                     .foregroundStyle(world.primaryColor.opacity(0.5))
             }
+            .accessibilityElement(children: .combine)
 
             Spacer()
 
@@ -179,6 +181,22 @@ private struct LevelCellView: View {
         .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: isPulsing)
         .onAppear {
             if isNextToPlay { isPulsing = true }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(levelAccessibilityLabel)
+        .accessibilityHint(isUnlocked || isCompleted ? "Double tap to play" : "Complete previous level to unlock")
+        .accessibilityAddTraits(isUnlocked || isCompleted ? .isButton : [])
+    }
+
+    private var levelAccessibilityLabel: String {
+        if isCompleted {
+            var label = "Level \(levelId), completed, \(stars) of 3 stars"
+            if bestScore > 0 { label += ", best score \(bestScore)" }
+            return label
+        } else if isUnlocked {
+            return "Level \(levelId), ready to play"
+        } else {
+            return "Level \(levelId), locked"
         }
     }
 

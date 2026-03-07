@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(GameState.self) private var gameState
     @Environment(\.dismiss) private var dismiss
+    @State private var showResetConfirmation = false
 
     var body: some View {
         @Bindable var gs = gameState
@@ -23,6 +24,7 @@ struct SettingsView: View {
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(Color.hex("#00D4FF"))
                     }
+                    .accessibilityLabel("Close settings")
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 24)
@@ -61,7 +63,25 @@ struct SettingsView: View {
                 ScoringGuideView()
                     .padding(.horizontal, 24)
 
+                Divider()
+                    .background(Color.hex("#00D4FF").opacity(0.2))
+                    .padding(.horizontal, 24)
+
+                // Statistics
+                StatsView()
+                    .padding(.horizontal, 24)
+
                 Spacer()
+
+                // Reset Progress
+                Button(action: { showResetConfirmation = true }) {
+                    Text("Reset All Progress")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.red.opacity(0.6))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                }
+                .padding(.horizontal, 24)
 
                 // Version footer
                 Text("FREEFALL v1.0")
@@ -71,6 +91,15 @@ struct SettingsView: View {
 
                 Spacer().frame(height: 24)
             }
+        }
+        .alert("Reset Progress", isPresented: $showResetConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Reset Everything", role: .destructive) {
+                gameState.resetProgress()
+                dismiss()
+            }
+        } message: {
+            Text("This will erase all scores, stars, completed levels, and stats. This cannot be undone.")
         }
     }
 }
@@ -191,6 +220,70 @@ private struct ScoringGuideView: View {
                 .font(.system(size: 12, weight: .regular))
                 .foregroundStyle(.white.opacity(0.6))
         }
+    }
+}
+
+private struct StatsView: View {
+    @Environment(GameState.self) private var gameState
+    @State private var isExpanded = false
+
+    private let cyan = Color.hex("#00D4FF")
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded.toggle()
+                }
+            }) {
+                HStack {
+                    Text("YOUR STATS")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundStyle(cyan.opacity(0.8))
+                    Spacer()
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(cyan.opacity(0.5))
+                }
+                .padding(.vertical, 12)
+            }
+
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 6) {
+                    statRow("Levels completed", "\(gameState.statsTotalLevelsCompleted)")
+                    statRow("Total deaths", "\(gameState.statsTotalDeaths)")
+                    statRow("Total flips", "\(gameState.statsTotalFlips)")
+                    statRow("Diamonds collected", "\(gameState.statsTotalCollectibles)")
+                    statRow("Play time", formatTime(gameState.statsTotalPlayTime))
+                    statRow("Best streak", "\(gameState.statsLongestStreak) levels")
+                    statRow("Current streak", "\(gameState.statsCurrentStreak) levels")
+                    statRow("Total stars", "\(gameState.totalStars) / 240")
+                }
+                .padding(.bottom, 12)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+    }
+
+    private func statRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 12, weight: .regular))
+                .foregroundStyle(.white.opacity(0.6))
+            Spacer()
+            Text(value)
+                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.white.opacity(0.8))
+        }
+    }
+
+    private func formatTime(_ seconds: TimeInterval) -> String {
+        let hours = Int(seconds) / 3600
+        let minutes = (Int(seconds) % 3600) / 60
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        }
+        return "\(minutes)m"
     }
 }
 

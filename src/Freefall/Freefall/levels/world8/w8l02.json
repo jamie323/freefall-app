@@ -11,7 +11,7 @@
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.529
+    "y": 0.415
   },
   "goalRadius": 28,
   "initialGravityDown": true,
@@ -134,20 +134,20 @@
   "collectibles": [
     {
       "position": {
-        "x": 0.139,
-        "y": 0.616
+        "x": 0.28,
+        "y": 0.415
       }
     },
     {
       "position": {
         "x": 0.375,
-        "y": 0.799
+        "y": 0.335
       }
     },
     {
       "position": {
         "x": 0.673,
-        "y": 0.309
+        "y": 0.513
       }
     }
   ]

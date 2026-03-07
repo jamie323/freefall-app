@@ -6,6 +6,7 @@ struct GameView: View {
     let world: WorldDefinition
     let level: LevelDefinition
     var audioManager: AudioManager?
+    var cosmeticsManager: CosmeticsManager?
     let onQuit: () -> Void
     let onAdvance: (GameAdvanceAction) -> Void
 
@@ -14,9 +15,12 @@ struct GameView: View {
     @State private var showPauseOverlay = false
     @State private var completionWord = "CLEAN"
     @State private var speedBonus = 0
+    @State private var totalScore = 0
     @State private var isNewBest = false
     @State private var fadeIn = true
     @State private var fadeOut = false
+    @State private var showOnboarding = false
+    @State private var showWorldComplete = false
 
     private var isLastLevelInWorld: Bool { level.levelId == 10 }
     private var isLastLevelOverall: Bool { world.id == WorldLibrary.allWorlds.count && level.levelId == 10 }
@@ -35,6 +39,7 @@ struct GameView: View {
             scene.levelCompleted = { [self] in
                 self.completionWord = scene.lastCompletionWord
                 self.speedBonus = scene.lastSpeedBonus
+                self.totalScore = scene.lastTotalScore
                 self.isNewBest = scene.lastIsNewBest
                 DispatchQueue.main.async {
                     withAnimation(.easeIn(duration: 0.2)) {
@@ -52,7 +57,7 @@ struct GameView: View {
 
     var body: some View {
         ZStack {
-            SpriteKitView(level: level, world: world, proxy: proxy, audioManager: audioManager)
+            SpriteKitView(level: level, world: world, proxy: proxy, audioManager: audioManager, cosmeticsManager: cosmeticsManager)
                 .ignoresSafeArea()
 
             // Full-screen tap target — SpriteKit gesture handler
@@ -82,6 +87,8 @@ struct GameView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             .padding(.trailing, 4)
             .padding(.top, 8)
+            .accessibilityLabel("Pause")
+            .accessibilityHint("Double tap to pause the game")
 
             // Pause overlay
             if showPauseOverlay {
@@ -96,6 +103,34 @@ struct GameView: View {
                 )
                 .transition(.opacity)
                 .zIndex(99)
+            }
+
+            // World complete celebration
+            if showWorldComplete {
+                WorldCompleteView(
+                    world: world,
+                    nextWorld: isLastLevelOverall ? nil : WorldLibrary.world(for: world.id + 1),
+                    totalStars: (1...10).reduce(0) { $0 + gameState.starsForLevel(world: world.id, level: $1) },
+                    worldBestScore: gameState.bestScoreForWorld(world: world.id),
+                    onContinue: {
+                        showWorldComplete = false
+                        handleAdvanceWithFade(completionAdvanceAction)
+                    }
+                )
+                .transition(.opacity)
+                .zIndex(120)
+            }
+
+            // Onboarding overlay — first time only
+            if showOnboarding {
+                OnboardingOverlay(world: world) {
+                    UserDefaults.standard.set(true, forKey: "freefall.hasSeenOnboarding")
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        showOnboarding = false
+                    }
+                }
+                .transition(.opacity)
+                .zIndex(150)
             }
 
             // Fade-in overlay — white flash "loading" feel
@@ -123,16 +158,22 @@ struct GameView: View {
                     level: level,
                     completionWord: completionWord,
                     collectiblesCollected: proxy.coordinator?.scene.collectiblesCollectedThisAttempt ?? 0,
+                    totalCollectibles: level.collectibles?.count ?? 0,
                     speedBonus: speedBonus,
+                    totalScore: totalScore,
                     isNewBest: isNewBest,
                     bestScore: gameState.bestScoreForLevel(world: world.id, level: level.levelId),
                     stars: gameState.starsForLevel(world: world.id, level: level.levelId),
+                    audioManager: audioManager,
                     onNextLevel: {
                         showLevelComplete = false
                         if proxy.coordinator?.scene.shouldOfferIntermissionAfterCompletion == true {
                             gameState.isIntermissionActive = true
-                        } else if isLastLevelOverall || isLastLevelInWorld {
-                            handleAdvanceWithFade(completionAdvanceAction)
+                        } else if isLastLevelInWorld {
+                            // Show world complete celebration
+                            withAnimation(.easeIn(duration: 0.3)) {
+                                showWorldComplete = true
+                            }
                         } else {
                             onAdvance(completionAdvanceAction)
                         }
@@ -155,10 +196,18 @@ struct GameView: View {
             // Wire immediately — proxy.coordinator is set synchronously in makeCoordinator
             // Retry loop handles edge case where scene isn't ready yet
             wireLevelCompleteCallback()
-            // Brief hold on white overlay, then fade to reveal game
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                withAnimation(.easeOut(duration: 0.6)) {
+            // Hold white overlay while music fades out, then reveal game
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+                withAnimation(.easeOut(duration: 0.8)) {
                     fadeIn = false
+                }
+                // Show onboarding after fade-in (first play only)
+                if !UserDefaults.standard.bool(forKey: "freefall.hasSeenOnboarding") {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+                        withAnimation(.easeIn(duration: 0.3)) {
+                            showOnboarding = true
+                        }
+                    }
                 }
             }
         }
@@ -239,6 +288,7 @@ private struct PauseOverlayView: View {
                                     .stroke(world.primaryColor, lineWidth: 2)
                             )
                     }
+                    .accessibilityLabel("Resume game")
 
                     Button(action: onRestart) {
                         Text("RESTART")
@@ -247,6 +297,7 @@ private struct PauseOverlayView: View {
                             .frame(width: 200)
                             .padding(.vertical, 12)
                     }
+                    .accessibilityLabel("Restart level")
 
                     Button(action: onQuit) {
                         Text("QUIT")
@@ -255,6 +306,7 @@ private struct PauseOverlayView: View {
                             .frame(width: 200)
                             .padding(.vertical, 12)
                     }
+                    .accessibilityLabel("Quit to level select")
                 }
             }
         }

@@ -6,6 +6,7 @@ struct MainMenuView: View {
 
     var onPlay: () -> Void
     var onOpenSettings: () -> Void
+    var onOpenCosmetics: () -> Void
     var onToggleMusic: () -> Void
 
     private let cyan = Color.hex("#00D4FF")
@@ -46,6 +47,8 @@ struct MainMenuView: View {
                                 .stroke(cyan, lineWidth: 2)
                         )
                 }
+                .accessibilityLabel("Play")
+                .accessibilityHint("Opens world select")
 
                 Spacer()
 
@@ -55,6 +58,16 @@ struct MainMenuView: View {
                             .font(.system(size: 24, weight: .medium))
                             .foregroundStyle(cyan.opacity(0.7))
                     }
+                    .accessibilityLabel("Settings")
+
+                    Spacer()
+
+                    Button(action: handleCosmeticsTapped) {
+                        Image(systemName: "paintpalette.fill")
+                            .font(.system(size: 24, weight: .medium))
+                            .foregroundStyle(cyan.opacity(0.7))
+                    }
+                    .accessibilityLabel("Customize trail and ball")
 
                     Spacer()
 
@@ -63,6 +76,8 @@ struct MainMenuView: View {
                             .font(.system(size: 24, weight: .medium))
                             .foregroundStyle(cyan.opacity(0.7))
                     }
+                    .accessibilityLabel(gameState.musicEnabled ? "Music on" : "Music off")
+                    .accessibilityHint("Double tap to toggle music")
                 }
                 .padding(.horizontal, 32)
                 .padding(.bottom, 32)
@@ -79,6 +94,11 @@ struct MainMenuView: View {
     private func handleSettingsTapped() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         onOpenSettings()
+    }
+
+    private func handleCosmeticsTapped() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        onOpenCosmetics()
     }
 
     private func handleMusicTapped() {
@@ -116,6 +136,7 @@ private struct AmbientSphereView: View {
         audioManager: AudioManager(gameState: GameState()),
         onPlay: {},
         onOpenSettings: {},
+        onOpenCosmetics: {},
         onToggleMusic: {}
     )
     .environment(GameState())

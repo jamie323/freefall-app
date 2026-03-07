@@ -32,6 +32,10 @@
 		C700CFD9A6A24B8A806D1A71 /* GameScenePhysics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97EBADA68F20470D9847607E /* GameScenePhysics.swift */; };
 		E9431C81C94840DE9AD06420 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203C3C37E9DE4929A486E646 /* GameScene.swift */; };
 		EFA79302B6C44109A05DF559 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BCEE07F80847229451D131 /* ContentView.swift */; };
+		D4A6E8F0B2C53D7E9F1A3B42 /* CosmeticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3B5C7E9F20A4B6C8D0E1F /* CosmeticsManager.swift */; };
+		E5B7F9A1C3D64E8F0A2B4C53 /* CosmeticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E4C6D8F0A31B5C7D9E1F20 /* CosmeticsView.swift */; };
+		F6C8A0B2D4E75F9A1B3C5D64 /* OnboardingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3F5D7E9A1B42C6D8E0F2A31 /* OnboardingOverlay.swift */; };
+		7B3E9A1C5D8F02E4A6C8B0D7 /* WorldCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8D2F4E6B0C71A3D5E9F2B48 /* WorldCompleteView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,6 +67,10 @@
 		D6BBB4DF62E31430D7CC4C6B /* AudioManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		F8DF075F96AA4E2C9FD968A7 /* SpriteKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteKitView.swift; sourceTree = "<group>"; };
 		FA80FA9FEE8078BCCC0C51A7 /* IntermissionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IntermissionView.swift; sourceTree = "<group>"; };
+		A1D3B5C7E9F20A4B6C8D0E1F /* CosmeticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmeticsManager.swift; sourceTree = "<group>"; };
+		B2E4C6D8F0A31B5C7D9E1F20 /* CosmeticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmeticsView.swift; sourceTree = "<group>"; };
+		C3F5D7E9A1B42C6D8E0F2A31 /* OnboardingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingOverlay.swift; sourceTree = "<group>"; };
+		A8D2F4E6B0C71A3D5E9F2B48 /* WorldCompleteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldCompleteView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,6 +138,10 @@
 				72C6BDEE68893FA839BFEB37 /* WorldSelectView.swift */,
 				BC07EE2E9AEBFEE1B0EC627F /* audio */,
 				4A222F10F9F38579B1C5ADA5 /* levels */,
+				A1D3B5C7E9F20A4B6C8D0E1F /* CosmeticsManager.swift */,
+				B2E4C6D8F0A31B5C7D9E1F20 /* CosmeticsView.swift */,
+				C3F5D7E9A1B42C6D8E0F2A31 /* OnboardingOverlay.swift */,
+				A8D2F4E6B0C71A3D5E9F2B48 /* WorldCompleteView.swift */,
 			);
 			path = Freefall;
 			sourceTree = "<group>";
@@ -227,6 +239,10 @@
 				80124A7911925CD793903338 /* LevelSelectView.swift in Sources */,
 				9CB48A86E1BF23732BFF9E25 /* SettingsView.swift in Sources */,
 				4925AD365A4A5DE9EAE96050 /* WorldSelectView.swift in Sources */,
+				D4A6E8F0B2C53D7E9F1A3B42 /* CosmeticsManager.swift in Sources */,
+				E5B7F9A1C3D64E8F0A2B4C53 /* CosmeticsView.swift in Sources */,
+				F6C8A0B2D4E75F9A1B3C5D64 /* OnboardingOverlay.swift in Sources */,
+				7B3E9A1C5D8F02E4A6C8B0D7 /* WorldCompleteView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -19,6 +19,14 @@ final class GameState {
         static let worldScores = "freefall.worldScores"
         static let totalScore = "freefall.totalScore"
         static let levelBestScores = "freefall.levelBestScores"
+        // Statistics
+        static let statsTotalDeaths = "freefall.stats.totalDeaths"
+        static let statsTotalFlips = "freefall.stats.totalFlips"
+        static let statsTotalPlayTime = "freefall.stats.totalPlayTime"
+        static let statsTotalLevelsCompleted = "freefall.stats.totalLevelsCompleted"
+        static let statsTotalCollectibles = "freefall.stats.totalCollectibles"
+        static let statsLongestStreak = "freefall.stats.longestStreak"
+        static let statsCurrentStreak = "freefall.stats.currentStreak"
     }
 
     private let defaults: UserDefaults
@@ -84,6 +92,29 @@ final class GameState {
     var currentLevelId: Int?
     var gameplayState: GameplayState
 
+    // MARK: - Statistics (persisted)
+    var statsTotalDeaths: Int {
+        didSet { defaults.set(statsTotalDeaths, forKey: DefaultsKeys.statsTotalDeaths) }
+    }
+    var statsTotalFlips: Int {
+        didSet { defaults.set(statsTotalFlips, forKey: DefaultsKeys.statsTotalFlips) }
+    }
+    var statsTotalPlayTime: TimeInterval {
+        didSet { defaults.set(statsTotalPlayTime, forKey: DefaultsKeys.statsTotalPlayTime) }
+    }
+    var statsTotalLevelsCompleted: Int {
+        didSet { defaults.set(statsTotalLevelsCompleted, forKey: DefaultsKeys.statsTotalLevelsCompleted) }
+    }
+    var statsTotalCollectibles: Int {
+        didSet { defaults.set(statsTotalCollectibles, forKey: DefaultsKeys.statsTotalCollectibles) }
+    }
+    var statsLongestStreak: Int {
+        didSet { defaults.set(statsLongestStreak, forKey: DefaultsKeys.statsLongestStreak) }
+    }
+    var statsCurrentStreak: Int {
+        didSet { defaults.set(statsCurrentStreak, forKey: DefaultsKeys.statsCurrentStreak) }
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         self.completedLevels = GameState.loadCompletedLevels(from: defaults)
@@ -96,6 +127,14 @@ final class GameState {
         self.currentWorldId = nil
         self.currentLevelId = nil
         self.gameplayState = .ready
+        // Stats
+        self.statsTotalDeaths = defaults.integer(forKey: DefaultsKeys.statsTotalDeaths)
+        self.statsTotalFlips = defaults.integer(forKey: DefaultsKeys.statsTotalFlips)
+        self.statsTotalPlayTime = defaults.double(forKey: DefaultsKeys.statsTotalPlayTime)
+        self.statsTotalLevelsCompleted = defaults.integer(forKey: DefaultsKeys.statsTotalLevelsCompleted)
+        self.statsTotalCollectibles = defaults.integer(forKey: DefaultsKeys.statsTotalCollectibles)
+        self.statsLongestStreak = defaults.integer(forKey: DefaultsKeys.statsLongestStreak)
+        self.statsCurrentStreak = defaults.integer(forKey: DefaultsKeys.statsCurrentStreak)
     }
 
     func isLevelUnlocked(world: Int, level: Int) -> Bool {
@@ -202,6 +241,28 @@ final class GameState {
     func resetCurrentLevelScore() {
         currentLevelScore = 0
         currentAttemptScore = 0
+    }
+
+    // MARK: - Stat Recording
+
+    func recordDeath() {
+        statsTotalDeaths += 1
+        statsCurrentStreak = 0
+    }
+
+    func recordLevelComplete(flips: Int, collectibles: Int, elapsed: TimeInterval) {
+        statsTotalLevelsCompleted += 1
+        statsTotalFlips += flips
+        statsTotalCollectibles += collectibles
+        statsTotalPlayTime += elapsed
+        statsCurrentStreak += 1
+        if statsCurrentStreak > statsLongestStreak {
+            statsLongestStreak = statsCurrentStreak
+        }
+    }
+
+    func recordFlips(_ count: Int) {
+        statsTotalFlips += count
     }
 
     private func levelKey(world: Int, level: Int) -> String {

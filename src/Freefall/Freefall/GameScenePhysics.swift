@@ -103,11 +103,11 @@ extension GameScene: SKPhysicsContactDelegate {
             gameState.addScore(100)
             updateScoreLabel(animated: true)
             spawnScorePopup("ALL COLLECTED +100", at: bonusPos, color: .white)
-            audioManager?.playSFX("all-collected")
+            playSFX("all-collected")
         }
 
         // SFX
-        audioManager?.playSFX("collectible")
+        playSFX("collectible")
 
         // Haptic ping
         if hapticsEnabled {
@@ -147,11 +147,28 @@ extension GameScene: SKPhysicsContactDelegate {
         sphereNode?.physicsBody?.isDynamic = false
         stopSphereMotion()
 
+        // Record stats
+        gameState.recordDeath()
+
         if hapticsEnabled {
             UINotificationFeedbackGenerator().notificationOccurred(.error)
         }
 
-        audioManager?.playSFX("death")
+        playSFX("death")
+
+        // Sphere death animation — flash red, scale up, then explode
+        if let sphere = sphereNode {
+            sphere.run(SKAction.sequence([
+                SKAction.group([
+                    SKAction.colorize(with: .red, colorBlendFactor: 1.0, duration: 0.06),
+                    SKAction.scale(to: 1.5, duration: 0.06)
+                ]),
+                SKAction.group([
+                    SKAction.scale(to: 0.0, duration: 0.12),
+                    SKAction.fadeOut(withDuration: 0.12)
+                ])
+            ]))
+        }
 
         createDeathParticleBurst()
         shakeScreen()
@@ -175,14 +192,26 @@ extension GameScene: SKPhysicsContactDelegate {
 
     private func createDeathParticleBurst() {
         guard let sphere = sphereNode else { return }
+        let worldColor = UIColor(worldDefinition?.primaryColor ?? .cyan)
 
         for _ in 0..<Constants.deathParticleCount {
             let radius = CGFloat.random(in: Constants.deathParticleRadiusRange)
             let diameter = radius * 2
-            let texture = GameScene.makeSphereTexture(diameter: diameter)
+
+            // Use cached texture — avoids UIGraphicsImageRenderer per particle
+            let roundedDiameter = ceil(diameter)
+            let texture: SKTexture
+            if let cached = GameScene.cachedDeathTextures[roundedDiameter] {
+                texture = cached
+            } else {
+                let newTexture = GameScene.makeSphereTexture(diameter: roundedDiameter)
+                GameScene.cachedDeathTextures[roundedDiameter] = newTexture
+                texture = newTexture
+            }
+
             let particle = SKSpriteNode(texture: texture)
             particle.size = CGSize(width: diameter, height: diameter)
-            particle.color = Constants.deathParticleColor
+            particle.color = worldColor
             particle.colorBlendFactor = 1
             particle.blendMode = .add
             particle.position = sphere.position
@@ -236,7 +265,7 @@ extension GameScene: SKPhysicsContactDelegate {
             UIImpactFeedbackGenerator(style: .heavy).impactOccurred(intensity: 1.0)
         }
 
-        audioManager?.playSFX("level-complete")
+        playSFX("level-complete")
 
         // Goal: expand ring, then suck ball in
         let goalPos = goalNode?.position ?? CGPoint(x: size.width / 2, y: size.height / 2)
@@ -331,11 +360,11 @@ extension GameScene: SKPhysicsContactDelegate {
             flash2.run(SKAction.sequence([SKAction.fadeOut(withDuration: 0.4), .removeFromParent()]))
         }]))
 
-        // 5) Massive particle explosion at goal — 60 particles, fast + far
+        // 5) Particle explosion at goal — 30 particles (capped for perf on older devices)
         run(SKAction.sequence([SKAction.wait(forDuration: 0.34), SKAction.run { [weak self] in
             guard let self else { return }
             let worldColor = UIColor(self.worldDefinition?.primaryColor ?? .cyan)
-            for _ in 0..<60 {
+            for _ in 0..<30 {
                 let sz: CGFloat = CGFloat.random(in: 4...12)
                 let colors: [UIColor] = [worldColor, .white, .yellow, worldColor]
                 let color = colors.randomElement() ?? worldColor
@@ -362,14 +391,12 @@ extension GameScene: SKPhysicsContactDelegate {
             }
         }]))
 
-        // 6) Fireworks — 7 staggered bursts across screen (more than before)
+        // 6) Fireworks — 5 staggered bursts (capped from 7 for perf)
         createFireworksBurst(at: goalPos, delay: 0.45)
-        createFireworksBurst(at: CGPoint(x: size.width * 0.15, y: size.height * 0.7), delay: 0.55)
-        createFireworksBurst(at: CGPoint(x: size.width * 0.85, y: size.height * 0.3), delay: 0.65)
-        createFireworksBurst(at: CGPoint(x: size.width * 0.3, y: size.height * 0.2), delay: 0.75)
-        createFireworksBurst(at: CGPoint(x: size.width * 0.7, y: size.height * 0.8), delay: 0.85)
-        createFireworksBurst(at: CGPoint(x: size.width * 0.5, y: size.height * 0.5), delay: 0.95)
-        createFireworksBurst(at: CGPoint(x: size.width * 0.45, y: size.height * 0.4), delay: 1.05)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.15, y: size.height * 0.7), delay: 0.58)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.85, y: size.height * 0.3), delay: 0.71)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.3, y: size.height * 0.2), delay: 0.84)
+        createFireworksBurst(at: CGPoint(x: size.width * 0.7, y: size.height * 0.8), delay: 0.97)
 
         // Show complete UI (slightly later to let explosions breathe)
         let delayAction = SKAction.sequence([
@@ -426,8 +453,8 @@ extension GameScene: SKPhysicsContactDelegate {
                 .removeFromParent()
             ]))
 
-            // 48 particles per burst — more dense, more impact
-            for i in 0..<48 {
+            // 24 particles per burst (capped from 48 for perf)
+            for i in 0..<24 {
                 let color = colors[i % colors.count]
                 let sz: CGFloat = CGFloat.random(in: 4...10)
                 let particle = SKSpriteNode(color: color, size: CGSize(width: sz, height: sz))
@@ -436,7 +463,7 @@ extension GameScene: SKPhysicsContactDelegate {
                 particle.blendMode = .add
                 self.addChild(particle)
 
-                let angle = CGFloat(i) * (2 * .pi / 48) + CGFloat.random(in: -0.15...0.15)
+                let angle = CGFloat(i) * (2 * .pi / 24) + CGFloat.random(in: -0.15...0.15)
                 let speed = CGFloat.random(in: 180...450)
                 let dur = TimeInterval.random(in: 0.5...1.1)
                 let dx = cos(angle) * speed * CGFloat(dur)
@@ -483,24 +510,24 @@ extension GameScene: SKPhysicsContactDelegate {
         }
         
         lastCompletionWord = word
-        // Speed bonus: based on time vs par
-        if let startTime = levelStartTime, let parTime = levelDefinition?.parTime {
-            let elapsed = CACurrentMediaTime() - startTime
-            if elapsed < parTime {
-                let ratio = max(0, 1.0 - elapsed / parTime)
-                lastSpeedBonus = Int(ratio * 300)
-            } else {
-                lastSpeedBonus = 0
-            }
-        }
+        // Speed bonus already calculated and stored in lastSpeedBonus by applyCompletionScoreIfNeeded()
 
-        // Record best score
+        // Record best score — store for LevelCompleteView to read
         let finalScore = gameState.currentLevelScore
+        lastTotalScore = finalScore
         lastIsNewBest = gameState.updateBestScoreIfNeeded(world: world.id, level: definition.levelId, score: finalScore)
         gameState.commitCurrentAttemptScore()
 
         // Always mark level as completed first
         gameState.markLevelCompleted(world: world.id, level: definition.levelId)
+
+        // Record stats
+        let elapsed = levelStartTime.map { CACurrentMediaTime() - $0 } ?? 0
+        gameState.recordLevelComplete(
+            flips: flipCount,
+            collectibles: collectiblesCollectedThisAttempt,
+            elapsed: elapsed
+        )
 
         shouldOfferIntermissionAfterCompletion = gameState.shouldTriggerIntermission(world: world.id, level: definition.levelId)
     }

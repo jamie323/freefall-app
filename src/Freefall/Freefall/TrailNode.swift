@@ -1,7 +1,11 @@
 import SpriteKit
 
-final class TrailNode: SKShapeNode {
-    private let mutablePath = CGMutablePath()
+final class TrailNode: SKNode {
+    // Two trails: a wide glow behind, and a sharp core on top
+    private let glowLine = SKShapeNode()
+    private let coreLine = SKShapeNode()
+    private var positions: [CGPoint] = []
+    private let maxPositions = 120            // ring buffer — cap at 120 segments (~2 seconds of trail)
     private var distanceTravelled: CGFloat = 0
     private var lastPosition: CGPoint = .zero
     private let startColor: UIColor
@@ -15,12 +19,25 @@ final class TrailNode: SKShapeNode {
         super.init()
 
         lastPosition = startPosition
-        path = mutablePath
-        zPosition = 3
-        blendMode = .add
-        lineWidth = 4
-        lineCap = .round
-        lineJoin = .round
+        positions.reserveCapacity(maxPositions + 1)
+
+        // Glow layer — wide, soft, additive
+        glowLine.zPosition = 3
+        glowLine.blendMode = .add
+        glowLine.lineWidth = 12
+        glowLine.lineCap = .round
+        glowLine.lineJoin = .round
+        glowLine.alpha = 0.2
+        addChild(glowLine)
+
+        // Core layer — sharp, bright
+        coreLine.zPosition = 4
+        coreLine.blendMode = .add
+        coreLine.lineWidth = 5
+        coreLine.lineCap = .round
+        coreLine.lineJoin = .round
+        coreLine.alpha = 0.9
+        addChild(coreLine)
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -33,21 +50,39 @@ final class TrailNode: SKShapeNode {
     func appendPosition(_ position: CGPoint) {
         let distance = hypot(position.x - lastPosition.x, position.y - lastPosition.y)
         distanceTravelled += distance
+        lastPosition = position
 
-        if distanceTravelled == 0 {
-            mutablePath.move(to: position)
-        } else {
-            mutablePath.addLine(to: position)
+        positions.append(position)
+
+        // Trim oldest positions to keep bounded
+        if positions.count > maxPositions {
+            positions.removeFirst(positions.count - maxPositions)
         }
 
-        lastPosition = position
+        rebuildPath()
         updateStrokeColor()
-        path = mutablePath
+    }
+
+    private func rebuildPath() {
+        guard positions.count >= 2 else {
+            glowLine.path = nil
+            coreLine.path = nil
+            return
+        }
+        let path = CGMutablePath()
+        path.move(to: positions[0])
+        for i in 1..<positions.count {
+            path.addLine(to: positions[i])
+        }
+        glowLine.path = path
+        coreLine.path = path
     }
 
     private func updateStrokeColor() {
         let t = min(1, distanceTravelled / estimatedLevelLength)
-        strokeColor = interpolateColor(from: startColor, to: endColor, t: t)
+        let color = interpolateColor(from: startColor, to: endColor, t: t)
+        coreLine.strokeColor = color
+        glowLine.strokeColor = color
     }
 
     private func interpolateColor(from: UIColor, to: UIColor, t: CGFloat) -> UIColor {

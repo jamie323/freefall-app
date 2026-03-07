@@ -58,7 +58,9 @@ final class ObstacleNode: SKShapeNode {
 
     private func configurePhysics() {
         guard let path = path else { return }
-        physicsBody = SKPhysicsBody(polygonFrom: path)
+        // edgeLoopFrom handles both open paths (lines) and closed paths (rects/polygons/circles)
+        // polygonFrom crashes on open paths, so edgeLoopFrom is safer for all types
+        physicsBody = SKPhysicsBody(edgeLoopFrom: path)
         physicsBody?.isDynamic = false
         physicsBody?.affectedByGravity = false
         physicsBody?.allowsRotation = false

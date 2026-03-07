@@ -42,7 +42,8 @@ final class GameScene: SKScene {
 
     let gameState: GameState
     weak var audioManager: AudioManager?
-    private var hapticsEnabled: Bool { gameState.hapticsEnabled }
+    weak var cosmeticsManager: CosmeticsManager?
+    var hapticsEnabled: Bool { gameState.hapticsEnabled }
 
     private(set) var levelDefinition: LevelDefinition?
     private(set) var worldDefinition: WorldDefinition?
@@ -64,6 +65,7 @@ final class GameScene: SKScene {
     var lastCompletionWord: String = "CLEAN"
     var lastSpeedBonus: Int = 0
     var lastIsNewBest: Bool = false
+    var lastTotalScore: Int = 0
     var shouldOfferIntermissionAfterCompletion: Bool = false
 
     // Combo system
@@ -109,12 +111,19 @@ final class GameScene: SKScene {
     private var beatTimer: Timer?
     private var beatInterval: TimeInterval = 0
 
+    // Cached textures — avoid regenerating per-frame or per-particle (internal for extension access)
+    static var cachedDeathTextures: [CGFloat: SKTexture] = [:]
+
+    // Backgrounding — freeze elapsed time so speed bonus isn't corrupted
+    private var backgroundedAt: TimeInterval?
+
     init(size: CGSize, gameState: GameState) {
         self.gameState = gameState
         super.init(size: size)
         scaleMode = .resizeFill
         backgroundColor = .black
         syncGameStateWithSceneState()
+        registerForAppLifecycleNotifications()
     }
 
     @available(*, unavailable)
@@ -251,8 +260,19 @@ final class GameScene: SKScene {
     }
 
     func resetScene() {
+        stopBeatTimer()
+        // Sphere may have been removed from parent during completion animation —
+        // recreate it before trying to reposition.
+        createSphereIfNeeded()
         stopSphereMotion()
+        // Reset scale in case completion animation shrunk it
+        sphereNode?.setScale(1.0)
         enterReadyState(shouldReposition: true, animateBackgroundReset: true)
+        // Restart beat timer for the current level
+        if let level = levelDefinition, let world = worldDefinition {
+            let bpm = level.levelId <= 5 ? world.bpmA : world.bpmB
+            startBeatTimer(bpm: bpm)
+        }
     }
 
     private func handlePrimaryTap() {
@@ -306,7 +326,7 @@ final class GameScene: SKScene {
         sphere.physicsBody?.velocity = launchVelocity
         createTrail()
         hideTapToStart()
-        audioManager?.playSFX("level-start")
+        playSFX("level-start")
     }
 
     private(set) var flipCount: Int = 0
@@ -325,7 +345,8 @@ final class GameScene: SKScene {
         let impulse = isGravityDown ? -flipImpulse : flipImpulse
         body.velocity = CGVector(dx: body.velocity.dx, dy: carry + impulse)
         triggerHapticIfNeeded()
-        audioManager?.playSFX("flip")
+        playSFX("flip")
+        audioManager?.playFlipThud()
     }
 
     private func applyGravityDirection() {
@@ -349,6 +370,37 @@ final class GameScene: SKScene {
         node.name = "sphere"
         node.zPosition = 10
         node.position = CGPoint(x: size.width * 0.2, y: size.height * 0.5)
+
+        // Apply ball skin
+        let skin = cosmeticsManager?.selectedBallSkin
+        if let skin, !skin.usesWorldColor {
+            node.color = UIColor(skin.color)
+        }
+
+        // Glow halo behind the ball — soft, pulsing aura
+        let glowDiameter = Constants.sphereDiameter * 3.0
+        let glowTexture = GameScene.makeSphereTexture(diameter: glowDiameter)
+        let glow = SKSpriteNode(texture: glowTexture)
+        glow.size = CGSize(width: glowDiameter, height: glowDiameter)
+        let glowColor: UIColor
+        if let skin, !skin.usesWorldColor {
+            glowColor = UIColor(skin.glowColor)
+        } else {
+            glowColor = UIColor(worldDefinition?.primaryColor ?? .cyan)
+        }
+        glow.color = glowColor
+        glow.colorBlendFactor = 1
+        glow.blendMode = .add
+        glow.alpha = 0.25
+        glow.zPosition = -1
+        glow.name = "sphereGlow"
+        // Persistent soft pulse
+        let glowPulse = SKAction.sequence([
+            SKAction.fadeAlpha(to: 0.35, duration: 0.6),
+            SKAction.fadeAlpha(to: 0.2, duration: 0.6)
+        ])
+        glow.run(SKAction.repeatForever(glowPulse))
+        node.addChild(glow)
 
         let physicsBody = SKPhysicsBody(circleOfRadius: Constants.sphereDiameter / 2)
         physicsBody.mass = 1
@@ -466,6 +518,8 @@ final class GameScene: SKScene {
         label.position = CGPoint(x: size.width - padding, y: size.height - 52)
     }
 
+    private var lastScoreTickTime: TimeInterval = 0
+
     func updateScoreLabel(animated: Bool) {
         setupScoreLabelIfNeeded()
         guard let label = scoreLabel else { return }
@@ -479,6 +533,13 @@ final class GameScene: SKScene {
             scaleDown.timingMode = .easeIn
             let sequence = SKAction.sequence([scaleUp, scaleDown])
             label.run(sequence, withKey: scoreLabelPulseKey)
+
+            // Clacker tick — throttle to max 8 per second so it doesn't overwhelm
+            let now = CACurrentMediaTime()
+            if now - lastScoreTickTime > 0.125 {
+                lastScoreTickTime = now
+                audioManager?.playScoreTick()
+            }
         }
         lastDisplayedScore = newScore
     }
@@ -507,14 +568,20 @@ final class GameScene: SKScene {
         }
     }
 
-    func applyCompletionScoreIfNeeded() {
-        guard !hasAppliedCompletionScore else { return }
-        hasAppliedCompletionScore = true
-        guard let levelDefinition else { return }
+    /// Calculates speed bonus from elapsed time vs par. Single source of truth.
+    func calculateSpeedBonus() -> Int {
+        guard let levelDefinition else { return 0 }
         let parTime = max(levelDefinition.parTime, 0.1)
         let elapsed = levelStartTime.map { CACurrentMediaTime() - $0 } ?? parTime
         let ratio = max(0, min(1, (parTime - elapsed) / parTime))
-        let speedBonus = max(0, Int(ratio * 300))
+        return max(0, Int(ratio * 300))
+    }
+
+    func applyCompletionScoreIfNeeded() {
+        guard !hasAppliedCompletionScore else { return }
+        hasAppliedCompletionScore = true
+        let speedBonus = calculateSpeedBonus()
+        lastSpeedBonus = speedBonus
         let totalPoints = 200 + speedBonus
         if totalPoints > 0 {
             gameState.addScore(totalPoints)
@@ -624,6 +691,17 @@ final class GameScene: SKScene {
         CGPoint(x: size.width * 0.2, y: size.height * 0.5)
     }
 
+    // MARK: - SFX via SpriteKit (bypasses AVAudioPlayer/Observable issues)
+
+    /// Play a file-based SFX using SKAction — the most reliable audio path in SpriteKit.
+    /// Falls back to AudioManager.playSFX if file isn't found.
+    func playSFX(_ name: String) {
+        guard gameState.sfxEnabled else { return }
+        // SKAction.playSoundFileNamed looks in the app bundle root and subdirectories
+        let fileName = "\(name).wav"
+        run(SKAction.playSoundFileNamed(fileName, waitForCompletion: false))
+    }
+
     private func triggerHapticIfNeeded() {
         guard hapticsEnabled else { return }
         hapticGenerator.impactOccurred(intensity: 0.8)
@@ -702,11 +780,21 @@ final class GameScene: SKScene {
     private func createTrail() {
         trailNode?.removeFromParent()
         trailSprayNode?.removeFromParent()
-        
+
         guard let sphere = sphereNode else { return }
-        
-        let trailStart = worldDefinition.map { UIColor($0.trailStartColor) } ?? UIColor(red: 0, green: 0.831, blue: 1, alpha: 1)
-        let trailEnd = worldDefinition.map { UIColor($0.trailEndColor) } ?? UIColor(red: 1, green: 0.078, blue: 0.576, alpha: 1)
+
+        // Apply cosmetic trail if selected (non-default)
+        let selectedTrail = cosmeticsManager?.selectedTrail
+        let trailStart: UIColor
+        let trailEnd: UIColor
+
+        if let selectedTrail, selectedTrail.id != "default" {
+            trailStart = UIColor(selectedTrail.startColor)
+            trailEnd = UIColor(selectedTrail.endColor)
+        } else {
+            trailStart = worldDefinition.map { UIColor($0.trailStartColor) } ?? UIColor(red: 0, green: 0.831, blue: 1, alpha: 1)
+            trailEnd = worldDefinition.map { UIColor($0.trailEndColor) } ?? UIColor(red: 1, green: 0.078, blue: 0.576, alpha: 1)
+        }
 
         let trail = TrailNode(
             startPosition: sphere.position,
@@ -773,13 +861,20 @@ final class GameScene: SKScene {
             ]))
         }
 
-        // Sphere glow pulse on beat
+        // Sphere glow pulse on beat — flash the ball AND its glow halo
         if let sphere = sphereNode {
             let worldColor = UIColor(worldDefinition?.primaryColor ?? .cyan)
             sphere.run(SKAction.sequence([
                 SKAction.colorize(with: worldColor, colorBlendFactor: 0.8, duration: 0.04),
                 SKAction.colorize(with: .white, colorBlendFactor: 1.0, duration: 0.12)
             ]))
+            // Glow halo pulse — bright flash then settle
+            if let glow = sphere.childNode(withName: "sphereGlow") {
+                glow.run(SKAction.sequence([
+                    SKAction.fadeAlpha(to: 0.55, duration: 0.04),
+                    SKAction.fadeAlpha(to: 0.25, duration: 0.2)
+                ]))
+            }
         }
 
         // Obstacle glow pulse — smooth alpha fade (gradual, not flashing)
@@ -796,6 +891,57 @@ final class GameScene: SKScene {
         beatTimer = nil
     }
     
+    // MARK: - App Lifecycle
+
+    private func registerForAppLifecycleNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillEnterForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
+    }
+
+    @objc private func appDidEnterBackground() {
+        // Pause beat timer to prevent firing while backgrounded
+        stopBeatTimer()
+
+        // Freeze elapsed time so speed bonus isn't corrupted by background duration
+        if sceneState == .playing, let startTime = levelStartTime {
+            backgroundedAt = CACurrentMediaTime() - startTime
+        }
+
+        // Pause the SpriteKit view
+        view?.isPaused = true
+    }
+
+    @objc private func appWillEnterForeground() {
+        // Restore elapsed time offset
+        if let frozenElapsed = backgroundedAt {
+            levelStartTime = CACurrentMediaTime() - frozenElapsed
+            backgroundedAt = nil
+        }
+
+        // Resume SpriteKit
+        view?.isPaused = false
+
+        // Restart beat timer if we were playing
+        if sceneState == .playing, let level = levelDefinition, let world = worldDefinition {
+            let bpm = level.levelId <= 5 ? world.bpmA : world.bpmB
+            startBeatTimer(bpm: bpm)
+        }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
     // MARK: - Tap to Start
 
     private func showTapToStart() {
@@ -871,7 +1017,7 @@ final class GameScene: SKScene {
         if hapticsEnabled {
             UIImpactFeedbackGenerator(style: .rigid).impactOccurred(intensity: 0.4)
         }
-        audioManager?.playSFX("close-call")
+        playSFX("close-call")
     }
 
     private func spawnCloseCallSparks(at position: CGPoint) {

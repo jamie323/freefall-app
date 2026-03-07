@@ -21,19 +21,34 @@ final class TrailSprayNode: SKNode {
             return
         }
 
-        let scatterCount = Int.random(in: 1...2)
+        let scatterCount = Int.random(in: 1...3)
         for _ in 0..<scatterCount {
-            let offset = CGFloat.random(in: 6...10)
+            let offset = CGFloat.random(in: 6...14)
             let angle = CGFloat.random(in: 0..<(2 * .pi))
             let offsetX = cos(angle) * offset
             let offsetY = sin(angle) * offset
 
-            let particle = SKSpriteNode(color: scatterColor, size: CGSize(width: 2, height: 2))
+            let sz = CGFloat.random(in: 2...4)
+            let particle = SKSpriteNode(color: scatterColor, size: CGSize(width: sz, height: sz))
             particle.position = CGPoint(x: position.x + offsetX, y: position.y + offsetY)
-            particle.alpha = CGFloat.random(in: 0.15...0.35)
+            particle.alpha = CGFloat.random(in: 0.25...0.5)
             particle.zPosition = 4
+            particle.blendMode = .add
             addChild(particle)
             scatterNodes.append(particle)
+
+            // Particles drift outward and fade over time
+            let driftDur = TimeInterval.random(in: 0.4...0.8)
+            let driftDist = CGFloat.random(in: 4...10)
+            particle.run(SKAction.sequence([
+                SKAction.group([
+                    SKAction.moveBy(x: cos(angle) * driftDist, y: sin(angle) * driftDist, duration: driftDur),
+                    SKAction.fadeOut(withDuration: driftDur)
+                ]),
+                SKAction.removeFromParent()
+            ])) { [weak self] in
+                self?.scatterNodes.removeAll { $0 === particle }
+            }
         }
     }
 

@@ -83,7 +83,7 @@
       },
       "size": {
         "width": 0.052,
-        "height": 0.322
+        "height": 0.2761
       },
       "rotation": 14.7,
       "style": "solid"
@@ -97,7 +97,7 @@
       },
       "size": {
         "width": 0.053,
-        "height": 0.184
+        "height": 0.0644
       },
       "rotation": -15.4,
       "style": "solid"
@@ -111,7 +111,7 @@
       },
       "size": {
         "width": 0.051,
-        "height": 0.323
+        "height": 0.2631
       },
       "rotation": 18.5,
       "style": "solid"
@@ -120,20 +120,20 @@
   "collectibles": [
     {
       "position": {
-        "x": 0.15,
-        "y": 0.241
+        "x": 0.28,
+        "y": 0.647
       }
     },
     {
       "position": {
         "x": 0.521,
-        "y": 0.612
+        "y": 0.752
       }
     },
     {
       "position": {
         "x": 0.737,
-        "y": 0.622
+        "y": 0.512
       }
     }
   ]

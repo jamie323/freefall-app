@@ -5,6 +5,8 @@ struct ContentView: View {
     @State private var navigationPath = NavigationPath()
     @State private var isSettingsPresented = false
     @State private var audioManager: AudioManager
+    @State private var cosmeticsManager: CosmeticsManager
+    @State private var isCosmeticsPresented = false
 
     private let worlds = WorldLibrary.allWorlds
 
@@ -12,6 +14,7 @@ struct ContentView: View {
         let gameState = GameState()
         _gameState = State(initialValue: gameState)
         _audioManager = State(initialValue: AudioManager(gameState: gameState))
+        _cosmeticsManager = State(initialValue: CosmeticsManager(gameState: gameState))
     }
 
     var body: some View {
@@ -20,6 +23,7 @@ struct ContentView: View {
                 audioManager: audioManager,
                 onPlay: { navigationPath.append(AppDestination.worldSelect) },
                 onOpenSettings: { isSettingsPresented = true },
+                onOpenCosmetics: { isCosmeticsPresented = true },
                 onToggleMusic: handleMusicToggle
             )
             .navigationDestination(for: AppDestination.self) { destination in
@@ -48,6 +52,7 @@ struct ContentView: View {
                         levelId: levelId,
                         gameState: gameState,
                         audioManager: audioManager,
+                        cosmeticsManager: cosmeticsManager,
                         onQuit: {
                             // Return to level select, play menu music
                             audioManager.playMenuMusic()
@@ -77,6 +82,12 @@ struct ContentView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.hidden)
                 .presentationBackground(Material.thin)
+        }
+        .sheet(isPresented: $isCosmeticsPresented) {
+            CosmeticsView(cosmeticsManager: cosmeticsManager)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.hidden)
+                .presentationBackground(.black)
         }
         .environment(gameState)
         .onChange(of: gameState.musicEnabled) { _, _ in
@@ -111,6 +122,7 @@ private struct GameDestinationView: View {
     let levelId: Int
     let gameState: GameState
     let audioManager: AudioManager
+    let cosmeticsManager: CosmeticsManager
     let onQuit: () -> Void
     let onAdvance: (GameAdvanceAction) -> Void
 
@@ -125,6 +137,7 @@ private struct GameDestinationView: View {
                         world: world,
                         level: level,
                         audioManager: audioManager,
+                        cosmeticsManager: cosmeticsManager,
                         onQuit: onQuit,
                         onAdvance: onAdvance
                     )
@@ -156,7 +169,12 @@ private struct GameDestinationView: View {
             } catch {
                 loadError = error
             }
-            audioManager.playMusic(world: worldId, level: levelId)
+            // Fade out menu/previous music completely, THEN start level music
+            audioManager.fadeOutMusic(duration: 1.0) { [audioManager] in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    audioManager.playMusic(world: worldId, level: levelId)
+                }
+            }
         }
     }
 

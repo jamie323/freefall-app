@@ -15,9 +15,10 @@ struct SpriteKitView: UIViewRepresentable {
     let world: WorldDefinition
     let proxy: SceneProxy
     var audioManager: AudioManager?
+    var cosmeticsManager: CosmeticsManager?
 
     func makeCoordinator() -> Coordinator {
-        let c = Coordinator(gameState: gameState, audioManager: audioManager)
+        let c = Coordinator(gameState: gameState, audioManager: audioManager, cosmeticsManager: cosmeticsManager)
         proxy.coordinator = c
         return c
     }
@@ -53,11 +54,12 @@ struct SpriteKitView: UIViewRepresentable {
         private var cachedLevelID: String?
         private var cachedWorldID: Int?
 
-        init(gameState: GameState, audioManager: AudioManager?) {
+        init(gameState: GameState, audioManager: AudioManager?, cosmeticsManager: CosmeticsManager?) {
             // Use screen size as initial hint; resizeFill will correct it
             let screenSize = UIScreen.main.bounds.size
             scene = GameScene(size: screenSize, gameState: gameState)
             scene.audioManager = audioManager
+            scene.cosmeticsManager = cosmeticsManager
             // Do NOT use resizeFill — it sets scene size to zero before layout
             scene.scaleMode = .resizeFill
             // Notify us when size is set so we can load the level

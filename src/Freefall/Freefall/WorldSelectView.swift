@@ -50,6 +50,7 @@ struct WorldSelectView: View {
                             .stroke(Color.hex("#00D4FF").opacity(0.3), lineWidth: 1)
                     )
             }
+            .accessibilityLabel("Back to menu")
             Spacer()
             Text("SELECT A WORLD")
                 .font(.system(.title2, design: .rounded, weight: .black))
@@ -108,6 +109,12 @@ private struct WorldCardView: View {
         }
         .buttonStyle(.plain)
         .modifier(ShakeEffect(amount: isUnlocked ? 0 : 10, shakesPerUnit: 3, animatableData: shakeTrigger))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(isUnlocked
+            ? "\(world.name), \(completedCount) of 10 completed"
+            : "\(world.name), locked")
+        .accessibilityHint(isUnlocked ? "Double tap to select" : "Complete previous world to unlock")
+        .accessibilityAddTraits(isUnlocked ? .isButton : [])
     }
 
     private var gradientOverlay: some View {
