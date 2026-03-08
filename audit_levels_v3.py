@@ -14,6 +14,10 @@ MAX_FRONTIER = 3000
 MAX_FRAMES = 1200
 Y_MERGE = 2.0
 VY_MERGE = 3.0
+# Human reaction-time constraint: minimum frames between flips.
+# 8 frames @ 60fps ≈ 133ms — fast but achievable for a gamer.
+# 12 frames ≈ 200ms — average human visual reaction time.
+MIN_FLIP_INTERVAL = 8
 
 WORLD_PHYSICS = {
     1: {"grav": 50, "imp": 35, "maxV": 140, "damp": 0.02},
@@ -114,6 +118,86 @@ def simulate(lv):
         if ever & (1<<i): ce.add(i)
     return {"comp":completable,"cog":cog,"ce":ce,"nc":nc,"gm":goal_masks}
 
+def simulate_human(lv, flip_interval=MIN_FLIP_INTERVAL):
+    """Like simulate() but enforces a minimum cooldown between flips.
+
+    State adds a 'frames_since_last_flip' counter. A flip is only allowed
+    when that counter >= flip_interval. This weeds out levels that are
+    technically completable but require super-human reaction times.
+    """
+    ph = WORLD_PHYSICS[lv["w"]]
+    grav=ph["grav"]; imp=ph["imp"]; maxV=ph["maxV"]; damp=ph["damp"]
+    obs=lv["obs"]; cols=lv["cols"]; nc=len(cols)
+    gx=lv["gx"]; gy=lv["gy"]; grsq=lv["gr"]**2; br=BALL_RADIUS
+    crsq=COLLECTIBLE_RADIUS**2
+    # State: (y, vy, gravDown, collectibles_mask, frames_since_flip)
+    # Start with a large counter so the player can flip immediately
+    frontier = [(lv["ly"], lv["dy"], lv["gd"], 0, flip_interval)]
+    x = lv["lx"]; dx_v = lv["dx"]
+    completable = False; goal_masks = set(); ever = 0
+    for frame in range(MAX_FRAMES):
+        if not frontier: break
+        nm = {}
+        for sy, svy, sgd, sc, sf in frontier:
+            can_flip = sf >= flip_interval
+            options = [False]
+            if can_flip:
+                options.append(True)
+            for df in options:
+                vy=svy; gd=sgd; nsf = sf + 1
+                if df:
+                    gd = not gd; vy = -vy*0.3 + (-imp if gd else imp)
+                    nsf = 0  # reset cooldown
+                vy *= (1.0-damp)
+                if vy > maxV: vy = maxV
+                elif vy < -maxV: vy = -maxV
+                g_dy = -grav if gd else grav
+                vy += g_dy * DT
+                nx = x + dx_v * DT; ny = sy + vy * DT
+                if ny < -OOB_MARGIN or ny > SCREEN_H+OOB_MARGIN: continue
+                if nx < -OOB_MARGIN or nx > SCREEN_W+OOB_MARGIN: continue
+                hit = False
+                for o in obs:
+                    lxx=(nx-o.cx)*o.cr+(ny-o.cy)*o.sr
+                    lyy=-(nx-o.cx)*o.sr+(ny-o.cy)*o.cr
+                    if abs(lxx)<=o.hw+br and abs(lyy)<=o.hh+br:
+                        hit=True; break
+                if hit: continue
+                ncc = sc
+                for ci in range(nc):
+                    bit=1<<ci
+                    if ncc&bit: continue
+                    ddx=nx-cols[ci][0]; ddy=ny-cols[ci][1]
+                    if ddx*ddx+ddy*ddy<=crsq: ncc|=bit
+                ever |= ncc
+                ddx=nx-gx; ddy=ny-gy
+                if ddx*ddx+ddy*ddy<=grsq:
+                    completable=True; goal_masks.add(ncc)
+                # Cap sf for merging so states don't diverge forever
+                sf_capped = min(nsf, flip_interval)
+                yb=round(ny/Y_MERGE); vb=round(vy/VY_MERGE)
+                key=(yb,vb,gd,ncc,sf_capped)
+                if key not in nm:
+                    nm[key]=(ny,vy,gd,ncc,nsf)
+                else:
+                    ex=nm[key]
+                    if ex[3]!=ncc and bin(ncc).count("1")>bin(ex[3]).count("1"):
+                        nm[key]=(ny,vy,gd,ncc,nsf)
+        frontier = list(nm.values())
+        if len(frontier) > MAX_FRONTIER:
+            frontier.sort(key=lambda s: (-bin(s[3]).count("1"), abs(s[0]-gy)))
+            frontier = frontier[:MAX_FRONTIER]
+        x += dx_v * DT
+        if x > SCREEN_W + OOB_MARGIN: break
+    cog = set()
+    for m in goal_masks:
+        for i in range(nc):
+            if m & (1<<i): cog.add(i)
+    ce = set()
+    for i in range(nc):
+        if ever & (1<<i): ce.add(i)
+    return {"comp":completable,"cog":cog,"ce":ce,"nc":nc,"gm":goal_masks}
+
 def y_range_at_x(lv, tx):
     ph = WORLD_PHYSICS[lv["w"]]
     grav=ph["grav"]; imp=ph["imp"]; maxV=ph["maxV"]; damp=ph["damp"]
@@ -186,6 +270,11 @@ def main():
             if os.path.exists(fp): files.append(fp)
     print("Found {} levels.".format(len(files)))
     print()
+
+    # ── Pass 1: Frame-perfect audit (existing) ──────────────────────
+    print("─" * 60)
+    print("  PASS 1: Frame-perfect simulation")
+    print("─" * 60)
     failures = []
     for fp in files:
         lv = load_level(fp)
@@ -206,83 +295,119 @@ def main():
             failures.append((label, lv, r))
     print()
     total = len(files); passed = total - len(failures)
-    print("="*80)
-    print("  SUMMARY: {}/{} passed, {}/{} failed".format(passed, total, len(failures), total))
-    print("="*80)
-    if not failures:
-        print("  All levels verified OK."); return
+    print("  Frame-perfect: {}/{} passed, {}/{} failed".format(passed, total, len(failures), total))
     print()
-    print("  FIXING BROKEN LEVELS")
-    print("="*80)
-    fixed = []
-    for label, lv, r in failures:
-        print("  " + label + ":")
-        if not r["comp"]:
-            # Try to find a reachable y at goal x and move goal there
-            yr = y_range_at_x(lv, lv["gx"])
-            if yr is None:
-                print("    CRITICAL: No states reach goal x. Level design broken.")
-                continue
-            ymn, ymx = yr
-            mid = (ymn + ymx) / 2.0
-            # Check if goal can be moved to a reachable y
-            old_gy = lv["raw"]["goalPosition"]["y"]
-            new_gy = round(mid / SCREEN_H, 3)
-            print("    Goal unreachable at y={:.3f} (pixel {:.1f})".format(old_gy, old_gy*SCREEN_H))
-            print("    Reachable y range at goal x: [{:.1f}, {:.1f}]".format(ymn, ymx))
-            print("    Moving goal to y={:.3f} (pixel {:.1f})".format(new_gy, new_gy*SCREEN_H))
-            lv["raw"]["goalPosition"]["y"] = new_gy
-            lv["gy"] = new_gy * SCREEN_H
-            # Re-simulate with fixed goal
-            lv2 = load_level.__wrapped__(lv["raw"], lv["fp"]) if hasattr(load_level, "__wrapped__") else None
-            # Actually just update and re-simulate directly
-            modified = True
-        else:
-            modified = False
 
-        # Fix unreachable collectibles
-        raw = lv["raw"]
-        nc = r["nc"]; cog = r["cog"]
-        for ci in sorted(set(range(nc)) - cog):
-            old = raw["collectibles"][ci]["position"]
-            print("    Collectible {}: ({:.3f}, {:.3f})".format(ci, old["x"], old["y"]))
-            np2 = fix_col(lv, ci)
-            if np2:
-                print("      -> ({:.3f}, {:.3f})".format(np2["x"], np2["y"]))
-                raw["collectibles"][ci]["position"] = np2
+    # ── Pass 2: Human-playability audit ─────────────────────────────
+    print("─" * 60)
+    print("  PASS 2: Human-playability (min {}f / {:.0f}ms between flips)".format(
+        MIN_FLIP_INTERVAL, MIN_FLIP_INTERVAL * DT * 1000))
+    print("─" * 60)
+    human_warnings = []
+    for fp in files:
+        lv = load_level(fp)
+        label = "W{}L{:02d}".format(lv["w"], lv["l"])
+        r_perfect = simulate(lv)
+        # Only check human-playability for levels that pass frame-perfect
+        if not (r_perfect["comp"] and len(r_perfect["cog"]) == r_perfect["nc"]):
+            continue
+        r_human = simulate_human(lv)
+        if r_human["comp"] and len(r_human["cog"]) == r_human["nc"]:
+            print("  [PASS] {}: human-playable".format(label))
+        else:
+            parts = []
+            if not r_human["comp"]:
+                parts.append("REQUIRES SUPERHUMAN REACTIONS to complete")
+            else:
+                ug = set(range(r_human["nc"])) - r_human["cog"]
+                if ug:
+                    parts.append("collectibles {} need frame-perfect flips".format(sorted(ug)))
+            print("  [WARN] {}: {}".format(label, "; ".join(parts)))
+            human_warnings.append((label, lv, r_human))
+    print()
+    if human_warnings:
+        print("  ⚠ {} level(s) pass frame-perfect but FAIL human-playability:".format(len(human_warnings)))
+        for label, _, _ in human_warnings:
+            print("    - {}".format(label))
+    else:
+        print("  All frame-perfect levels are also human-playable.")
+    print()
+
+    # ── Summary ─────────────────────────────────────────────────────
+    print("="*80)
+    print("  SUMMARY: {}/{} frame-perfect, {} human-playability warnings".format(
+        passed, total, len(human_warnings)))
+    print("="*80)
+    if not failures and not human_warnings:
+        print("  All levels verified OK."); return
+
+    # ── Fix broken levels (frame-perfect failures) ──────────────────
+    if failures:
+        print()
+        print("  FIXING BROKEN LEVELS")
+        print("="*80)
+        fixed = []
+        for label, lv, r in failures:
+            print("  " + label + ":")
+            if not r["comp"]:
+                yr = y_range_at_x(lv, lv["gx"])
+                if yr is None:
+                    print("    CRITICAL: No states reach goal x. Level design broken.")
+                    continue
+                ymn, ymx = yr
+                mid = (ymn + ymx) / 2.0
+                old_gy = lv["raw"]["goalPosition"]["y"]
+                new_gy = round(mid / SCREEN_H, 3)
+                print("    Goal unreachable at y={:.3f} (pixel {:.1f})".format(old_gy, old_gy*SCREEN_H))
+                print("    Reachable y range at goal x: [{:.1f}, {:.1f}]".format(ymn, ymx))
+                print("    Moving goal to y={:.3f} (pixel {:.1f})".format(new_gy, new_gy*SCREEN_H))
+                lv["raw"]["goalPosition"]["y"] = new_gy
+                lv["gy"] = new_gy * SCREEN_H
                 modified = True
             else:
-                print("      -> Cannot auto-fix")
-        if modified or not r["comp"]:
-            with open(lv["fp"], "w") as f:
-                json.dump(raw, f, indent=2)
-                f.write("\n")
-            print("    Saved " + lv["fp"])
-            fixed.append(lv["fp"])
+                modified = False
 
-    # Re-audit
-    if fixed:
-        print()
-        print("="*80)
-        print("  RE-AUDIT AFTER FIXES")
-        print("="*80)
-        sb = 0; sp = 0
-        for fp in files:
-            lv = load_level(fp)
-            label = "W{}L{:02d}".format(lv["w"], lv["l"])
-            r = simulate(lv)
-            ok = r["comp"] and len(r["cog"]) == r["nc"]
-            if ok:
-                sp += 1
-            else:
-                sb += 1
-                parts = []
-                if not r["comp"]: parts.append("NOT COMPLETABLE")
-                ug = set(range(r["nc"])) - r["cog"]
-                if ug: parts.append("unreachable: {}".format(sorted(ug)))
-                print("  [STILL FAIL] {}: {}".format(label, "; ".join(parts)))
-        print()
-        print("  {}/{} pass, {}/{} still failing.".format(sp, len(files), sb, len(files)))
+            raw = lv["raw"]
+            nc = r["nc"]; cog = r["cog"]
+            for ci in sorted(set(range(nc)) - cog):
+                old = raw["collectibles"][ci]["position"]
+                print("    Collectible {}: ({:.3f}, {:.3f})".format(ci, old["x"], old["y"]))
+                np2 = fix_col(lv, ci)
+                if np2:
+                    print("      -> ({:.3f}, {:.3f})".format(np2["x"], np2["y"]))
+                    raw["collectibles"][ci]["position"] = np2
+                    modified = True
+                else:
+                    print("      -> Cannot auto-fix")
+            if modified or not r["comp"]:
+                with open(lv["fp"], "w") as f:
+                    json.dump(raw, f, indent=2)
+                    f.write("\n")
+                print("    Saved " + lv["fp"])
+                fixed.append(lv["fp"])
+
+        if fixed:
+            print()
+            print("="*80)
+            print("  RE-AUDIT AFTER FIXES")
+            print("="*80)
+            sb = 0; sp = 0
+            for fp in files:
+                lv = load_level(fp)
+                label = "W{}L{:02d}".format(lv["w"], lv["l"])
+                r = simulate(lv)
+                ok = r["comp"] and len(r["cog"]) == r["nc"]
+                if ok:
+                    sp += 1
+                else:
+                    sb += 1
+                    parts = []
+                    if not r["comp"]: parts.append("NOT COMPLETABLE")
+                    ug = set(range(r["nc"])) - r["cog"]
+                    if ug: parts.append("unreachable: {}".format(sorted(ug)))
+                    print("  [STILL FAIL] {}: {}".format(label, "; ".join(parts)))
+            print()
+            print("  {}/{} pass, {}/{} still failing.".format(sp, len(files), sb, len(files)))
     print("\nDone.")
 
 if __name__ == "__main__": main()

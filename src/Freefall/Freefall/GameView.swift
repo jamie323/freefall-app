@@ -8,6 +8,7 @@ struct GameView: View {
     var audioManager: AudioManager?
     var cosmeticsManager: CosmeticsManager?
     let onQuit: () -> Void
+    let onHome: () -> Void
     let onAdvance: (GameAdvanceAction) -> Void
 
     @State private var proxy = SceneProxy()
@@ -17,6 +18,8 @@ struct GameView: View {
     @State private var speedBonus = 0
     @State private var totalScore = 0
     @State private var isNewBest = false
+    var skipTransitionFade: Bool = false
+
     @State private var fadeIn = true
     @State private var fadeOut = false
     @State private var showOnboarding = false
@@ -99,6 +102,10 @@ struct GameView: View {
                     onQuit: {
                         showPauseOverlay = false
                         handleQuitWithFade()
+                    },
+                    onHome: {
+                        showPauseOverlay = false
+                        onHome()
                     }
                 )
                 .transition(.opacity)
@@ -196,16 +203,22 @@ struct GameView: View {
             // Wire immediately — proxy.coordinator is set synchronously in makeCoordinator
             // Retry loop handles edge case where scene isn't ready yet
             wireLevelCompleteCallback()
-            // Hold white overlay while music fades out, then reveal game
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
-                withAnimation(.easeOut(duration: 0.8)) {
-                    fadeIn = false
-                }
-                // Show onboarding after fade-in (first play only)
-                if !UserDefaults.standard.bool(forKey: "freefall.hasSeenOnboarding") {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
-                        withAnimation(.easeIn(duration: 0.3)) {
-                            showOnboarding = true
+
+            if skipTransitionFade {
+                // Same-world level advance — no white flash, start immediately
+                fadeIn = false
+            } else {
+                // Hold white overlay while music fades out, then reveal game
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+                    withAnimation(.easeOut(duration: 0.8)) {
+                        fadeIn = false
+                    }
+                    // Show onboarding after fade-in (first play only)
+                    if !UserDefaults.standard.bool(forKey: "freefall.hasSeenOnboarding") {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+                            withAnimation(.easeIn(duration: 0.3)) {
+                                showOnboarding = true
+                            }
                         }
                     }
                 }
@@ -245,7 +258,13 @@ struct GameView: View {
     }
 
     private func handleAdvanceWithFade(_ action: GameAdvanceAction) {
-        audioManager?.fadeOutMusic(duration: 0.5)
+        // Only fade music when leaving the world (quit or next world)
+        switch action {
+        case .quitToLevels, .nextWorld:
+            audioManager?.fadeOutMusic(duration: 0.5)
+        case .nextLevel:
+            break // keep music playing for same-world transitions
+        }
         withAnimation(.easeIn(duration: 0.4)) {
             fadeOut = true
         }
@@ -265,6 +284,7 @@ private struct PauseOverlayView: View {
     let onResume: () -> Void
     let onRestart: () -> Void
     let onQuit: () -> Void
+    let onHome: () -> Void
 
     var body: some View {
         ZStack {
@@ -300,13 +320,22 @@ private struct PauseOverlayView: View {
                     .accessibilityLabel("Restart level")
 
                     Button(action: onQuit) {
-                        Text("QUIT")
+                        Text("LEVELS")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.5))
+                            .frame(width: 200)
+                            .padding(.vertical, 12)
+                    }
+                    .accessibilityLabel("Back to level select")
+
+                    Button(action: onHome) {
+                        Text("HOME")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(.white.opacity(0.4))
                             .frame(width: 200)
                             .padding(.vertical, 12)
                     }
-                    .accessibilityLabel("Quit to level select")
+                    .accessibilityLabel("Back to main menu")
                 }
             }
         }

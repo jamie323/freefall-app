@@ -632,7 +632,16 @@ final class GameScene: SKScene {
         levelStartTime = nil
         shouldOfferIntermissionAfterCompletion = false
         sphereNode?.physicsBody?.isDynamic = false
+        sphereNode?.removeAllActions()
+        sphereNode?.setScale(1.0)
         sphereNode?.alpha = 1
+        // Reset color from death animation (red flash)
+        if let skin = cosmeticsManager?.selectedBallSkin, !skin.usesWorldColor {
+            sphereNode?.color = UIColor(skin.color)
+        } else {
+            sphereNode?.color = .white
+        }
+        sphereNode?.colorBlendFactor = 1
         stopSphereMotion()
         collectibleComboCount = 0
         closeCallTriggeredObstacles.removeAll()
@@ -691,15 +700,14 @@ final class GameScene: SKScene {
         CGPoint(x: size.width * 0.2, y: size.height * 0.5)
     }
 
-    // MARK: - SFX via SpriteKit (bypasses AVAudioPlayer/Observable issues)
+    // MARK: - SFX
 
-    /// Play a file-based SFX using SKAction — the most reliable audio path in SpriteKit.
-    /// Falls back to AudioManager.playSFX if file isn't found.
+    /// Play a file-based SFX via AudioManager (AVAudioPlayer).
+    /// SKAction.playSoundFileNamed can't resolve files inside folder references,
+    /// so we delegate to AudioManager which uses Bundle.main.url(subdirectory:).
     func playSFX(_ name: String) {
         guard gameState.sfxEnabled else { return }
-        // SKAction.playSoundFileNamed looks in the app bundle root and subdirectories
-        let fileName = "\(name).wav"
-        run(SKAction.playSoundFileNamed(fileName, waitForCompletion: false))
+        audioManager?.playSFX(name)
     }
 
     private func triggerHapticIfNeeded() {

@@ -58,10 +58,17 @@ struct ContentView: View {
                             audioManager.playMenuMusic()
                             popDestination()
                         },
+                        onHome: {
+                            // Pop all the way back to main menu
+                            audioManager.stopMusic()
+                            navigationPath = NavigationPath()
+                            audioManager.playMenuMusic()
+                        },
                         onAdvance: { action in
                             navigationPath.removeLast()
                             switch action {
                             case .nextLevel(let nextLevelId):
+                                gameState.isSameWorldTransition = true
                                 navigationPath.append(AppDestination.game(worldId: worldId, levelId: nextLevelId))
                             case .nextWorld(let nextWorldId):
                                 audioManager.playMenuMusic()
@@ -124,10 +131,12 @@ private struct GameDestinationView: View {
     let audioManager: AudioManager
     let cosmeticsManager: CosmeticsManager
     let onQuit: () -> Void
+    let onHome: () -> Void
     let onAdvance: (GameAdvanceAction) -> Void
 
     @State private var level: LevelDefinition?
     @State private var loadError: Error?
+    @State private var isContinuation = false
 
     var body: some View {
         Group {
@@ -139,7 +148,9 @@ private struct GameDestinationView: View {
                         audioManager: audioManager,
                         cosmeticsManager: cosmeticsManager,
                         onQuit: onQuit,
-                        onAdvance: onAdvance
+                        onHome: onHome,
+                        onAdvance: onAdvance,
+                        skipTransitionFade: isContinuation
                     )
 
                     if gameState.isIntermissionActive {
@@ -164,15 +175,24 @@ private struct GameDestinationView: View {
             }
         }
         .onAppear {
+            isContinuation = gameState.isSameWorldTransition
+            gameState.isSameWorldTransition = false
+
             do {
                 level = try LevelLoader().loadLevel(world: worldId, level: levelId)
             } catch {
                 loadError = error
             }
-            // Fade out menu/previous music completely, THEN start level music
-            audioManager.fadeOutMusic(duration: 1.0) { [audioManager] in
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    audioManager.playMusic(world: worldId, level: levelId)
+
+            if isContinuation {
+                // Same world — music already playing, just ensure correct track
+                audioManager.playMusic(world: worldId, level: levelId)
+            } else {
+                // New world or first entry — fade out then start new music
+                audioManager.fadeOutMusic(duration: 1.0) { [audioManager] in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        audioManager.playMusic(world: worldId, level: levelId)
+                    }
                 }
             }
         }

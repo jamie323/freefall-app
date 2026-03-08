@@ -19,6 +19,7 @@ final class GameState {
         static let worldScores = "freefall.worldScores"
         static let totalScore = "freefall.totalScore"
         static let levelBestScores = "freefall.levelBestScores"
+        static let lastBuildNumber = "freefall.lastBuildNumber"
         // Statistics
         static let statsTotalDeaths = "freefall.stats.totalDeaths"
         static let statsTotalFlips = "freefall.stats.totalFlips"
@@ -27,6 +28,35 @@ final class GameState {
         static let statsTotalCollectibles = "freefall.stats.totalCollectibles"
         static let statsLongestStreak = "freefall.stats.longestStreak"
         static let statsCurrentStreak = "freefall.stats.currentStreak"
+    }
+
+    /// Clears all freefall progress data when the build number changes.
+    /// Keeps preference keys (music/sfx/haptics enabled) intact.
+    private static func resetIfNewBuild(defaults: UserDefaults) {
+        let currentBuild = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
+        let lastBuild = defaults.string(forKey: DefaultsKeys.lastBuildNumber)
+        guard lastBuild != currentBuild else { return }
+
+        // New build detected — wipe progress & stats, keep prefs
+        let progressKeys = [
+            DefaultsKeys.completedLevels,
+            DefaultsKeys.worldScores,
+            DefaultsKeys.totalScore,
+            DefaultsKeys.levelBestScores,
+            DefaultsKeys.statsTotalDeaths,
+            DefaultsKeys.statsTotalFlips,
+            DefaultsKeys.statsTotalPlayTime,
+            DefaultsKeys.statsTotalLevelsCompleted,
+            DefaultsKeys.statsTotalCollectibles,
+            DefaultsKeys.statsLongestStreak,
+            DefaultsKeys.statsCurrentStreak,
+            "freefall.hasSeenOnboarding",
+        ]
+        for key in progressKeys {
+            defaults.removeObject(forKey: key)
+        }
+        defaults.set(currentBuild, forKey: DefaultsKeys.lastBuildNumber)
+        print("[GameState] New build \(currentBuild) — progress reset")
     }
 
     private let defaults: UserDefaults
@@ -65,6 +95,8 @@ final class GameState {
     var isIntermissionActive: Bool = false
     var lastIntermissionScore: Int = 0
     var lastIntermissionSurvivalTime: TimeInterval = 0
+    /// Set to true when advancing to next level in the same world — skips fade/music restart
+    var isSameWorldTransition: Bool = false
 
     // Persisted totals
     var worldScores: [Int: Int] {
@@ -116,6 +148,7 @@ final class GameState {
     }
 
     init(defaults: UserDefaults = .standard) {
+        GameState.resetIfNewBuild(defaults: defaults)
         self.defaults = defaults
         self.completedLevels = GameState.loadCompletedLevels(from: defaults)
         self.musicEnabled = defaults.object(forKey: DefaultsKeys.musicEnabled) as? Bool ?? true
