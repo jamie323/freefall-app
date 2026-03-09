@@ -6,17 +6,17 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 220.9,
+    "dx": 145.0,
     "dy": 0
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.531
+    "y": 0.581
   },
-  "goalRadius": 32,
+  "goalRadius": 37,
   "initialGravityDown": true,
-  "parFlips": 7,
-  "parTime": 1.6,
+  "parFlips": 5,
+  "parTime": 3.0,
   "obstacles": [
     {
       "id": "top-bar",
@@ -50,90 +50,62 @@
       "id": "obs-1",
       "type": "rect",
       "position": {
-        "x": 0.19,
-        "y": 0.242
+        "x": 0.177,
+        "y": 0.402
       },
       "size": {
-        "width": 0.042,
-        "height": 0.229
+        "width": 0.056,
+        "height": 0.081
       },
-      "rotation": 20.0,
+      "rotation": 1.0,
       "style": "solid"
     },
     {
       "id": "obs-2",
       "type": "rect",
       "position": {
-        "x": 0.327,
-        "y": 0.774
+        "x": 0.504,
+        "y": 0.778
       },
       "size": {
-        "width": 0.042,
-        "height": 0.198
+        "width": 0.048,
+        "height": 0.077
       },
-      "rotation": 13.1,
+      "rotation": -5.1,
       "style": "solid"
     },
     {
       "id": "obs-3",
       "type": "rect",
       "position": {
-        "x": 0.463,
-        "y": 0.211
+        "x": 0.781,
+        "y": 0.369
       },
       "size": {
-        "width": 0.042,
-        "height": 0.146
+        "width": 0.047,
+        "height": 0.081
       },
-      "rotation": -15.5,
-      "style": "solid"
-    },
-    {
-      "id": "obs-4",
-      "type": "rect",
-      "position": {
-        "x": 0.567,
-        "y": 0.572
-      },
-      "size": {
-        "width": 0.052,
-        "height": 0.273
-      },
-      "rotation": 24.9,
-      "style": "solid"
-    },
-    {
-      "id": "obs-6",
-      "type": "rect",
-      "position": {
-        "x": 0.79,
-        "y": 0.55
-      },
-      "size": {
-        "width": 0.036,
-        "height": 0.137
-      },
-      "rotation": 15.8,
+      "rotation": 3.1,
       "style": "solid"
     }
   ],
   "collectibles": [
     {
       "position": {
-        "x": 0.28,
-        "y": 0.421
+        "x": 0.345,
+        "y": 0.514
       }
     },
     {
       "position": {
-        "x": 0.395,
-        "y": 0.5
+        "x": 0.635,
+        "y": 0.576
       }
     },
     {
       "position": {
-        "x": 0.678,
-        "y": 0.5
+        "x": 0.86,
+        "y": 0.548
       }
     }
   ]

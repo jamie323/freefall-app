@@ -6,17 +6,17 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 219.9,
+    "dx": 142.3,
     "dy": 0
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.238
+    "y": 0.451
   },
-  "goalRadius": 32,
+  "goalRadius": 37,
   "initialGravityDown": true,
-  "parFlips": 7,
-  "parTime": 1.7,
+  "parFlips": 4,
+  "parTime": 3.1,
   "obstacles": [
     {
       "id": "top-bar",
@@ -50,90 +50,62 @@
       "id": "obs-1",
       "type": "rect",
       "position": {
-        "x": 0.178,
-        "y": 0.222
+        "x": 0.206,
+        "y": 0.345
       },
       "size": {
         "width": 0.057,
-        "height": 0.157
+        "height": 0.082
       },
-      "rotation": 12.3,
+      "rotation": 5.5,
       "style": "solid"
     },
     {
       "id": "obs-2",
       "type": "rect",
       "position": {
-        "x": 0.341,
-        "y": 0.679
+        "x": 0.467,
+        "y": 0.605
       },
       "size": {
-        "width": 0.039,
-        "height": 0.268
+        "width": 0.043,
+        "height": 0.08
       },
-      "rotation": 25.6,
+      "rotation": -2.9,
       "style": "solid"
     },
     {
       "id": "obs-3",
       "type": "rect",
       "position": {
-        "x": 0.436,
-        "y": 0.333
+        "x": 0.788,
+        "y": 0.218
       },
       "size": {
-        "width": 0.038,
-        "height": 0.243
+        "width": 0.046,
+        "height": 0.067
       },
-      "rotation": 6.2,
-      "style": "solid"
-    },
-    {
-      "id": "obs-4",
-      "type": "rect",
-      "position": {
-        "x": 0.53,
-        "y": 0.767
-      },
-      "size": {
-        "width": 0.05,
-        "height": 0.136
-      },
-      "rotation": -25.6,
-      "style": "solid"
-    },
-    {
-      "id": "obs-5",
-      "type": "rect",
-      "position": {
-        "x": 0.645,
-        "y": 0.462
-      },
-      "size": {
-        "width": 0.055,
-        "height": 0.271
-      },
-      "rotation": 0.4,
+      "rotation": -5.6,
       "style": "solid"
     }
   ],
   "collectibles": [
     {
       "position": {
-        "x": 0.28,
-        "y": 0.38
+        "x": 0.345,
+        "y": 0.487
       }
     },
     {
       "position": {
-        "x": 0.389,
-        "y": 0.506
+        "x": 0.635,
+        "y": 0.555
       }
     },
     {
       "position": {
-        "x": 0.588,
-        "y": 0.492
+        "x": 0.86,
+        "y": 0.526
       }
     }
   ]

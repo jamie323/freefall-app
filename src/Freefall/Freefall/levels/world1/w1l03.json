@@ -6,68 +6,79 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 140.0,
+    "dx": 110.3,
     "dy": 0
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.5
+    "y": 0.558
   },
-  "goalRadius": 40,
+  "goalRadius": 43,
   "initialGravityDown": true,
-  "parFlips": 4,
-  "parTime": 3.0,
+  "parFlips": 2,
+  "parTime": 3.7,
   "obstacles": [
     {
       "id": "top-bar",
       "type": "rect",
-      "position": { "x": 0.5, "y": 0.06 },
-      "size": { "width": 1.0, "height": 0.018 },
+      "position": {
+        "x": 0.5,
+        "y": 0.06
+      },
+      "size": {
+        "width": 1.0,
+        "height": 0.018
+      },
       "rotation": 0,
       "style": "solid"
     },
     {
       "id": "bot-bar",
       "type": "rect",
-      "position": { "x": 0.5, "y": 0.94 },
-      "size": { "width": 1.0, "height": 0.018 },
+      "position": {
+        "x": 0.5,
+        "y": 0.94
+      },
+      "size": {
+        "width": 1.0,
+        "height": 0.018
+      },
       "rotation": 0,
       "style": "solid"
     },
     {
       "id": "obs-1",
       "type": "rect",
-      "position": { "x": 0.30, "y": 0.35 },
-      "size": { "width": 0.055, "height": 0.095 },
-      "rotation": -5,
-      "style": "solid"
-    },
-    {
-      "id": "obs-2",
-      "type": "rect",
-      "position": { "x": 0.52, "y": 0.65 },
-      "size": { "width": 0.055, "height": 0.095 },
-      "rotation": 5,
-      "style": "solid"
-    },
-    {
-      "id": "obs-3",
-      "type": "rect",
-      "position": { "x": 0.74, "y": 0.40 },
-      "size": { "width": 0.050, "height": 0.090 },
-      "rotation": -4,
+      "position": {
+        "x": 0.524,
+        "y": 0.381
+      },
+      "size": {
+        "width": 0.042,
+        "height": 0.067
+      },
+      "rotation": -0.1,
       "style": "solid"
     }
   ],
   "collectibles": [
     {
-      "position": { "x": 0.22, "y": 0.55 }
+      "position": {
+        "x": 0.25,
+        "y": 0.519
+      }
     },
     {
-      "position": { "x": 0.42, "y": 0.45 }
+      "position": {
+        "x": 0.5,
+        "y": 0.492
+      }
     },
     {
-      "position": { "x": 0.63, "y": 0.50 }
+      "position": {
+        "x": 0.75,
+        "y": 0.581
+      }
     }
   ]
 }
