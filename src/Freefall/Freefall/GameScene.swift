@@ -186,8 +186,16 @@ final class GameScene: SKScene {
         updateBackgroundParallax(currentTime: currentTime)
         updateTrail()
         updateTrailScore()
+        updateBallRotation()
+        updateGravityIndicator()
         checkNearMisses()
         checkSphereOutOfBounds()
+    }
+
+    private func updateBallRotation() {
+        guard sceneState == .playing, let sphere = sphereNode else { return }
+        let spin: CGFloat = isGravityDown ? -0.03 : 0.03
+        sphere.zRotation += spin
     }
 
     private func updateTrailScore() {
@@ -265,8 +273,9 @@ final class GameScene: SKScene {
         // recreate it before trying to reposition.
         createSphereIfNeeded()
         stopSphereMotion()
-        // Reset scale in case completion animation shrunk it
+        // Reset scale/rotation in case completion or flip animation changed them
         sphereNode?.setScale(1.0)
+        sphereNode?.zRotation = 0
         enterReadyState(shouldReposition: true, animateBackgroundReset: true)
         // Restart beat timer for the current level
         if let level = levelDefinition, let world = worldDefinition {
@@ -344,9 +353,50 @@ final class GameScene: SKScene {
         let flipImpulse = physics?.flipImpulse ?? Constants.flipImpulse
         let impulse = isGravityDown ? -flipImpulse : flipImpulse
         body.velocity = CGVector(dx: body.velocity.dx, dy: carry + impulse)
+        spawnFlipEffects()
         triggerHapticIfNeeded()
         playSFX("flip")
         audioManager?.playFlipThud()
+    }
+
+    // MARK: - Flip visual feedback
+
+    private func spawnFlipEffects() {
+        guard let sphere = sphereNode else { return }
+
+        // 1. Horizontal shockwave line
+        let lineWidth: CGFloat = 120
+        let line = SKShapeNode(rectOf: CGSize(width: lineWidth, height: 1.5))
+        line.position = sphere.position
+        line.fillColor = .white
+        line.strokeColor = .clear
+        line.alpha = 0.7
+        line.blendMode = .add
+        line.zPosition = 15
+        line.setScale(0.3)
+        addChild(line)
+        line.run(SKAction.sequence([
+            SKAction.group([
+                SKAction.scaleX(to: 1.0, duration: 0.1),
+                SKAction.fadeOut(withDuration: 0.15)
+            ]),
+            .removeFromParent()
+        ]))
+
+        // 2. Squash-and-stretch on ball
+        sphere.run(SKAction.sequence([
+            SKAction.scaleY(to: 0.7, duration: 0.04),
+            SKAction.scaleY(to: 1.1, duration: 0.04),
+            SKAction.scaleY(to: 1.0, duration: 0.04)
+        ]), withKey: "flipSquash")
+
+        // 3. Glow flash
+        if let glow = sphere.childNode(withName: "sphereGlow") {
+            glow.run(SKAction.sequence([
+                SKAction.fadeAlpha(to: 0.6, duration: 0.03),
+                SKAction.fadeAlpha(to: 0.25, duration: 0.15)
+            ]), withKey: "flipGlowFlash")
+        }
     }
 
     private func applyGravityDirection() {
@@ -416,8 +466,27 @@ final class GameScene: SKScene {
         physicsBody.contactTestBitMask = PhysicsCategory.obstacle | PhysicsCategory.goal | PhysicsCategory.boundary | PhysicsCategory.collectible
         node.physicsBody = physicsBody
 
+        // Gravity direction indicator — small chevron below ball
+        let indicator = SKLabelNode(text: "▼")
+        indicator.fontSize = 10
+        indicator.fontColor = UIColor(worldDefinition?.primaryColor ?? .cyan).withAlphaComponent(0.35)
+        indicator.verticalAlignmentMode = .center
+        indicator.horizontalAlignmentMode = .center
+        indicator.position = CGPoint(x: 0, y: -22)
+        indicator.zPosition = 2
+        indicator.name = "gravityIndicator"
+        node.addChild(indicator)
+
         addChild(node)
         sphereNode = node
+    }
+
+    private func updateGravityIndicator() {
+        guard let indicator = sphereNode?.childNode(withName: "gravityIndicator") as? SKLabelNode else { return }
+        // Counter-rotate to keep indicator upright despite ball spin
+        indicator.zRotation = -(sphereNode?.zRotation ?? 0)
+        indicator.text = isGravityDown ? "▼" : "▲"
+        indicator.position = CGPoint(x: 0, y: isGravityDown ? -22 : 22)
     }
 
     private func createBackgroundIfNeeded() {
@@ -634,6 +703,7 @@ final class GameScene: SKScene {
         sphereNode?.physicsBody?.isDynamic = false
         sphereNode?.removeAllActions()
         sphereNode?.setScale(1.0)
+        sphereNode?.zRotation = 0
         sphereNode?.alpha = 1
         // Reset color from death animation (red flash)
         if let skin = cosmeticsManager?.selectedBallSkin, !skin.usesWorldColor {
@@ -723,6 +793,7 @@ final class GameScene: SKScene {
             node.zPosition = 5
             node.name = obstacle.identifier ?? "obs-\(index)"
             node.applyWorldColor(worldColor)
+            node.startBreathing()
             addChild(node)
             obstacleNodes.append(node)
         }
@@ -770,11 +841,12 @@ final class GameScene: SKScene {
         clearCollectibles()
         guard let collectibles = definition.collectibles, !collectibles.isEmpty else { return }
         let worldColor = UIColor(worldDefinition?.primaryColor ?? Color(red: 0, green: 0.831, blue: 1))
-        for collectible in collectibles {
+        for (index, collectible) in collectibles.enumerated() {
             let position = CGPoint(x: collectible.position.x * size.width, y: collectible.position.y * size.height)
             let node = CollectibleNode(position: position, worldColor: worldColor, id: collectible.id)
             addChild(node)
             collectibleNodes.append(node)
+            node.animateIn(delay: Double(index) * 0.1)
         }
     }
 

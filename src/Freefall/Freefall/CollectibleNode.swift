@@ -53,4 +53,13 @@ final class CollectibleNode: SKNode {
         let repeatPulse = SKAction.repeatForever(pulse)
         run(repeatPulse)
     }
+
+    func animateIn(delay: TimeInterval) {
+        setScale(0)
+        run(SKAction.sequence([
+            SKAction.wait(forDuration: delay),
+            SKAction.scale(to: 1.2, duration: 0.2),
+            SKAction.scale(to: 1.0, duration: 0.1)
+        ]))
+    }
 }

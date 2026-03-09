@@ -82,6 +82,14 @@ final class ObstacleNode: SKShapeNode {
         strokeColor = color
         glowWidth = 6
     }
+
+    func startBreathing() {
+        let breathe = SKAction.sequence([
+            SKAction.fadeAlpha(to: 0.6, duration: 0.75),
+            SKAction.fadeAlpha(to: 0.85, duration: 0.75)
+        ])
+        run(SKAction.repeatForever(breathe), withKey: "breathing")
+    }
 }
 
 struct PhysicsCategory {
