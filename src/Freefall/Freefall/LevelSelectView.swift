@@ -149,22 +149,22 @@ private struct LevelCellView: View {
                     )
 
                 if isCompleted {
-                    VStack(spacing: 3) {
+                    VStack(spacing: 4) {
                         Text("\(levelId)")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(.white.opacity(0.5))
                         // Mini star display
-                        HStack(spacing: 2) {
+                        HStack(spacing: 3) {
                             ForEach(1...3, id: \.self) { i in
                                 Image(systemName: i <= stars ? "star.fill" : "star")
-                                    .font(.system(size: 9))
+                                    .font(.system(size: 11))
                                     .foregroundStyle(i <= stars ? rankColor : .white.opacity(0.2))
                             }
                         }
                         if bestScore > 0 {
                             Text("\(bestScore)")
-                                .font(.system(size: 9, weight: .medium, design: .monospaced))
-                                .foregroundStyle(rankColor.opacity(0.8))
+                                .font(.system(size: 13, weight: .bold, design: .monospaced))
+                                .foregroundStyle(rankColor.opacity(0.9))
                         }
                     }
                 } else if isUnlocked {

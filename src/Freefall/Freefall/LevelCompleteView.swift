@@ -53,10 +53,20 @@ struct LevelCompleteView: View {
 
     private var rankColor: Color {
         switch scoreRank {
-        case "S": return .yellow
-        case "A": return world.primaryColor
-        case "B": return .white
+        case "S": return .green
+        case "A": return .yellow
+        case "B": return .orange
         default: return .white.opacity(0.5)
+        }
+    }
+
+    /// Star color matches level select: green=3★, yellow=2★, orange=1★
+    private var starColor: Color {
+        switch stars {
+        case 3: return .green
+        case 2: return .yellow
+        case 1: return .orange
+        default: return .white.opacity(0.2)
         }
     }
 
@@ -91,8 +101,8 @@ struct LevelCompleteView: View {
                         ForEach(1...3, id: \.self) { i in
                             Image(systemName: i <= stars ? "star.fill" : "star")
                                 .font(.system(size: 30, weight: .bold))
-                                .foregroundStyle(i <= stars ? world.primaryColor : .white.opacity(0.2))
-                                .shadow(color: i <= stars ? world.primaryColor.opacity(0.5) : .clear, radius: 6)
+                                .foregroundStyle(i <= stars ? starColor : .white.opacity(0.2))
+                                .shadow(color: i <= stars ? starColor.opacity(0.5) : .clear, radius: 6)
                         }
                     }
                     .transition(.scale.combined(with: .opacity))

@@ -92,6 +92,7 @@ final class GameScene: SKScene {
     var collectibleNodes: [CollectibleNode] = []
     var collectiblesCollectedThisAttempt: Int = 0
     private var scoreLabel: SKLabelNode?
+    private var highScoreLabel: SKLabelNode?
     private let scoreLabelPulseKey = "scoreLabelPulse"
     private var lastDisplayedScore: Int = 0
     var levelStartTime: TimeInterval?
@@ -154,6 +155,7 @@ final class GameScene: SKScene {
         lastDisplayedScore = 0
         setupScoreLabelIfNeeded()
         updateScoreLabel(animated: false)
+        updateHighScoreLabel()
         createBackgroundIfNeeded()
         updateBackgroundTexture(for: world)
         configureForCurrentLevelIfPossible()
@@ -291,6 +293,14 @@ final class GameScene: SKScene {
         // Reset scale/rotation in case completion or flip animation changed them
         sphereNode?.setScale(1.0)
         sphereNode?.zRotation = 0
+        // Restore goal after completion animation (scale 0.1 → full, white → cyan)
+        restoreGoalIfNeeded()
+        // Recreate collectibles (they get removed on collection)
+        if let level = levelDefinition, let world = worldDefinition {
+            createCollectibles(from: level, world: world)
+        }
+        collectiblesCollectedThisAttempt = 0
+        collectibleComboCount = 0
         enterReadyState(shouldReposition: true, animateBackgroundReset: true)
         // Restart beat timer for the current level
         if let level = levelDefinition, let world = worldDefinition {
@@ -591,14 +601,42 @@ final class GameScene: SKScene {
         label.text = "0"
         scoreLabel = label
         addChild(label)
+
+        // High score target — opposite side, visible but not distracting
+        if highScoreLabel == nil {
+            let best = SKLabelNode(fontNamed: "Menlo-Bold")
+            best.fontSize = 18
+            best.fontColor = UIColor(worldDefinition?.primaryColor ?? .cyan)
+            best.alpha = 0.4
+            best.horizontalAlignmentMode = .left
+            best.verticalAlignmentMode = .top
+            best.zPosition = 50
+            best.text = ""
+            highScoreLabel = best
+            addChild(best)
+        }
+
         layoutScoreLabel()
     }
 
     private func layoutScoreLabel() {
         guard let label = scoreLabel else { return }
         let padding: CGFloat = 16
-        // Position below the pause button area
-        label.position = CGPoint(x: size.width - padding, y: size.height - 52)
+        // Position below the top boundary bar (bar at y=0.94, height=0.018)
+        let barBottom = size.height * 0.931 - 6  // just below bar's lower edge
+        label.position = CGPoint(x: size.width - padding, y: barBottom)
+        highScoreLabel?.position = CGPoint(x: padding, y: barBottom)
+    }
+
+    private func updateHighScoreLabel() {
+        guard let world = worldDefinition, let level = levelDefinition else { return }
+        let best = gameState.bestScoreForLevel(world: world.id, level: level.levelId)
+        highScoreLabel?.fontColor = UIColor(world.primaryColor)
+        if best > 0 {
+            highScoreLabel?.text = "BEST \(best)"
+        } else {
+            highScoreLabel?.text = ""
+        }
     }
 
     private var lastScoreTickTime: TimeInterval = 0
@@ -875,6 +913,20 @@ final class GameScene: SKScene {
 
         addChild(circle)
         goalNode = circle
+    }
+
+    /// Restore goal to full size/color/pulse after completion animation shrinks it
+    private func restoreGoalIfNeeded() {
+        guard let goal = goalNode else { return }
+        goal.removeAllActions()
+        goal.setScale(1.0)
+        goal.strokeColor = Constants.goalStrokeColor
+        goal.fillColor = Constants.goalStrokeColor.withAlphaComponent(0.08)
+        goal.alpha = Constants.goalPulseHighAlpha
+        // Restart pulse
+        let fadeDown = SKAction.fadeAlpha(to: 0.75, duration: Constants.goalPulseDuration / 2)
+        let fadeUp = SKAction.fadeAlpha(to: Constants.goalPulseHighAlpha, duration: Constants.goalPulseDuration / 2)
+        goal.run(SKAction.repeatForever(SKAction.sequence([fadeDown, fadeUp])), withKey: Constants.goalPulseActionKey)
     }
 
     private func createCollectibles(from definition: LevelDefinition, world: WorldDefinition) {
