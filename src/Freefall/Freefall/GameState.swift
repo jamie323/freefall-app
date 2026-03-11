@@ -254,6 +254,11 @@ final class GameState {
         return 0
     }
 
+    /// Rank tier for color-coding: 3=S(green), 2=A(yellow), 1=B(orange), 0=incomplete
+    func rankTierForLevel(world: Int, level: Int) -> Int {
+        starsForLevel(world: world, level: level)
+    }
+
     /// Sum of all per-level best scores for a world
     func bestScoreForWorld(world: Int) -> Int {
         (1...10).reduce(0) { $0 + bestScoreForLevel(world: world, level: $1) }

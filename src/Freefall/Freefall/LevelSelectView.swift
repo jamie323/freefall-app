@@ -129,11 +129,20 @@ private struct LevelCellView: View {
 
     @State private var isPulsing = false
 
+    private var rankColor: Color {
+        switch stars {
+        case 3: return .green
+        case 2: return .yellow
+        case 1: return .orange
+        default: return .clear
+        }
+    }
+
     var body: some View {
         Button(action: onTap) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.white.opacity(isCompleted ? 0.05 : 0.03))
+                    .fill(isCompleted ? rankColor.opacity(0.12) : Color.white.opacity(0.03))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .stroke(borderColor, lineWidth: borderWidth)
@@ -149,13 +158,13 @@ private struct LevelCellView: View {
                             ForEach(1...3, id: \.self) { i in
                                 Image(systemName: i <= stars ? "star.fill" : "star")
                                     .font(.system(size: 9))
-                                    .foregroundStyle(i <= stars ? world.primaryColor : .white.opacity(0.2))
+                                    .foregroundStyle(i <= stars ? rankColor : .white.opacity(0.2))
                             }
                         }
                         if bestScore > 0 {
                             Text("\(bestScore)")
                                 .font(.system(size: 9, weight: .medium, design: .monospaced))
-                                .foregroundStyle(world.primaryColor.opacity(0.6))
+                                .foregroundStyle(rankColor.opacity(0.8))
                         }
                     }
                 } else if isUnlocked {
@@ -201,7 +210,7 @@ private struct LevelCellView: View {
     }
 
     private var borderColor: Color {
-        if isCompleted { return world.primaryColor.opacity(0.5) }
+        if isCompleted { return rankColor.opacity(0.5) }
         if isNextToPlay { return world.primaryColor }
         if isUnlocked { return world.primaryColor.opacity(0.35) }
         return .white.opacity(0.12)

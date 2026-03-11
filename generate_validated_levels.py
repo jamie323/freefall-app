@@ -73,7 +73,7 @@ def simulate(lv):
             for df in (False, True):
                 vy=svy; gd=sgd
                 if df:
-                    gd = not gd; vy = -vy*0.3 + (-imp if gd else imp)
+                    gd = not gd; vy = -vy*0.5 + (-imp*0.7 if gd else imp*0.7)
                 vy *= (1.0-damp)
                 if vy > maxV: vy = maxV
                 elif vy < -maxV: vy = -maxV
@@ -140,7 +140,7 @@ def simulate_human(lv, flip_interval=MIN_FLIP_INTERVAL):
             for df in options:
                 vy=svy; gd=sgd; nsf = sf + 1
                 if df:
-                    gd = not gd; vy = -vy*0.3 + (-imp if gd else imp)
+                    gd = not gd; vy = -vy*0.5 + (-imp*0.7 if gd else imp*0.7)
                     nsf = 0
                 vy *= (1.0-damp)
                 if vy > maxV: vy = maxV

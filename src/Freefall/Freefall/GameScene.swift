@@ -188,8 +188,23 @@ final class GameScene: SKScene {
         updateTrailScore()
         updateBallRotation()
         updateGravityIndicator()
+        attractNearbyCollectibles()
         checkNearMisses()
         checkSphereOutOfBounds()
+    }
+
+    private func attractNearbyCollectibles() {
+        guard sceneState == .playing, let sphere = sphereNode else { return }
+        let pullRadius: CGFloat = 42  // matches glow visual radius
+        for node in collectibleNodes where node.parent != nil && node.physicsBody != nil {
+            let dx = sphere.position.x - node.position.x
+            let dy = sphere.position.y - node.position.y
+            let dist = sqrt(dx * dx + dy * dy)
+            guard dist < pullRadius, dist > 0 else { continue }
+            let strength: CGFloat = (1 - dist / pullRadius) * 3.0
+            node.position.x += dx / dist * strength
+            node.position.y += dy / dist * strength
+        }
     }
 
     private func updateBallRotation() {
@@ -347,14 +362,13 @@ final class GameScene: SKScene {
         flipCount += 1
         applyGravityDirection()
         let physics = worldDefinition?.physicsConfig
-        // Pendulum feel: carry 30% of existing vertical velocity into the new direction,
-        // then add a small impulse. Gives swing/arc rather than dead stop + restart.
-        let carry = -body.velocity.dy * 0.3   // reverse 30% of current dy
+        // Swing feel: carry 50% of existing vertical velocity through the turn,
+        // with a softer impulse. Creates a tight arc/bend rather than instant zigzag.
+        let carry = -body.velocity.dy * 0.5   // reverse 50% of current dy
         let flipImpulse = physics?.flipImpulse ?? Constants.flipImpulse
-        let impulse = isGravityDown ? -flipImpulse : flipImpulse
+        let impulse = (isGravityDown ? -flipImpulse : flipImpulse) * 0.7
         body.velocity = CGVector(dx: body.velocity.dx, dy: carry + impulse)
         spawnFlipEffects()
-        triggerHapticIfNeeded()
         playSFX("flip")
         audioManager?.playFlipThud()
     }
@@ -808,18 +822,44 @@ final class GameScene: SKScene {
 
     private func createGoal(from definition: LevelDefinition) {
         goalNode?.removeFromParent()
-        
-        let circle = SKShapeNode(circleOfRadius: definition.goalRadius)
-        circle.position = CGPoint(
+        childNode(withName: "goalOuterRing")?.removeFromParent()
+
+        let goalPos = CGPoint(
             x: definition.goalPosition.x * size.width,
             y: definition.goalPosition.y * size.height
         )
+        let worldColor = UIColor(worldDefinition?.primaryColor ?? .cyan)
+
+        // Outer halo ring — world color, faint
+        let outerRing = SKShapeNode(circleOfRadius: definition.goalRadius * 1.3)
+        outerRing.position = goalPos
+        outerRing.strokeColor = worldColor
+        outerRing.lineWidth = 1
+        outerRing.fillColor = .clear
+        outerRing.alpha = 0.15
+        outerRing.zPosition = 5
+        outerRing.blendMode = .add
+        outerRing.name = "goalOuterRing"
+        addChild(outerRing)
+
+        // Main goal circle — with subtle fill
+        let circle = SKShapeNode(circleOfRadius: definition.goalRadius)
+        circle.position = goalPos
         circle.strokeColor = Constants.goalStrokeColor
         circle.lineWidth = 2
-        circle.fillColor = .clear
+        circle.fillColor = Constants.goalStrokeColor.withAlphaComponent(0.08)
         circle.alpha = Constants.goalPulseHighAlpha
         circle.zPosition = 6
-        
+
+        // Inner bullseye ring
+        let innerRing = SKShapeNode(circleOfRadius: definition.goalRadius * 0.6)
+        innerRing.strokeColor = Constants.goalStrokeColor
+        innerRing.lineWidth = 1
+        innerRing.fillColor = .clear
+        innerRing.alpha = 0.3
+        innerRing.blendMode = .add
+        circle.addChild(innerRing)
+
         let physicsBody = SKPhysicsBody(circleOfRadius: definition.goalRadius)
         physicsBody.isDynamic = false
         physicsBody.affectedByGravity = false
@@ -827,12 +867,12 @@ final class GameScene: SKScene {
         physicsBody.collisionBitMask = 0
         physicsBody.contactTestBitMask = PhysicsCategory.sphere
         circle.physicsBody = physicsBody
-        
-        let fadeDown = SKAction.fadeAlpha(to: Constants.goalPulseLowAlpha, duration: Constants.goalPulseDuration / 2)
+
+        let fadeDown = SKAction.fadeAlpha(to: 0.75, duration: Constants.goalPulseDuration / 2)
         let fadeUp = SKAction.fadeAlpha(to: Constants.goalPulseHighAlpha, duration: Constants.goalPulseDuration / 2)
         let pulseSequence = SKAction.sequence([fadeDown, fadeUp])
         circle.run(SKAction.repeatForever(pulseSequence), withKey: Constants.goalPulseActionKey)
-        
+
         addChild(circle)
         goalNode = circle
     }
