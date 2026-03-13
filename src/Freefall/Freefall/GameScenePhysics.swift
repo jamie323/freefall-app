@@ -33,7 +33,26 @@ extension GameScene: SKPhysicsContactDelegate {
     }
 
     private func handleSphereGoalCollision() {
+        // Auto-collect any collectibles near the goal before completing
+        // (fixes bug where collectibles inside the goal ring are impossible to get)
+        autoCollectNearGoal()
         enterCompleteState()
+    }
+
+    /// Instantly collect any remaining collectibles within the goal radius
+    private func autoCollectNearGoal() {
+        guard let goal = goalNode, let level = levelDefinition else { return }
+        let goalRadius = level.goalRadius + 10  // slight buffer
+        let goalPos = goal.position
+        for node in collectibleNodes where node.parent != nil && node.physicsBody != nil {
+            let dx = node.position.x - goalPos.x
+            let dy = node.position.y - goalPos.y
+            let dist = sqrt(dx * dx + dy * dy)
+            if dist < goalRadius {
+                // Simulate a collectible contact
+                handleCollectibleContact(with: node.physicsBody!)
+            }
+        }
     }
 
     private func handleCollectibleContact(with collectibleBody: SKPhysicsBody) {
@@ -516,6 +535,12 @@ extension GameScene: SKPhysicsContactDelegate {
         let finalScore = gameState.currentLevelScore
         lastTotalScore = finalScore
         lastIsNewBest = gameState.updateBestScoreIfNeeded(world: world.id, level: definition.levelId, score: finalScore)
+        if lastIsNewBest {
+            // Play excited "HIGH SCORE!" voice clip after a short delay for impact
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+                self?.playSFX("high-score")
+            }
+        }
         gameState.commitCurrentAttemptScore()
 
         // Always mark level as completed first

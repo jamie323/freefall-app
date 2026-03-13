@@ -6,17 +6,17 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 129.0,
-    "dy": 0
+    "dx": 148.9,
+    "dy": -3.4
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.492
+    "y": 0.444
   },
-  "goalRadius": 40,
+  "goalRadius": 26,
   "initialGravityDown": true,
-  "parFlips": 3,
-  "parTime": 3.3,
+  "parFlips": 6,
+  "parTime": 2.7,
   "obstacles": [
     {
       "id": "top-bar",
@@ -50,48 +50,76 @@
       "id": "obs-1",
       "type": "rect",
       "position": {
-        "x": 0.209,
-        "y": 0.38
+        "x": 0.213,
+        "y": 0.288
       },
       "size": {
-        "width": 0.055,
-        "height": 0.082
+        "width": 0.074,
+        "height": 0.071
       },
-      "rotation": -2.4,
+      "rotation": 1.7,
       "style": "solid"
     },
     {
       "id": "obs-2",
       "type": "rect",
       "position": {
-        "x": 0.808,
-        "y": 0.78
+        "x": 0.425,
+        "y": 0.64
       },
       "size": {
-        "width": 0.058,
+        "width": 0.06,
+        "height": 0.062
+      },
+      "rotation": 1.1,
+      "style": "solid"
+    },
+    {
+      "id": "obs-3",
+      "type": "rect",
+      "position": {
+        "x": 0.573,
+        "y": 0.201
+      },
+      "size": {
+        "width": 0.081,
         "height": 0.082
       },
-      "rotation": 2.1,
+      "rotation": -2.9,
+      "style": "solid"
+    },
+    {
+      "id": "obs-4",
+      "type": "rect",
+      "position": {
+        "x": 0.788,
+        "y": 0.564
+      },
+      "size": {
+        "width": 0.072,
+        "height": 0.078
+      },
+      "rotation": -4.8,
       "style": "solid"
     }
   ],
   "collectibles": [
     {
       "position": {
-        "x": 0.12,
-        "y": 0.474
+        "x": 0.14,
+        "y": 0.532
       }
     },
     {
       "position": {
-        "x": 0.49,
-        "y": 0.422
+        "x": 0.5,
+        "y": 0.464
       }
     },
     {
       "position": {
-        "x": 0.86,
-        "y": 0.571
+        "x": 0.78,
+        "y": 0.48
       }
     }
   ]

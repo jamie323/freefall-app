@@ -6,17 +6,17 @@
     "y": 0.5
   },
   "launchVelocity": {
-    "dx": 113.0,
-    "dy": 0
+    "dx": 115.7,
+    "dy": -3.7
   },
   "goalPosition": {
     "x": 0.9,
-    "y": 0.506
+    "y": 0.439
   },
-  "goalRadius": 43,
+  "goalRadius": 39,
   "initialGravityDown": true,
   "parFlips": 2,
-  "parTime": 3.6,
+  "parTime": 3.9,
   "obstacles": [
     {
       "id": "top-bar",
@@ -50,14 +50,14 @@
       "id": "obs-1",
       "type": "rect",
       "position": {
-        "x": 0.473,
-        "y": 0.353
+        "x": 0.506,
+        "y": 0.317
       },
       "size": {
-        "width": 0.056,
-        "height": 0.064
+        "width": 0.055,
+        "height": 0.092
       },
-      "rotation": 0.7,
+      "rotation": -1.1,
       "style": "solid"
     }
   ],
@@ -65,19 +65,19 @@
     {
       "position": {
         "x": 0.25,
-        "y": 0.544
+        "y": 0.521
       }
     },
     {
       "position": {
         "x": 0.5,
-        "y": 0.611
+        "y": 0.509
       }
     },
     {
       "position": {
         "x": 0.75,
-        "y": 0.521
+        "y": 0.504
       }
     }
   ]

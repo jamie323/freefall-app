@@ -20,14 +20,14 @@ VY_MERGE = 3.0
 MIN_FLIP_INTERVAL = 8
 
 WORLD_PHYSICS = {
-    1: {"grav": 50, "imp": 35, "maxV": 140, "damp": 0.02},
-    2: {"grav": 65, "imp": 48, "maxV": 180, "damp": 0.008},
-    3: {"grav": 75, "imp": 32, "maxV": 130, "damp": 0.03},
-    4: {"grav": 70, "imp": 42, "maxV": 200, "damp": 0.005},
-    5: {"grav": 40, "imp": 30, "maxV": 220, "damp": 0.0},
-    6: {"grav": 95, "imp": 60, "maxV": 120, "damp": 0.04},
-    7: {"grav": 60, "imp": 38, "maxV": 170, "damp": 0.012},
-    8: {"grav": 85, "imp": 45, "maxV": 240, "damp": 0.003},
+    1: {"grav": 38,  "imp": 30, "maxV": 125, "damp": 0.025},  # Floaty — slow, wide arcs
+    2: {"grav": 72,  "imp": 52, "maxV": 190, "damp": 0.006},  # Snappy — fast reactions
+    3: {"grav": 85,  "imp": 28, "maxV": 115, "damp": 0.04},   # Heavy — high drag, weak flip
+    4: {"grav": 68,  "imp": 44, "maxV": 210, "damp": 0.004},  # Wild — low drag, fast
+    5: {"grav": 32,  "imp": 26, "maxV": 240, "damp": 0.0},    # Slippery — no friction
+    6: {"grav": 105, "imp": 65, "maxV": 105, "damp": 0.05},   # Explosive — huge gravity
+    7: {"grav": 55,  "imp": 36, "maxV": 165, "damp": 0.015},  # Inverted — medium
+    8: {"grav": 95,  "imp": 48, "maxV": 250, "damp": 0.002},  # Brutal — fast, unforgiving
 }
 
 LEVELS_DIR = "/Users/jamiethomson/freefall-app/src/Freefall/Freefall/levels"
@@ -69,7 +69,7 @@ def simulate(lv):
             for df in (False, True):
                 vy=svy; gd=sgd
                 if df:
-                    gd = not gd; vy = -vy*0.5 + (-imp*0.7 if gd else imp*0.7)
+                    gd = not gd; vy = -vy*0.3 + (-imp if gd else imp)
                 vy *= (1.0-damp)
                 if vy > maxV: vy = maxV
                 elif vy < -maxV: vy = -maxV
@@ -146,7 +146,7 @@ def simulate_human(lv, flip_interval=MIN_FLIP_INTERVAL):
             for df in options:
                 vy=svy; gd=sgd; nsf = sf + 1
                 if df:
-                    gd = not gd; vy = -vy*0.5 + (-imp*0.7 if gd else imp*0.7)
+                    gd = not gd; vy = -vy*0.3 + (-imp if gd else imp)
                     nsf = 0  # reset cooldown
                 vy *= (1.0-damp)
                 if vy > maxV: vy = maxV
@@ -211,7 +211,7 @@ def y_range_at_x(lv, tx):
             for df in (False, True):
                 vy=svy; gd=sgd
                 if df:
-                    gd = not gd; vy = -vy*0.5 + (-imp*0.7 if gd else imp*0.7)
+                    gd = not gd; vy = -vy*0.3 + (-imp if gd else imp)
                 vy *= (1.0-damp)
                 if vy > maxV: vy = maxV
                 elif vy < -maxV: vy = -maxV

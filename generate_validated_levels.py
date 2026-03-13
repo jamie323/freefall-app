@@ -20,14 +20,14 @@ VY_MERGE = 3.0
 MIN_FLIP_INTERVAL = 8
 
 WORLD_PHYSICS = {
-    1: {"grav": 50, "imp": 35, "maxV": 140, "damp": 0.02},
-    2: {"grav": 65, "imp": 48, "maxV": 180, "damp": 0.008},
-    3: {"grav": 75, "imp": 32, "maxV": 130, "damp": 0.03},
-    4: {"grav": 70, "imp": 42, "maxV": 200, "damp": 0.005},
-    5: {"grav": 40, "imp": 30, "maxV": 220, "damp": 0.0},
-    6: {"grav": 95, "imp": 60, "maxV": 120, "damp": 0.04},
-    7: {"grav": 60, "imp": 38, "maxV": 170, "damp": 0.012},
-    8: {"grav": 85, "imp": 45, "maxV": 240, "damp": 0.003},
+    1: {"grav": 38,  "imp": 30, "maxV": 125, "damp": 0.025},  # Floaty — slow, wide arcs
+    2: {"grav": 72,  "imp": 52, "maxV": 190, "damp": 0.006},  # Snappy — fast reactions
+    3: {"grav": 85,  "imp": 28, "maxV": 115, "damp": 0.04},   # Heavy — high drag, weak flip
+    4: {"grav": 68,  "imp": 44, "maxV": 210, "damp": 0.004},  # Wild — low drag, fast
+    5: {"grav": 32,  "imp": 26, "maxV": 240, "damp": 0.0},    # Slippery — no friction
+    6: {"grav": 105, "imp": 65, "maxV": 105, "damp": 0.05},   # Explosive — huge gravity
+    7: {"grav": 55,  "imp": 36, "maxV": 165, "damp": 0.015},  # Inverted — medium
+    8: {"grav": 95,  "imp": 48, "maxV": 250, "damp": 0.002},  # Brutal — fast, unforgiving
 }
 
 LEVELS_DIR = "/Users/jamiethomson/freefall-app/src/Freefall/Freefall/levels"
@@ -73,7 +73,7 @@ def simulate(lv):
             for df in (False, True):
                 vy=svy; gd=sgd
                 if df:
-                    gd = not gd; vy = -vy*0.5 + (-imp*0.7 if gd else imp*0.7)
+                    gd = not gd; vy = -vy*0.3 + (-imp if gd else imp)
                 vy *= (1.0-damp)
                 if vy > maxV: vy = maxV
                 elif vy < -maxV: vy = -maxV
@@ -140,7 +140,7 @@ def simulate_human(lv, flip_interval=MIN_FLIP_INTERVAL):
             for df in options:
                 vy=svy; gd=sgd; nsf = sf + 1
                 if df:
-                    gd = not gd; vy = -vy*0.5 + (-imp*0.7 if gd else imp*0.7)
+                    gd = not gd; vy = -vy*0.3 + (-imp if gd else imp)
                     nsf = 0
                 vy *= (1.0-damp)
                 if vy > maxV: vy = maxV
@@ -205,46 +205,52 @@ def validate_level(data):
 def lerp(a, b, t):
     return a + (b - a) * t
 
-def difficulty(world, level):
-    """Return t ∈ [0, 1] representing overall difficulty.
-    W1L1 = 0.0, W8L10 = 1.0."""
-    # World contributes 70%, level within world 30%
-    w_t = (world - 1) / 7.0          # 0..1
-    l_t = (level - 1) / 9.0          # 0..1
-    return w_t * 0.7 + l_t * 0.3
-
 def get_params(world, level):
-    """Compute generation parameters from difficulty."""
-    t = difficulty(world, level)
+    """Compute generation parameters from difficulty.
 
-    # Number of obstacles (excluding bars): 1 at easiest → 5 at hardest
-    num_obs = max(1, min(5, int(1 + t * 5)))
+    AGGRESSIVE ramp: by L3 the player needs multiple attempts.
+    L1 is intro, L2 adds challenge, L3+ is real difficulty.
+    """
+    lt = (level - 1) / 9.0   # 0..1 within world
+    wt = (world - 1) / 7.0   # 0..1 across worlds
 
-    # Obstacle height (normalized): small early, bigger later
-    obs_h_min = lerp(0.055, 0.065, t)
-    obs_h_max = lerp(0.075, 0.105, t)
+    # Combined t for obstacle sizes, rotation (level-weighted)
+    t = wt * 0.4 + lt * 0.6
 
-    # Obstacle width (normalized)
-    obs_w_min = lerp(0.040, 0.045, t)
-    obs_w_max = lerp(0.055, 0.065, t)
+    # ── Obstacle count: STEEP ramp ──
+    # W1: L1=1, L2=2, L3=3, L4=4, L5=5, L6+=5
+    # W8: L1=3, L2=4, L3=5, L4=6, L5+=6
+    base_obs = 1 + int(wt * 2)                    # 1 for W1, 3 for W8
+    level_obs = min(4, max(0, level - 1))          # L1=0, L2=1, L3=2, L4=3, L5=4
+    num_obs = min(6, base_obs + level_obs)
 
-    # Rotation range (degrees)
-    rot_max = lerp(0, 12, t)
+    # ── Obstacle sizes: BIGGER — actually block the path ──
+    obs_h_min = lerp(0.065, 0.090, t)
+    obs_h_max = lerp(0.095, 0.150, t)
+    obs_w_min = lerp(0.045, 0.065, t)
+    obs_w_max = lerp(0.070, 0.095, t)
 
-    # Launch velocity (dx pixels/sec): slower = easier
-    velocity = lerp(105, 185, t)
+    # ── Rotation range (degrees) ──
+    rot_max = lerp(0, 22, t)
 
-    # Goal radius: bigger at start, smaller later
-    goal_radius = lerp(44, 30, t)
+    # ── Launch velocity: faster baseline ──
+    base_vel = lerp(110, 150, wt)
+    level_vel = lerp(0, 70, lt)
+    max_vel = lerp(165, 220, wt)
+    velocity = min(max_vel, base_vel + level_vel)
 
-    # Playable y range (normalized, where obstacles can appear)
-    # Keep obstacles away from edges
+    # ── Goal radius: shrinks faster ──
+    base_radius = lerp(40, 32, wt)
+    level_shrink = lerp(0, 14, lt)
+    goal_radius = max(22, base_radius - level_shrink)
+
+    # Playable y range (where obstacles can appear)
     y_min = 0.18
     y_max = 0.82
 
-    # Par flips & time scale with difficulty
-    par_flips = max(2, int(2 + t * 6))
-    par_time = lerp(3.8, 2.2, t)
+    # Par flips & time
+    par_flips = max(2, int(2 + t * 8))
+    par_time = lerp(4.0, 1.8, t)
 
     return {
         "num_obs": num_obs,
@@ -258,7 +264,7 @@ def get_params(world, level):
     }
 
 # ── Level Generation ─────────────────────────────────────────────────
-def generate_level(world, level, max_attempts=50):
+def generate_level(world, level, max_attempts=80):
     """Generate a level that passes both sims. Retries with random layouts."""
     params = get_params(world, level)
     grav_down = world not in WORLD_GRAVITY_UP
@@ -268,15 +274,17 @@ def generate_level(world, level, max_attempts=50):
         if data and validate_level(data):
             return data
 
-    # If we can't generate after max_attempts, relax constraints
-    for relax in range(5):
+    # If we can't generate after max_attempts, relax constraints progressively
+    for relax in range(6):
         relaxed = dict(params)
         relaxed["obs_h_max"] *= (0.85 ** (relax + 1))
         relaxed["obs_h_min"] *= (0.85 ** (relax + 1))
         relaxed["velocity"] *= (0.95 ** (relax + 1))
         relaxed["num_obs"] = max(1, relaxed["num_obs"] - relax)
-        for attempt in range(30):
-            data = _try_generate(world, level, relaxed, grav_down, attempt + 100 + relax*30)
+        # Pull goal toward center — each relax step moves 25% closer to 0.50
+        relaxed["_goal_center_pull"] = 0.25 * (relax + 1)  # 0.25, 0.50, 0.75, 1.0...
+        for attempt in range(40):
+            data = _try_generate(world, level, relaxed, grav_down, attempt + 100 + relax*40)
             if data and validate_level(data):
                 return data
 
@@ -289,6 +297,32 @@ def _try_generate(world, level, params, grav_down, seed_offset):
 
     num_obs = params["num_obs"]
     velocity = params["velocity"]
+
+    # ── Goal Y: CLEARLY VISIBLE variation ──
+    # Pools of actual Y positions — not subtle math, real positions.
+    # L1-2: near center but still varied
+    # L3-5: moderate spread — goal clearly top/bottom half
+    # L6+: full range — goal can be near edges
+    if level <= 2:
+        pool = [0.40, 0.50, 0.60]
+    elif level <= 5:
+        pool = [0.32, 0.42, 0.58, 0.68]
+    else:
+        pool = [0.27, 0.36, 0.50, 0.64, 0.73]
+    base_y = pool[(level + world) % len(pool)]
+
+    # World scaling: W1-2 pull slightly toward center, W5+ use full positions
+    world_factor = lerp(0.65, 1.0, (world - 1) / 7.0)
+    goal_y = 0.50 + (base_y - 0.50) * world_factor
+
+    # Relaxation: pull goal toward center if requested
+    center_pull = params.get("_goal_center_pull", 0.0)
+    if center_pull > 0:
+        goal_y = goal_y + (0.50 - goal_y) * min(1.0, center_pull)
+
+    # Small jitter per-attempt
+    goal_y += rng.uniform(-0.02, 0.02)
+    goal_y = max(0.25, min(0.75, goal_y))
 
     # Obstacles: spread evenly along x, zigzag y
     obstacles = []
@@ -306,9 +340,9 @@ def _try_generate(world, level, params, grav_down, seed_offset):
         "rotation": 0, "style": "solid"
     })
 
-    # Space obstacles evenly between x=0.20 and x=0.80
-    x_start = 0.20
-    x_end = 0.78
+    # Space obstacles evenly — tighter cluster when few, wider when many
+    x_start = 0.22 if num_obs >= 3 else 0.28
+    x_end = 0.78 if num_obs >= 3 else 0.72
     if num_obs == 1:
         x_positions = [0.5]
     else:
@@ -316,10 +350,19 @@ def _try_generate(world, level, params, grav_down, seed_offset):
 
     for i, ox in enumerate(x_positions):
         # Zigzag: alternate between upper and lower half
+        # Keep obstacles away from the goal's Y zone for navigability
         if i % 2 == 0:
-            oy = rng.uniform(params["y_min"], 0.42)
+            # Low obstacle: place in lower third, but not blocking goal if goal is low
+            lo_min = params["y_min"]
+            lo_max = min(0.45, goal_y - 0.12)
+            lo_max = max(lo_min + 0.05, lo_max)  # ensure valid range
+            oy = rng.uniform(lo_min, lo_max)
         else:
-            oy = rng.uniform(0.58, params["y_max"])
+            # High obstacle: place in upper third, but not blocking goal if goal is high
+            hi_max = params["y_max"]
+            hi_min = max(0.55, goal_y + 0.12)
+            hi_min = min(hi_max - 0.05, hi_min)  # ensure valid range
+            oy = rng.uniform(hi_min, hi_max)
 
         ow = round(rng.uniform(params["obs_w_min"], params["obs_w_max"]), 3)
         oh = round(rng.uniform(params["obs_h_min"], params["obs_h_max"]), 3)
@@ -361,21 +404,41 @@ def _try_generate(world, level, params, grav_down, seed_offset):
         cy = rng.uniform(0.35, 0.65)
         collectibles.append({"position": {"x": round(cx, 3), "y": round(cy, 3)}})
 
-    # Goal: at far right, y near center
-    goal_y = rng.uniform(0.40, 0.60)
+    # Goal radius from params
+    goal_radius = round(params["goal_radius"])
+
+    # Give ball initial vertical velocity toward goal (helps reach varied positions)
+    launch_dy = (goal_y - 0.5) * 60.0  # push in goal direction
+
+    # Ensure no collectibles overlap with goal ring (causes impossible collection)
+    goal_x_abs = 0.90 * SCREEN_W
+    goal_y_abs = goal_y * SCREEN_H
+    exclusion_radius = goal_radius + 20  # goal radius + buffer in pixels
+    filtered_collectibles = []
+    for c in collectibles:
+        cx_abs = c["position"]["x"] * SCREEN_W
+        cy_abs = c["position"]["y"] * SCREEN_H
+        dist = math.sqrt((cx_abs - goal_x_abs)**2 + (cy_abs - goal_y_abs)**2)
+        if dist > exclusion_radius:
+            filtered_collectibles.append(c)
+        else:
+            # Move collectible left to avoid goal overlap
+            new_cx = c["position"]["x"] - 0.08
+            new_cx = max(0.12, min(0.82, new_cx))
+            filtered_collectibles.append({"position": {"x": round(new_cx, 3), "y": c["position"]["y"]}})
 
     data = {
         "worldId": world,
         "levelId": level,
         "launchPosition": {"x": 0.08, "y": 0.5},
-        "launchVelocity": {"dx": round(velocity, 1), "dy": 0},
+        "launchVelocity": {"dx": round(velocity, 1), "dy": round(launch_dy, 1)},
         "goalPosition": {"x": 0.90, "y": round(goal_y, 3)},
-        "goalRadius": round(params["goal_radius"]),
+        "goalRadius": goal_radius,
         "initialGravityDown": grav_down,
         "parFlips": params["par_flips"],
         "parTime": round(params["par_time"], 1),
         "obstacles": obstacles,
-        "collectibles": collectibles,
+        "collectibles": filtered_collectibles,
     }
     return data
 

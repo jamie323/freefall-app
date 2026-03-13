@@ -201,6 +201,7 @@ final class AudioManager {
         do {
             ensureAudioSessionActive()
             let player = try AVAudioPlayer(contentsOf: url)
+            player.volume = 1.0  // Ensure max volume for SFX
             player.prepareToPlay()
             player.play()
             activeSFXPlayers.append(player)

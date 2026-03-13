@@ -58,6 +58,9 @@ final class IntermissionScene: SKScene {
     private var beatTimer: TimeInterval = 0
     private let bpm: Double = 170
 
+    /// When true, tunnel animates but gates don't spawn and no death — used for tutorial overlay
+    var waitingForStart = false
+
     override func didMove(to view: SKView) {
         backgroundColor = .black
         setupScene()
@@ -79,6 +82,14 @@ final class IntermissionScene: SKScene {
 
         let dt = min(1.0 / 20.0, currentTime - lastUpdateTime)
         lastUpdateTime = currentTime
+
+        // When waiting for start (tutorial showing), only animate visuals — no gameplay
+        if waitingForStart {
+            updateTunnel(dt: dt)
+            updateStreaks(dt: dt)
+            updateBeat(dt: dt)
+            return
+        }
 
         timeAlive += dt
         score += Int((900 + scrollSpeed * 800) * dt)

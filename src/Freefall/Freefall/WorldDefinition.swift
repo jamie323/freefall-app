@@ -41,7 +41,7 @@ enum WorldLibrary {
             musicFolderName: "world1-the-block",
             bpmA: 88,
             bpmB: 95,
-            physicsConfig: PhysicsConfig(gravityMagnitude: 50, flipImpulse: 35, maxVerticalVelocity: 140, verticalDamping: 0.02)
+            physicsConfig: PhysicsConfig(gravityMagnitude: 38, flipImpulse: 30, maxVerticalVelocity: 125, verticalDamping: 0.025)
         ),
         // W2: Snappy/twitchy — strong flip impulse, low damping, bouncy. Fast BPM.
         WorldDefinition(
@@ -56,7 +56,7 @@ enum WorldLibrary {
             musicFolderName: "world2-neon-yard",
             bpmA: 172,
             bpmB: 174,
-            physicsConfig: PhysicsConfig(gravityMagnitude: 65, flipImpulse: 48, maxVerticalVelocity: 180, verticalDamping: 0.008)
+            physicsConfig: PhysicsConfig(gravityMagnitude: 72, flipImpulse: 52, maxVerticalVelocity: 190, verticalDamping: 0.006)
         ),
         // W3: Heavy/sluggish — strong gravity, high damping, weak flip. Gritty, deliberate.
         WorldDefinition(
@@ -71,9 +71,9 @@ enum WorldLibrary {
             musicFolderName: "world3-underground",
             bpmA: 160,
             bpmB: 165,
-            physicsConfig: PhysicsConfig(gravityMagnitude: 75, flipImpulse: 32, maxVerticalVelocity: 130, verticalDamping: 0.03)
+            physicsConfig: PhysicsConfig(gravityMagnitude: 85, flipImpulse: 28, maxVerticalVelocity: 115, verticalDamping: 0.04)
         ),
-        // W4: Wild/precise — strong gravity, near-zero damping, high max velocity. Demands precision.
+        // W4: Wild/precise — near-zero damping, high max velocity. Demands precision.
         WorldDefinition(
             id: 4,
             name: "STATIC",
@@ -86,7 +86,7 @@ enum WorldLibrary {
             musicFolderName: "world4-static",
             bpmA: 132,
             bpmB: 138,
-            physicsConfig: PhysicsConfig(gravityMagnitude: 70, flipImpulse: 42, maxVerticalVelocity: 200, verticalDamping: 0.005)
+            physicsConfig: PhysicsConfig(gravityMagnitude: 68, flipImpulse: 44, maxVerticalVelocity: 210, verticalDamping: 0.004)
         ),
         // W5: Slippery/momentum — zero damping, ball never slows vertically. Ice-skating overshoot feel.
         WorldDefinition(
@@ -101,7 +101,7 @@ enum WorldLibrary {
             musicFolderName: "world5-glass",
             bpmA: 110,
             bpmB: 118,
-            physicsConfig: PhysicsConfig(gravityMagnitude: 40, flipImpulse: 30, maxVerticalVelocity: 220, verticalDamping: 0.0)
+            physicsConfig: PhysicsConfig(gravityMagnitude: 32, flipImpulse: 26, maxVerticalVelocity: 240, verticalDamping: 0.0)
         ),
         // W6: Explosive/short hops — extreme gravity, huge impulse, high damping. Deliberate committed moves.
         WorldDefinition(
@@ -116,7 +116,7 @@ enum WorldLibrary {
             musicFolderName: "world6-furnace",
             bpmA: 180,
             bpmB: 185,
-            physicsConfig: PhysicsConfig(gravityMagnitude: 95, flipImpulse: 60, maxVerticalVelocity: 120, verticalDamping: 0.04)
+            physicsConfig: PhysicsConfig(gravityMagnitude: 105, flipImpulse: 65, maxVerticalVelocity: 105, verticalDamping: 0.05)
         ),
         // W7: Inverted start — gravity starts UP on every level. Mentally disorienting. Forces re-learning.
         WorldDefinition(
@@ -131,7 +131,7 @@ enum WorldLibrary {
             musicFolderName: "world7-void",
             bpmA: 140,
             bpmB: 148,
-            physicsConfig: PhysicsConfig(gravityMagnitude: 60, flipImpulse: 38, maxVerticalVelocity: 170, verticalDamping: 0.012)
+            physicsConfig: PhysicsConfig(gravityMagnitude: 55, flipImpulse: 36, maxVerticalVelocity: 165, verticalDamping: 0.015)
         ),
         // W8: Brutal precision — near-max everything. Fast, violent reactions. Expert-only.
         WorldDefinition(
@@ -146,7 +146,7 @@ enum WorldLibrary {
             musicFolderName: "world8-mainframe",
             bpmA: 150,
             bpmB: 158,
-            physicsConfig: PhysicsConfig(gravityMagnitude: 85, flipImpulse: 45, maxVerticalVelocity: 240, verticalDamping: 0.003)
+            physicsConfig: PhysicsConfig(gravityMagnitude: 95, flipImpulse: 48, maxVerticalVelocity: 250, verticalDamping: 0.002)
         )
     ]
 

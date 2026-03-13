@@ -13,11 +13,11 @@ final class GameScene: SKScene {
 
     enum Constants {
         static let sphereDiameter: CGFloat = 28
-        static let gravityMagnitude: CGFloat = 60
-        static let maxVerticalVelocity: CGFloat = 160
-        static let flipImpulse: CGFloat = 40
+        static let gravityMagnitude: CGFloat = 38
+        static let maxVerticalVelocity: CGFloat = 125
+        static let flipImpulse: CGFloat = 30
         static let linearDamping: CGFloat = 0.0
-        static let verticalDamping: CGFloat = 0.015
+        static let verticalDamping: CGFloat = 0.025
         static let backgroundScale: CGFloat = 1.2
         static let parallaxMultiplier: CGFloat = 0.2
         static let backgroundResetDuration: TimeInterval = 0.3
@@ -101,6 +101,12 @@ final class GameScene: SKScene {
     private var isGravityDown: Bool = true
     private var launchVelocity: CGVector = CGVector(dx: 150, dy: 0)
     private lazy var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
+
+    // Flip easing — spread velocity change over several frames for smooth arc
+    private var flipEaseTarget: CGFloat?
+    private var flipEaseStartVy: CGFloat = 0
+    private var flipEaseFrame: Int = 0
+    private let flipEaseFrames: Int = 8  // ~0.133s at 60fps
     private var lastUpdateTimestamp: TimeInterval = 0
     var totalFlipsDuringLevel: Int = 0
 
@@ -184,6 +190,7 @@ final class GameScene: SKScene {
 
     override func update(_ currentTime: TimeInterval) {
         super.update(currentTime)
+        updateFlipEasing()
         clampSphereVelocity()
         updateBackgroundParallax(currentTime: currentTime)
         updateTrail()
@@ -372,15 +379,33 @@ final class GameScene: SKScene {
         flipCount += 1
         applyGravityDirection()
         let physics = worldDefinition?.physicsConfig
-        // Swing feel: carry 50% of existing vertical velocity through the turn,
-        // with a softer impulse. Creates a tight arc/bend rather than instant zigzag.
-        let carry = -body.velocity.dy * 0.5   // reverse 50% of current dy
+        // Swing feel: carry 40% of existing vertical velocity through the turn,
+        // with moderate impulse. Eased over 8 frames for a smooth arc/bend.
+        let carry = -body.velocity.dy * 0.4
         let flipImpulse = physics?.flipImpulse ?? Constants.flipImpulse
-        let impulse = (isGravityDown ? -flipImpulse : flipImpulse) * 0.7
-        body.velocity = CGVector(dx: body.velocity.dx, dy: carry + impulse)
+        let impulse = (isGravityDown ? -flipImpulse : flipImpulse) * 0.85
+        let targetVy = carry + impulse
+        // Start easing — velocity blends over flipEaseFrames for smooth curve
+        flipEaseStartVy = body.velocity.dy
+        flipEaseTarget = targetVy
+        flipEaseFrame = 0
         spawnFlipEffects()
         playSFX("flip")
         audioManager?.playFlipThud()
+    }
+
+    /// Smoothly interpolate velocity change over several frames (ease-out quadratic)
+    private func updateFlipEasing() {
+        guard let target = flipEaseTarget, let body = sphereNode?.physicsBody, sceneState == .playing else { return }
+        flipEaseFrame += 1
+        let t = min(1.0, CGFloat(flipEaseFrame) / CGFloat(flipEaseFrames))
+        // Ease-out quadratic — fast start, smooth deceleration into new direction
+        let eased = 1.0 - (1.0 - t) * (1.0 - t)
+        let blendedVy = flipEaseStartVy + (target - flipEaseStartVy) * eased
+        body.velocity = CGVector(dx: body.velocity.dx, dy: blendedVy)
+        if flipEaseFrame >= flipEaseFrames {
+            flipEaseTarget = nil
+        }
     }
 
     // MARK: - Flip visual feedback
